@@ -1,0 +1,3 @@
+gui/junk/*
+gui/flask/__pycache__
+gui/flask/venv
