@@ -16,7 +16,7 @@ public class CodeGen {
 
     private void validateArgs(String[] args) {
         if (args.length != NUM_OF_ARGS) {
-            throw new RuntimeException("Expecting exactly 2 input strings: JSON file path and flink task manager address");
+            throw new RuntimeException("Expecting exactly 2 input strings: JSON file path and jar output path");
         }
 
         validateJsonFile(args[0]);
