@@ -5,13 +5,18 @@
         <title> Acylic Join under Update </title>
         <meta name="description" content="This is the demo of acyclic join under update algorithm.">
         <meta name="author" content="">
-        <link rel="icon" type="image/png" href="../images/favicon_io/favicon-32x32.png">
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-32x32.png', _external=True)}}">
     </head>
     <body>
-        <h1>AJU</h1>
+        <h1><img src="{{ url_for('static', filename='images/favicon-32x32.png', _external=True)}}" alt="AJU " /> Acylic Join under Update Algorithm Demo</h1>
         <form action="" enctype="multipart/form-data" method="POST">
             select file: <input type="file" accept=".json" name="json_file">
             <input type="submit" value="upload">
         </form>
+
+        <div>
+            Result is : <br />
+            <p> {{ result }} </p>
+        </div>
     </body>
 </html>

@@ -5,27 +5,34 @@ import subprocess
 import json
 
 app = Flask(__name__)
+app.config['JSON_FILE_UPLOAD_PATH'] = './uploads/'
+app.config['GENERATED_JAR_PATH'] = './generated_jar/'
+app.config['CODEGEN_FILE'] = './codegen-1.0-SNAPSHOT.jar'
 
 @app.route('/')
-def hello_world():
+def index():
     return render_template('index.html')
 
 
-@app.route('/upload', methods=['POST', 'GET'])
+@app.route('/', methods=['POST'])
 def upload_json_file():
-    if request.method == 'POST':
-        f = request.files['json_file']
-        json_file_save_path = './uploads/' + secure_filename(f.filename)
-        f.save(json_file_save_path)
-        codegen_file_path = './codegen-1.0-SNAPSHOT.jar'
-        generated_jar_path = './generated_jar'
-        cmd_str = 'java -jar' + ' ' + codegen_file_path + ' ' + json_file_save_path + ' ' + generated_jar_path
+    # if request.method == 'POST':
+    f = request.files['json_file']
+    uploaded_json_filename = secure_filename(f.filename)
+    uploaded_json_file_save_path = os.path.join(app.config['JSON_FILE_UPLOAD_PATH'], uploaded_json_filename)
+    if uploaded_json_filename != '' :
+        f.save(uploaded_json_file_save_path)
+    
+    cmd_str = 'java -jar' + ' ' \
+        + app.config['CODEGEN_FILE'] + ' ' \
+        + uploaded_json_file_save_path + ' ' \
+        + app.config['GENERATED_JAR_PATH']
 
-        output = subprocess.check_output(cmd_str, shell=True)
+    output = subprocess.check_output(cmd_str, shell=True)
 
-        return render_template('upload.html', result = str(output))
-        # return redirect(url_for('upload_json_file'))
-    return render_template('upload.html', result = "null")
+    return render_template('index.html', result = str(output, encoding = "utf-8"))
+    # return redirect(url_for('upload_json_file'))
+    # return render_template('index.html', result = "null")
 
 
 def is_json_file(the_file):
