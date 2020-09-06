@@ -1,9 +1,33 @@
-import subprocess
+import unittest
+import main
+from main import app
+import json
+import os
 
-json_file_save_path = './uploads/' + 'test.json'
-codegen_file_path = './codegen-1.0-SNAPSHOT.jar'
-flink_address = './'
-cmd_str = 'java -jar' + ' ' + codegen_file_path + ' ' + json_file_save_path + ' ' + flink_address
+class TestUpload(unittest.TestCase):
+    def setUp(self):
+        self.app = app
+        app.testing = True
+        self.client = app.test_client()
 
-output = subprocess.check_output(cmd_str, shell=True)
-print(output)
+    def test_is_json_file(self):
+        # generate a fake json file
+        fake_json_file_content = {'flink':1, 'spark':2, 'streaming':"yes"}
+        fake_json_file_path = "./fake_json_file.json"
+        with open(fake_json_file_path, 'w') as f:
+            json.dump(fake_json_file_content, f, indent=4)
+        
+        # test the function is_json_file()
+        result = main.is_json_file(fake_json_file_path)
+        
+        # delete the fake json file
+        if os.path.exists(fake_json_file_path):
+            os.remove(fake_json_file_path)
+        else:
+            print("fake_json_file does not exist!")
+
+        return result
+
+
+if __name__ == '__main__':
+    unittest.main()

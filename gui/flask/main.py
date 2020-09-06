@@ -22,8 +22,6 @@ def upload_json_file():
         cmd_str = 'java -jar' + ' ' + codegen_file_path + ' ' + json_file_save_path + ' ' + generated_jar_path
 
         output = subprocess.check_output(cmd_str, shell=True)
-        # print(output)
-        # os.system(cmd_str)
 
         return render_template('upload.html', result = str(output))
         # return redirect(url_for('upload_json_file'))
@@ -33,7 +31,7 @@ def upload_json_file():
 def is_json_file(the_file):
     try:
         json_obj = json.loads(the_file)
-    except ValueError, e:
+    except ValueError:
         return False
     return True
 
