@@ -38,3 +38,6 @@ $ pip install Flask
 `FLASK_ENV` can set the debug mode when it is assigned `development`. Then in this mode, we can change the server code without restart the flask service.
 
 So the "gui/flask/start.sh" file sets the above two variables and runs the flask.
+
+# Test
+Change the directory to `gui/flask_project/tests`, and use command `python3 <test_file>` to do the unit test.
