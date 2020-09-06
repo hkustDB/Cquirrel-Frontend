@@ -16,7 +16,6 @@ def index():
 
 @app.route('/', methods=['POST'])
 def upload_json_file():
-    # if request.method == 'POST':
     f = request.files['json_file']
     uploaded_json_filename = secure_filename(f.filename)
     uploaded_json_file_save_path = os.path.join(app.config['JSON_FILE_UPLOAD_PATH'], uploaded_json_filename)
