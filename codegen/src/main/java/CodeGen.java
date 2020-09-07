@@ -24,7 +24,7 @@ public class CodeGen {
     }
 
     private void validateJsonFile(String jsonFilePath) {
-        validateString(jsonFilePath, "jsonFilePath");
+        CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
         if (jsonFilePath.endsWith(".json")) {
             if (new File(jsonFilePath).exists()) return;
             throw new RuntimeException("Unable to find JSON file");
@@ -34,16 +34,10 @@ public class CodeGen {
     }
 
     private void validateOutputDir(String outputDirPath) {
-        validateString(outputDirPath, "outputDirPath");
+        CheckerUtils.checkNullOrEmpty(outputDirPath, "outputDirPath");
         File outputDir = new File(outputDirPath);
         if (outputDir.exists() && outputDir.isDirectory()) return;
 
         throw new RuntimeException("output directory must exist and must be a directory, got: " + outputDirPath);
-    }
-
-    private void validateString(String string, String name) {
-        if (string == null || string.isEmpty()) {
-            throw new RuntimeException(name + " cannot be null or empty");
-        }
     }
 }
