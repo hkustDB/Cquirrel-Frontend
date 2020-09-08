@@ -3,7 +3,7 @@ import json
 import os
 
 import sys 
-sys.path.append("..") 
+sys.path.append(".") 
 import run
 from run import app
 

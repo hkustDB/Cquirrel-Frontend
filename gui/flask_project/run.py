@@ -23,20 +23,36 @@ def upload_json_file():
     # check if the uploaded file is empty
     if uploaded_json_filename == '' :
         return render_template('index.html', result = "json file is empty")
+        
+    # save the json file to server
+    f.save(uploaded_json_file_save_path)
+
     # check if the uploaded file is json file
     if not is_json_file(uploaded_json_file_save_path):
+        # remove the uploaded non json file
+        if os.path.exists(uploaded_json_file_save_path):
+            os.remove(uploaded_json_file_save_path)
         return render_template('index.html', result = "uploaded file is not json file")
     
-    f.save(uploaded_json_file_save_path)
     
+    # call the codegen to generate a jar file
     cmd_str = 'java -jar' + ' ' \
         + app.config['CODEGEN_FILE'] + ' ' \
         + uploaded_json_file_save_path + ' ' \
         + app.config['GENERATED_JAR_PATH']
 
-    output = subprocess.check_output(cmd_str, shell=True)
 
-    return render_template('index.html', result = str(output, encoding = "utf-8"))
+    # temporarily show the result
+    output = subprocess.check_output(cmd_str, shell=True)
+    with open(uploaded_json_file_save_path, "r") as jf:
+        json_tmp = jf.read()
+    result = str(output, encoding = "utf-8") + "\n" + json_tmp
+
+    # remove the uploaded file
+    if os.path.exists(uploaded_json_file_save_path):
+        os.remove(uploaded_json_file_save_path)
+
+    return render_template('index.html', result = result)
     # return redirect(url_for('upload_json_file'))
     # return render_template('index.html', result = "null")
 
