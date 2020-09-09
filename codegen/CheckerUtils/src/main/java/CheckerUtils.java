@@ -1,3 +1,4 @@
+import java.util.Collection;
 import java.util.List;
 
 public class CheckerUtils {
@@ -10,7 +11,7 @@ public class CheckerUtils {
         }
     }
 
-    public static void checkNullOrEmpty(List list, String name) {
+    public static void checkNullOrEmpty(Collection list, String name) {
         if (list == null || list.isEmpty()) {
             throw new RuntimeException(name + NULL_OR_EMPTY_MESSAGE);
         }
