@@ -1,10 +1,12 @@
 from flask import Flask, request, render_template, redirect, url_for
+from flask_bootstrap import Bootstrap
 from werkzeug.utils import secure_filename
 import os
 import subprocess
 import json
 
 app = Flask(__name__)
+Bootstrap(app)
 app.config['JSON_FILE_UPLOAD_PATH'] = './uploads/'
 app.config['GENERATED_JAR_PATH'] = './generated_jar/'
 app.config['CODEGEN_FILE'] = './codegen-1.0-SNAPSHOT.jar'
