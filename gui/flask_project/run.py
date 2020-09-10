@@ -55,8 +55,6 @@ def upload_json_file():
         os.remove(uploaded_json_file_save_path)
 
     return render_template('index.html', result = result)
-    # return redirect(url_for('upload_json_file'))
-    # return render_template('index.html', result = "null")
 
 
 def is_json_file(the_file):
@@ -67,6 +65,23 @@ def is_json_file(the_file):
     except ValueError:
         return False
     return True
+
+
+def run_flink_task(filename):
+    if filename == '':
+        return "filename is null"
+
+    generated_jar_file_path = os.path.join(app.config['GENERATED_JAR_PATH'], filename)
+    if not os.path.exists(generated_jar_file_path):
+        return "generated file path does not exist!"
+
+    flink_home_path = "/mnt/e/Projects/AJU/Programs/flink-1.11.1"
+    generated_jar_para = ""
+    flink_command_path = os.path.join(flink_home_path, "bin/flink")
+    cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
+    output = subprocess.check_output(cmd_str, shell=True)
+    return str(output, encoding = "utf-8")
+
 
 
 if __name__ == '__main__':
