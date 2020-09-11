@@ -7,9 +7,13 @@ import json
 
 app = Flask(__name__)
 Bootstrap(app)
-app.config['JSON_FILE_UPLOAD_PATH'] = './uploads/'
-app.config['GENERATED_JAR_PATH'] = './generated_jar/'
-app.config['CODEGEN_FILE'] = './codegen-1.0-SNAPSHOT.jar'
+app.config['GUI_FLASK_PATH'] = '/mnt/e/Projects/AJU/Code/gui-codegen/gui/aju_flask/'
+app.config['JSON_FILE_UPLOAD_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'uploads')
+app.config['GENERATED_JAR_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar')
+app.config['CODEGEN_FILE'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar/codegen-1.0-SNAPSHOT.jar')
+
+app.config['FLINK_HOME_PATH'] = "/mnt/e/Projects/AJU/Programs/flink-1.11.1"
+
 
 @app.route('/')
 def index():
@@ -36,13 +40,11 @@ def upload_json_file():
             os.remove(uploaded_json_file_save_path)
         return render_template('index.html', result = "uploaded file is not json file")
     
-    
     # call the codegen to generate a jar file
     cmd_str = 'java -jar' + ' ' \
         + app.config['CODEGEN_FILE'] + ' ' \
         + uploaded_json_file_save_path + ' ' \
         + app.config['GENERATED_JAR_PATH']
-
 
     # temporarily show the result
     output = subprocess.check_output(cmd_str, shell=True)
@@ -75,9 +77,8 @@ def run_flink_task(filename):
     if not os.path.exists(generated_jar_file_path):
         return "generated file path does not exist!"
 
-    flink_home_path = "/mnt/e/Projects/AJU/Programs/flink-1.11.1"
     generated_jar_para = ""
-    flink_command_path = os.path.join(flink_home_path, "bin/flink")
+    flink_command_path = os.path.join(app.config['FLINK_HOME_PATH'], "bin/flink")
     cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
     output = subprocess.check_output(cmd_str, shell=True)
     return str(output, encoding = "utf-8")

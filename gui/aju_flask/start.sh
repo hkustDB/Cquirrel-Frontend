@@ -1,9 +1,10 @@
 #!/bin/bash
 
-#. venv/bin/activate
+python3 -m venv venv
+. venv/bin/activate
 
 export FLASK_APP=run.py
 export FLASK_ENV=development
-flask run 
+python3 -m flask run 
 
 

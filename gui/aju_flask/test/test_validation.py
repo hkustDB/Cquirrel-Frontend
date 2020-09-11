@@ -3,7 +3,7 @@ import json
 import os
 
 import sys 
-sys.path.append(".") 
+sys.path.append("..") 
 import run
 from run import app
 
@@ -13,15 +13,17 @@ class TestValidation(unittest.TestCase):
         app.testing = True
         self.client = app.test_client()
 
+        self.resources_path = "/mnt/e/Projects/AJU/Code/gui-codegen/gui/aju_flask/test/resources"
+
         # generate a positive json file
         self.positive_json_file_content = {'flink':1, 'spark':2, 'streaming':"yes"}
-        self.positive_json_file_path = "./positive_json_file.json"
+        self.positive_json_file_path = os.path.join(self.resources_path, "positive_json_file.json")
         with open(self.positive_json_file_path, 'w') as f:
             json.dump(self.positive_json_file_content, f, indent=4)
 
         # generate a negative json file
         self.negative_json_file_content = {'flink':1, 'spark':2, 'streaming':"yes"}
-        self.negative_json_file_path = "./negative_json_file.json"
+        self.negative_json_file_path = os.path.join(self.resources_path, "negative_json_file.json")
         with open(self.negative_json_file_path, 'w') as f:
             f.write(self.negative_json_file_path)
 
