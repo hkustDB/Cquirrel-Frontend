@@ -21,17 +21,23 @@ class TestRunFlink(unittest.TestCase):
 
     def test_run_flink(self):
         filename = "WordCount.jar"
-        output = run.run_flink_task(filename)
-        self.assertIn("JobID", output)
+        ret = run.run_flink_task(filename)
+        print(type(ret))
+        print(ret)
+        self.assertEqual(0, ret.returncode)
 
 
         filename = ""
-        output = run.run_flink_task(filename)
-        self.assertIn("null", output)
+        ret = run.run_flink_task(filename)
+        print(type(ret))
+        print(ret)
+        self.assertNotEqual(0, ret.returncode)
 
         filename = "ABC.jar"
-        output = run.run_flink_task(filename)
-        self.assertIn("does not exist", output)
+        ret = run.run_flink_task(filename)
+        print(type(ret))
+        print(ret)
+        self.assertNotEqual(0, ret.returncode)
         
 
 if __name__ == '__main__':

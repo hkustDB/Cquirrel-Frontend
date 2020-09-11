@@ -71,18 +71,20 @@ def is_json_file(the_file):
 
 def run_flink_task(filename):
     if filename == '':
-        return "filename is null"
+        ret = subprocess.CompletedProcess(args='', returncode=1, stdout="filename is null.")
+        return ret
 
     generated_jar_file_path = os.path.join(app.config['GENERATED_JAR_PATH'], filename)
     if not os.path.exists(generated_jar_file_path):
-        return "generated file path does not exist!"
+        ret = subprocess.CompletedProcess(args='', returncode=1, stdout="generated jar does not exist.")
+        return ret
 
     generated_jar_para = ""
     flink_command_path = os.path.join(app.config['FLINK_HOME_PATH'], "bin/flink")
     cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
-    output = subprocess.check_output(cmd_str, shell=True)
-    return str(output, encoding = "utf-8")
 
+    ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+    return ret
 
 
 if __name__ == '__main__':
