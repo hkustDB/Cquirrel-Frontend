@@ -1,11 +1,24 @@
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
+
 public class Expression {
-    private final Value left;
-    private final Value right;
+    private final List<Value> values;
     private final Operator operator;
 
-    public Expression(Value left, Value right, Operator operator) {
-        this.left = left;
-        this.right = right;
+    public Expression(List<Value> values, Operator operator) {
+        CheckerUtils.checkNullOrEmpty(values, "values");
+        requireNonNull(operator);
+
+        this.values = values;
         this.operator = operator;
+    }
+
+    public List<Value> getValues() {
+        return values;
+    }
+
+    public Operator getOperator() {
+        return operator;
     }
 }
