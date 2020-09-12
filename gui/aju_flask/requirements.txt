@@ -1,0 +1,9 @@
+Flask==1.1.2
+Jinja2==2.11.2
+Flask-Bootstrap==3.3.7.1
+MarkupSafe==1.1.1 
+Werkzeug==1.0.1 
+click==7.1.2 
+dominate==2.5.2 
+itsdangerous==1.1.0 
+visitor==0.1.3
