@@ -1,0 +1,38 @@
+{
+  "RelationProcessFunction": {
+    "name": "lineitem",
+    "relation": "lineitem",
+    "this_key": [
+      "orderkey",
+      "l_linenumber"
+    ],
+    "next_key": [],
+    "child_nodes": 0,
+    "is_Root": true,
+    "is_Last": true,
+    "rename_attribute": null,
+    "select_conditions": {
+      "l_shipdate": {
+        "operator": ">=",
+        "type": "attribute",
+        "right_field": {
+          "type": "constant",
+          "var_type": "Date",
+          "value": "1994-01-01"
+        }
+      }
+    }
+  },
+  "AggregateProcessFunction": {
+    "name": "Q1AggregateFunction",
+    "this_key": [],
+    "next_key": [],
+    "computation": {
+      "column1": "L_EXTENDEDPRICE",
+      "column2": "L_DISCOUNT",
+      "operator": "*"
+    },
+    "aggregation": "+",
+    "value_type": "Double"
+  }
+}
