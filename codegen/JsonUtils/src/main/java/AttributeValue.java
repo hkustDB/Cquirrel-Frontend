@@ -1,21 +1,12 @@
-/**
- * Created by tom on 12/9/2020.
- * Copyright (c) 2020 tom
- */
-public class AttributeValue extends Value {
+public class AttributeValue implements Value {
 
     private final String name;
+    private final String type;
 
-    public AttributeValue(String name, DataType type) {
-        super(type);
+    public AttributeValue(String name, String type) {
+        CheckerUtils.checkNullOrEmpty(name,"name");
+        CheckerUtils.checkNullOrEmpty(type,"type");
         this.name = name;
+        this.type = type;
     }
-
-    public String getAttributeName() {
-        return this.name;
-    }
-
-    /*
-        Maybe allow directly return the attribute value based on the attribute name and type?
-     */
 }
