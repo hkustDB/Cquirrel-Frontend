@@ -1,12 +1,16 @@
 public class AttributeValue implements Value {
 
     private final String name;
-    private final String type;
 
-    public AttributeValue(String name, String type) {
+    public AttributeValue(String name) {
         CheckerUtils.checkNullOrEmpty(name,"name");
-        CheckerUtils.checkNullOrEmpty(type,"type");
         this.name = name;
-        this.type = type;
+    }
+
+    @Override
+    public String toString() {
+        return "AttributeValue{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }

@@ -1,4 +1,14 @@
 public enum Position {
-    ROOT,
-    LEAF
+    ROOT("ROOT"),
+    LEAF("LEAF");
+
+    private String position;
+
+    Position(String position) {
+        this.position = position;
+    }
+
+    public String position() {
+        return position;
+    }
 }

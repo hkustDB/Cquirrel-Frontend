@@ -12,11 +12,27 @@ public enum Operator {
 
     private String operator;
 
-    Operator(String type) {
-        this.operator = type;
+    Operator(String operator) {
+        this.operator = operator;
     }
 
-    public String type() {
+    public String getValue() {
         return operator;
+    }
+
+    public static Operator getOperator(String op) {
+        for (Operator operator : values()) {
+            if (operator.getValue().equals(op)) {
+                return operator;
+            }
+        }
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public String toString() {
+        return "Operator{" +
+                "operator='" + operator + '\'' +
+                '}';
     }
 }

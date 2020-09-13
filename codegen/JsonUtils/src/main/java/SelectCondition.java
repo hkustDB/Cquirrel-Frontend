@@ -29,4 +29,13 @@ public class SelectCondition extends Expression {
     public Value getRight() {
         return right;
     }
+
+    @Override
+    public String toString() {
+        return "SelectCondition{" +
+                "operator=" + operator +
+                ", left=" + left +
+                ", right=" + right +
+                '}';
+    }
 }

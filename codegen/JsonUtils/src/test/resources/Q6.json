@@ -6,7 +6,7 @@
       "orderkey",
       "l_linenumber"
     ],
-    "next_key": [],
+    "next_key": null,
     "child_nodes": 0,
     "is_Root": true,
     "is_Last": true,
@@ -14,7 +14,9 @@
     "select_conditions": {
       "l_shipdate": {
         "operator": ">=",
-        "type": "attribute",
+        "left_field": {
+          "type": "attribute"
+        },
         "right_field": {
           "type": "constant",
           "var_type": "Date",
@@ -25,11 +27,20 @@
   },
   "AggregateProcessFunction": {
     "name": "Q1AggregateFunction",
-    "this_key": [],
-    "next_key": [],
-    "computation": {
-      "column1": "L_EXTENDEDPRICE",
-      "column2": "L_DISCOUNT",
+    "this_key": null,
+    "next_key": null,
+    "AggregateValue": {
+      "type" : "expression",
+      "value1": {
+        "type": "attribute",
+        "name": "L_EXTENDEDPRICE"
+      },
+
+      "value2": {
+        "type": "attribute",
+        "name": "L_DISCOUNT"
+      },
+
       "operator": "*"
     },
     "aggregation": "+",

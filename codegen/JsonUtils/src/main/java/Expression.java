@@ -21,4 +21,12 @@ public class Expression {
     public Operator getOperator() {
         return operator;
     }
+
+    @Override
+    public String toString() {
+        return "Expression{" +
+                "values=" + values +
+                ", operator=" + operator +
+                '}';
+    }
 }

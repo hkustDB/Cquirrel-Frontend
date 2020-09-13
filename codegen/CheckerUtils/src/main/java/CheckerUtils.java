@@ -11,9 +11,15 @@ public class CheckerUtils {
         }
     }
 
-    public static void checkNullOrEmpty(Collection list, String name) {
-        if (list == null || list.isEmpty()) {
+    public static void checkNullOrEmpty(Collection collection, String name) {
+        if (collection == null || collection.isEmpty()) {
             throw new RuntimeException(name + NULL_OR_EMPTY_MESSAGE);
+        }
+    }
+
+    public static void validateNonNullNonEmpty(Collection collection, String name) {
+        if (collection != null && collection.isEmpty()) {
+            throw new RuntimeException(name + " cannot be empty. In case of no keys pass null");
         }
     }
 }
