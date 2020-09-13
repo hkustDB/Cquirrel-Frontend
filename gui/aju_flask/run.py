@@ -7,13 +7,11 @@ import json
 
 app = Flask(__name__)
 Bootstrap(app)
-app.config['GUI_FLASK_PATH'] = '/mnt/e/Projects/AJU/Code/gui-codegen/gui/aju_flask/'
+
+app.config.from_pyfile('./conf/settings.cfg')
 app.config['JSON_FILE_UPLOAD_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'uploads')
 app.config['GENERATED_JAR_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar')
 app.config['CODEGEN_FILE'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar/codegen-1.0-SNAPSHOT.jar')
-
-app.config['FLINK_HOME_PATH'] = "/mnt/e/Projects/AJU/Programs/flink-1.11.1"
-
 
 @app.route('/')
 def index():
@@ -46,11 +44,11 @@ def upload_json_file():
         + uploaded_json_file_save_path + ' ' \
         + app.config['GENERATED_JAR_PATH']
 
-    # temporarily show the result
-    output = subprocess.check_output(cmd_str, shell=True)
+    # run the command and get the result and the json content
+    ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     with open(uploaded_json_file_save_path, "r") as jf:
         json_tmp = jf.read()
-    result = str(output, encoding = "utf-8") + "\n" + json_tmp
+    result = str(ret.stdout, encoding = "utf-8") + "\n" + json_tmp
 
     # remove the uploaded file
     if os.path.exists(uploaded_json_file_save_path):
@@ -88,5 +86,6 @@ def run_flink_task(filename):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
+
 
