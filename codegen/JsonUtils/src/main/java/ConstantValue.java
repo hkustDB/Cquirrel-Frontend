@@ -6,6 +6,8 @@ public class ConstantValue implements Value {
     private final Object value;
     private final Class type;
 
+    private static final DateFormat date_format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+
     public Object getValue() {
         return value;
     }
@@ -27,7 +29,6 @@ public class ConstantValue implements Value {
         }
 
         if (clss.equals(Date.class)) {
-            DateFormat date_format = new java.text.SimpleDateFormat("yyyy-MM-dd");
             value = date_format.parse(val);
         } else {
             value = clss.getConstructor(String.class).newInstance(val);
