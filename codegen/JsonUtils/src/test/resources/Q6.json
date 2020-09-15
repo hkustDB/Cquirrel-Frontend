@@ -1,49 +1,115 @@
 {
-  "RelationProcessFunction": {
-    "name": "lineitem",
-    "relation": "lineitem",
-    "this_key": [
+  "RelationProcessFunction":{
+    "name":"lineitem",
+    "relation":"lineitem",
+    "this_key":[
       "orderkey",
       "l_linenumber"
     ],
-    "next_key": null,
-    "child_nodes": 0,
-    "is_Root": true,
-    "is_Last": true,
-    "rename_attribute": null,
-    "select_conditions": {
-      "l_shipdate": {
-        "operator": ">=",
-        "left_field": {
-          "type": "attribute"
+    "next_key":null,
+    "child_nodes":0,
+    "is_Root":true,
+    "is_Last":true,
+    "rename_attribute":null,
+    "select_conditions":{
+      "value1":{
+        "type":"expression",
+        "value1":{
+          "type":"expression",
+          "value1":{
+            "type":"attribute",
+            "name":"l_shipdate"
+          },
+          "value2":{
+            "type":"constant",
+            "var_type":"Date",
+            "value":"1994-01-01"
+          },
+          "operator":">="
         },
-        "right_field": {
-          "type": "constant",
-          "var_type": "Date",
-          "value": "1994-01-01"
-        }
-      }
-    }
-  },
-  "AggregateProcessFunction": {
-    "name": "Q1AggregateFunction",
-    "this_key": null,
-    "next_key": null,
-    "AggregateValue": {
-      "type" : "expression",
-      "value1": {
-        "type": "attribute",
-        "name": "L_EXTENDEDPRICE"
+        "value2":{
+          "type":"expression",
+          "value1":{
+            "type":"expression",
+            "value1":{
+              "type":"attribute",
+              "name":"l_shipdate"
+            },
+            "value2":{
+              "type":"constant",
+              "var_type":"Date",
+              "value":"1995-01-01"
+            },
+            "operator":"<"
+          },
+          "value2":{
+            "type":"expression",
+            "value1":{
+              "type":"attribute",
+              "name":"l_discount"
+            },
+            "value2":{
+              "type":"constant",
+              "var_type":"Double",
+              "value":"0.05"
+            },
+            "operator":">"
+          },
+          "operator":"AND"
+        },
+        "operator":"AND"
       },
-
-      "value2": {
-        "type": "attribute",
-        "name": "L_DISCOUNT"
+      "value2":{
+        "type":"expression",
+        "value1":{
+          "type":"expression",
+          "value1":{
+            "type":"attribute",
+            "name":"l_discount"
+          },
+          "value2":{
+            "type":"constant",
+            "var_type":"Double",
+            "value":"0.07"
+          },
+          "operator":"<"
+        },
+        "value2":{
+          "type":"expression",
+          "value1":{
+            "type":"attribute",
+            "name":"l_quantity"
+          },
+          "value2":{
+            "type":"constant",
+            "var_type":"int",
+            "value":"24"
+          },
+          "operator":"<"
+        },
+        "operator":"AND"
       },
-
-      "operator": "*"
+      "operator":"AND"
     },
-    "aggregation": "+",
-    "value_type": "Double"
+  },
+  "AggregateProcessFunction":{
+    "name":"Q1AggregateFunction",
+    "this_key":null,
+    "next_key":null,
+    "AggregateValue":{
+      "type":"expression",
+      "value1":{
+        "type":"attribute",
+        "name":"L_EXTENDEDPRICE"
+      },
+      "value2":{
+        "type":"attribute",
+        "name":"L_DISCOUNT"
+      },
+      "operator":"*",
+      "name":"revenue"
+    },
+    "aggregation":"+",
+    "value_type":"Double"
   }
 }
