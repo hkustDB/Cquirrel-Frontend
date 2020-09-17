@@ -9,6 +9,7 @@ public class Type {
     //types with String constructor
     private static Map<String, Class> types;
 
+    //Note: if all numbers types can't be instantiated with string use BigDecimal
     static {
         Map<String, Class> typesTemp = new HashMap<>();
         typesTemp.put("int", Integer.class);
@@ -16,6 +17,8 @@ public class Type {
         typesTemp.put("double", Double.class);
         typesTemp.put("long", Double.class);
         typesTemp.put("date", Date.class);
+        typesTemp.put("char", Character.class);
+        typesTemp.put("long", Long.class);
         types = ImmutableMap.copyOf(typesTemp);
     }
 
