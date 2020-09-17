@@ -48,17 +48,15 @@ class CodeGenTest {
 
     @Test
     void nullOrEmptyArgs() {
-        exceptionTest(null, "Argument cannot be null or empty");
         String[] args = getArgs();
         args[0] = "";
-        exceptionTest(args, "Argument cannot be null or empty");
+        exceptionTest(args, "cannot be null or empty");
     }
 
     @Test
     void extraArgs() {
-        String[] args = getArgs();
-        args[2] = "";
-        exceptionTest(null, "Expecting exactly 2 input strings: JSON file path and flink task manager address");
+        String[] args = new String[3];
+        exceptionTest(args, "Expecting exactly 2 input strings: JSON file path and jar output path");
     }
 
     @Test
