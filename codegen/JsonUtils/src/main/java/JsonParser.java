@@ -4,6 +4,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -75,14 +76,17 @@ public class JsonParser {
 
     private static List<SelectCondition> makeSelectConditions(LinkedTreeMap scMap) throws Exception {
         List<SelectCondition> selectConditions = new ArrayList<>();
+        Operator nextOperator = Operator.getOperator((String) scMap.get("operator"));
         for (Object entryObject : scMap.entrySet()) {
             Map.Entry entry = (Map.Entry) entryObject;
-            LinkedTreeMap value = (LinkedTreeMap) entry.getValue();
-            Operator operator = Operator.getOperator((String) value.get("operator"));
-            Value left = makeValue((LinkedTreeMap) value.get("left_field"));
-            Value right = makeValue((LinkedTreeMap) value.get("right_field"));
-            SelectCondition sc = new SelectCondition(operator, left, right);
-            selectConditions.add(sc);
+            if (((String) entry.getKey()).startsWith("value")) {
+                LinkedTreeMap value = (LinkedTreeMap) entry.getValue();
+                Operator operator = Operator.getOperator((String) value.get("operator"));
+                Value left = makeValue((LinkedTreeMap) value.get("left_field"));
+                Value right = makeValue((LinkedTreeMap) value.get("right_field"));
+                SelectCondition sc = new SelectCondition(new Expression(Arrays.asList(left, right), operator), nextOperator);
+                selectConditions.add(sc);
+            }
         }
 
         return selectConditions;

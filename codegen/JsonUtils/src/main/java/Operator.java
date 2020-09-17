@@ -8,7 +8,9 @@ public enum Operator {
     SUMMATION("++"),
     MULTIPLY("*"),
     PRODUCT("**"),
-    AVG("~");
+    AVG("~"),
+    AND("AND"),
+    OR("OR");
 
     private String operator;
 

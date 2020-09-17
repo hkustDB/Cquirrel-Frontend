@@ -1,41 +1,18 @@
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-public class SelectCondition extends Expression {
+public class SelectCondition {
+    private final Expression expression;
+    //This is the operator between each select condition (AND/OR) e.g. condition1 AND condition2
     private final Operator operator;
-    private final Value left;
-    private final Value right;
 
-    public SelectCondition(Operator operator, Value left, Value right) {
-        super(asList(left, right), operator);
-
+    public SelectCondition(final Expression expression, final Operator operator) {
+        requireNonNull(expression);
         requireNonNull(operator);
-        requireNonNull(left);
-        requireNonNull(right);
+        if (expression.getValues().size() != 2) {
+            throw new RuntimeException("There must be exactly 2 values in the expression of a select condition");
+        }
+        this.expression = expression;
         this.operator = operator;
-        this.left = left;
-        this.right = right;
     }
 
-    @Override
-    public Operator getOperator() {
-        return operator;
-    }
-
-    public Value getLeft() {
-        return left;
-    }
-
-    public Value getRight() {
-        return right;
-    }
-
-    @Override
-    public String toString() {
-        return "SelectCondition{" +
-                "operator=" + operator +
-                ", left=" + left +
-                ", right=" + right +
-                '}';
-    }
 }

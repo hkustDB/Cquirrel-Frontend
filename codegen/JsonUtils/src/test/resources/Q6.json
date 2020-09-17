@@ -12,6 +12,7 @@
     "is_Last": true,
     "rename_attribute": null,
     "select_conditions": {
+      "operator": "AND",
       "value1": {
         "left_field": {
           "type": "attribute",
@@ -76,8 +77,7 @@
           "name": "l_quantity"
         },
         "operator": "<"
-      },
-      "operator" : "AND"
+      }
     }
   },
   "AggregateProcessFunction": {
