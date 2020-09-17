@@ -21,8 +21,7 @@
         "right_field": {
           "type": "constant",
           "var_type": "Date",
-          "value": "1994-01-01",
-          "name": "l_shipdate"
+          "value": "1994-01-01"
         },
         "operator": ">="
       },
@@ -34,8 +33,7 @@
         "right_field": {
           "type": "constant",
           "var_type": "Date",
-          "value": "1995-01-01",
-          "name": "l_shipdate"
+          "value": "1995-01-01"
         },
         "operator": "<"
       },
@@ -47,8 +45,7 @@
         "right_field": {
           "type": "constant",
           "var_type": "Double",
-          "value": "0.05",
-          "name": "l_discount"
+          "value": "0.05"
         },
         "operator": ">"
       },
@@ -60,8 +57,7 @@
         "right_field": {
           "type": "constant",
           "var_type": "Double",
-          "value": "0.07",
-          "name": "l_discount"
+          "value": "0.07"
         },
         "operator": "<"
       },
@@ -73,8 +69,7 @@
         "right_field": {
           "type": "constant",
           "var_type": "int",
-          "value": "24",
-          "name": "l_quantity"
+          "value": "24"
         },
         "operator": "<"
       }
