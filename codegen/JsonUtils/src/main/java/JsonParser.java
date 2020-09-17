@@ -64,7 +64,7 @@ public class JsonParser {
                     } else if (valueType.equals("constant")) {
                         values.add(ConstantValue.newInstance((String) entryMap.get("value"), (String) entryMap.get("var_type"), (String) entryMap.get("column_name")));
                     } else {
-                        throw new RuntimeException("Unknown type for AggregateValue." + name + ", currently only supporting attribute and constant types. Got: ");
+                        throw new RuntimeException("Unknown type for AggregateValue." + name + ", currently only supporting attribute and constant types. Got: " + valueType);
                     }
                 }
             }
@@ -77,11 +77,10 @@ public class JsonParser {
         List<SelectCondition> selectConditions = new ArrayList<>();
         for (Object entryObject : scMap.entrySet()) {
             Map.Entry entry = (Map.Entry) entryObject;
-            String name = (String) entry.getKey();
             LinkedTreeMap value = (LinkedTreeMap) entry.getValue();
             Operator operator = Operator.getOperator((String) value.get("operator"));
-            Value left = makeValue((LinkedTreeMap) value.get("left_field"), name);
-            Value right = makeValue((LinkedTreeMap) value.get("right_field"), name);
+            Value left = makeValue((LinkedTreeMap) value.get("left_field"));
+            Value right = makeValue((LinkedTreeMap) value.get("right_field"));
             SelectCondition sc = new SelectCondition(operator, left, right);
             selectConditions.add(sc);
         }
@@ -89,8 +88,9 @@ public class JsonParser {
         return selectConditions;
     }
 
-    private static Value makeValue(LinkedTreeMap field, String name) throws Exception {
+    private static Value makeValue(LinkedTreeMap field) throws Exception {
         String type = (String) field.get("type");
+        String name = (String) field.get("name");
         Value value;
         if (type.equals("attribute")) {
             value = new AttributeValue(name);

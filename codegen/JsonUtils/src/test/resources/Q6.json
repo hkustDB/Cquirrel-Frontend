@@ -12,16 +12,74 @@
     "is_Last": true,
     "rename_attribute": null,
     "select_conditions": {
-      "l_shipdate": {
-        "operator": ">=",
+      "sc1": {
         "left_field": {
-          "type": "attribute"
+          "type": "attribute",
+          "name": "l_shipdate"
         },
         "right_field": {
           "type": "constant",
           "var_type": "Date",
-          "value": "1994-01-01"
-        }
+          "value": "1994-01-01",
+          "name": "l_shipdate"
+        },
+        "operator": ">=",
+        "next_operator": "AND"
+      },
+      "sc2": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_shipdate"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Date",
+          "value": "1995-01-01",
+          "name": "l_shipdate"
+        },
+        "operator": "<",
+        "next_operator": "AND"
+      },
+      "sc3": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_discount"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Double",
+          "value": "0.05",
+          "name": "l_discount"
+        },
+        "operator": ">",
+        "next_operator": "AND"
+      },
+      "sc4": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_discount"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Double",
+          "value": "0.07",
+          "name": "l_discount"
+        },
+        "operator": "<",
+        "next_operator": "AND"
+      },
+      "sc5": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_quantity"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "int",
+          "value": "24",
+          "name": "l_quantity"
+        },
+        "operator": "<"
       }
     }
   },
@@ -30,17 +88,15 @@
     "this_key": null,
     "next_key": null,
     "AggregateValue": {
-      "type" : "expression",
+      "type": "expression",
       "value1": {
         "type": "attribute",
         "name": "L_EXTENDEDPRICE"
       },
-
       "value2": {
         "type": "attribute",
         "name": "L_DISCOUNT"
       },
-
       "operator": "*"
     },
     "aggregation": "+",
