@@ -14,43 +14,6 @@ public class RelationSchema {
         return new RelationSchema(name, columns);
     }
 
-    /**
-     * l_shipdate
-     * date
-     * l_orderkey
-     * bigint
-     * l_discount
-     * decimal
-     * l_extendedprice
-     * decimal
-     * l_suppkey
-     * int
-     * l_quantity
-     * bigint
-     * l_returnflag
-     * char
-     * l_partkey
-     * bigint
-     * l_linestatus
-     * char
-     * l_tax
-     * decimal
-     * l_commitdate
-     * date
-     * l_receiptdate
-     * date
-     * l_shipmode
-     * char
-     * l_linenumber
-     * bigint
-     * l_shipinstruct
-     * char
-     * l_comment
-     * varchar
-     *
-     * @return
-     */
-
     private static Map<String, Attribute> lineitemColumns;
 
     static {
