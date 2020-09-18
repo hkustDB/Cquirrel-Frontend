@@ -16,7 +16,6 @@ public class Type {
         typesTemp.put("string", String.class);
         typesTemp.put("varchar", String.class);
         typesTemp.put("double", Double.class);
-        typesTemp.put("long", Double.class);
         typesTemp.put("date", Date.class);
         typesTemp.put("char", Character.class);
         typesTemp.put("long", Long.class);
