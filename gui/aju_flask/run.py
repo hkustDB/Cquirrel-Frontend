@@ -105,6 +105,12 @@ def download_log_file():
         return send_from_directory(app.config['CODEGEN_LOG_PATH'], 'codegen.log', as_attachment=True)
         
 
+@app.route("/download_generated_jar")
+def download_generatd_jar_file():
+    if os.path.exists(app.config['GENERATED_JAR_FILE']):
+        return send_from_directory(app.config['GENERATED_JAR_PATH'], 'generated.jar', as_attachment=True)
+
+        
 
 if __name__ == '__main__':
     socketio.run(app)
