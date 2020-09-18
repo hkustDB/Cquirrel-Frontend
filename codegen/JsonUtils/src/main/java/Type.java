@@ -14,6 +14,7 @@ public class Type {
         Map<String, Class> typesTemp = new HashMap<>();
         typesTemp.put("int", Integer.class);
         typesTemp.put("string", String.class);
+        typesTemp.put("varchar", String.class);
         typesTemp.put("double", Double.class);
         typesTemp.put("long", Double.class);
         typesTemp.put("date", Date.class);

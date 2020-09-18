@@ -18,11 +18,8 @@ public class RelationSchema {
 
     static {
         lineitemColumns = ImmutableMap.copyOf(new HashMap<String, Attribute>() {{
-            put("l_orderkey", new Attribute(Type.getClass("long"), 0));
-            put("l_partkey", new Attribute(Type.getClass("long"), 1));
-            put("l_suppkey", new Attribute(Type.getClass("int"), 2));
-            put("l_linenumber", new Attribute(Type.getClass("long"), 3));
-            put("l_quantity", new Attribute(Type.getClass("long"), 4));
+            put("l_linenumber", new Attribute(Type.getClass("int"), 3));
+            put("l_quantity", new Attribute(Type.getClass("double"), 4));
             put("l_extendedprice", new Attribute(Type.getClass("double"), 5));
             put("l_discount", new Attribute(Type.getClass("double"), 6));
             put("l_tax", new Attribute(Type.getClass("double"), 7));
@@ -31,9 +28,9 @@ public class RelationSchema {
             put("l_shipdate", new Attribute(Type.getClass("date"), 10));
             put("l_commitdate", new Attribute(Type.getClass("date"), 11));
             put("l_receiptdate", new Attribute(Type.getClass("date"), 12));
-            put("l_shipinstruct", new Attribute(Type.getClass("char"), 13));
-            put("l_shipmode", new Attribute(Type.getClass("char"), 14));
-            put("l_comment", new Attribute(Type.getClass("varchar"), 15));
+            put("l_shipinstruct", new Attribute(Type.getClass("String"), 13));
+            put("l_shipmode", new Attribute(Type.getClass("String"), 14));
+            put("l_comment", new Attribute(Type.getClass("String"), 15));
         }});
     }
 
