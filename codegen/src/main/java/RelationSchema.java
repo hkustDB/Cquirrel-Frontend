@@ -20,7 +20,7 @@ public class RelationSchema {
         lineitemColumns = ImmutableMap.copyOf(new HashMap<String, Attribute>() {{
             put("orderkey", new Attribute(Type.getClass("long"), 0));
             put("partkey", new Attribute(Type.getClass("long"), 1));
-            put("suppkey", new Attribute(Type.getClass("int"), 2));
+            put("suppkey", new Attribute(Type.getClass("long"), 2));
             put("l_linenumber", new Attribute(Type.getClass("int"), 3));
             put("l_quantity", new Attribute(Type.getClass("double"), 4));
             put("l_extendedprice", new Attribute(Type.getClass("double"), 5));
