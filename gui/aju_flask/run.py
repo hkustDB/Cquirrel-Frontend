@@ -1,6 +1,13 @@
-from flask import Flask, request, render_template, redirect, url_for
-from flask_bootstrap import Bootstrap
+from flask import Flask, request, render_template, redirect, url_for, send_file, send_from_directory
 from werkzeug.utils import secure_filename
+
+from flask_bootstrap import Bootstrap
+from flask_socketio import SocketIO, send, emit
+
+import asyncio
+from asyncio.subprocess import PIPE
+from asyncio import create_subprocess_shell
+
 import os
 import subprocess
 import json
@@ -11,7 +18,13 @@ Bootstrap(app)
 app.config.from_pyfile('./conf/settings.cfg')
 app.config['JSON_FILE_UPLOAD_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'uploads')
 app.config['GENERATED_JAR_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar')
+app.config['GENERATED_JAR_FILE'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar/generated.jar')
 app.config['CODEGEN_FILE'] = os.path.join(app.config['GUI_FLASK_PATH'], 'jar/codegen-1.0-SNAPSHOT.jar')
+app.config['CODEGEN_LOG_PATH'] = os.path.join(app.config['GUI_FLASK_PATH'], 'log')
+app.config['CODEGEN_LOG_FILE'] = os.path.join(app.config['GUI_FLASK_PATH'], 'log/codegen.log')
+
+socketio = SocketIO(app)
+
 
 @app.route('/')
 def index():
@@ -44,17 +57,18 @@ def upload_json_file():
         + uploaded_json_file_save_path + ' ' \
         + app.config['GENERATED_JAR_PATH']
 
-    # run the command and get the result and the json content
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
-    with open(uploaded_json_file_save_path, "r") as jf:
-        json_tmp = jf.read()
-    result = str(ret.stdout, encoding = "utf-8") + "\n" + json_tmp
+    codegen_log_stdout = str(ret.stdout, encoding = "utf-8") + "\n"
+    codegen_log_stderr = str(ret.stderr, encoding = "utf-8") + "\n"
+    codegen_log_result = codegen_log_stdout + codegen_log_stderr
+    with open("./log/codegen.log", "w") as f:
+        f.write(codegen_log_result)
 
     # remove the uploaded file
     if os.path.exists(uploaded_json_file_save_path):
         os.remove(uploaded_json_file_save_path)
 
-    return render_template('index.html', result = result)
+    return render_template('index.html', codegen_log_result = codegen_log_result)
 
 
 def is_json_file(the_file):
@@ -85,7 +99,14 @@ def run_flink_task(filename):
     return ret
 
 
+@app.route("/download_log")
+def download_log_file():
+    if os.path.exists(app.config['CODEGEN_LOG_FILE']):
+        return send_from_directory(app.config['CODEGEN_LOG_PATH'], 'codegen.log', as_attachment=True)
+        
+
+
 if __name__ == '__main__':
-    app.run()
+    socketio.run(app)
 
 

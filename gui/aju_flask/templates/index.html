@@ -16,10 +16,17 @@
     
     {% block div_show_results %}
     <div class="div_show_results">
-        Result is : <br />
-        <p><code> 
-            {{ result }} 
-        </code></p>
+        CodeGen log : <br />
+        <div id="codegen_log_div">
+        </div>
+    
+        <textarea id="codegen_log_textarea" rows="6" cols="70"> 
+                {{ codegen_log_result }} 
+        </textarea>
+        <br/>
+        <a href="download_log">Download Codegen Log</a>
     </div>
+    <hr/>
+
     {% endblock %}
 </div>
