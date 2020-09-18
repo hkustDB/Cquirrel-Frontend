@@ -1,5 +1,5 @@
 import com.google.common.collect.ImmutableMap;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.HashMap;
