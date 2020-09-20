@@ -58,17 +58,19 @@ public class RelationProcessFunctionWriter implements CodeGenerator {
             ifCondition.append("(\"").append(attributeValue.getName().toUpperCase()).append("\")");
             Class type = constantValue.getType();
             ifCondition.append(".asInstanceOf[")
-                    .append(type.getName())
+                    //Needed to add fully qualified name of Date class but not others
+                    .append(type.getSimpleName().equals("Date") ? type.getName() : type.getSimpleName())
                     .append("]")
                     //operator of the select condition itself
                     .append(expression.getOperator().getValue());
 
             if (type.equals(Type.getClass("date"))) {
+                //Needed so generated code parses the date
                 ifCondition.append("format.parse(\"").append(constantValue.getValue()).append("\")");
             } else if (type.equals(Type.getClass("string"))) {
                 ifCondition.append("\"").append(constantValue.getValue()).append("\"");
             } else {
-                ifCondition.append(String.valueOf(constantValue.getValue()));
+                ifCondition.append(constantValue.getValue());
             }
 
             if (i < selectConditions.size() - 1) {
