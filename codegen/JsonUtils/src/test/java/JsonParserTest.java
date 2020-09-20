@@ -8,6 +8,5 @@ class JsonParserTest {
     @Test
     void q6json() throws Exception {
         Node node = JsonParser.parse(resourceFolder + File.separator + "Q6.json");
-        System.out.println(node);
     }
 }

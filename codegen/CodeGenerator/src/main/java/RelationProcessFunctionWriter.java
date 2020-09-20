@@ -34,8 +34,8 @@ public class RelationProcessFunctionWriter implements CodeGenerator {
 
     private void makeConstructor() {
 
-        String stringBuilder = "class " + className + " extends RelationFKProcessFunction[Any](" +
-                relationName + "," +
+        String stringBuilder = "class " + className + " extends RelationFKProcessFunction[Any](\"" +
+                relationName + "\"," +
                 "Array()" + "," +
                 "Array()" + "," +
                 "true)" +
