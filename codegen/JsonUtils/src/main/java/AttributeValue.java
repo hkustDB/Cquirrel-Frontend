@@ -13,4 +13,8 @@ public class AttributeValue implements Value {
                 "name='" + name + '\'' +
                 '}';
     }
+
+    public String getName() {
+        return name;
+    }
 }

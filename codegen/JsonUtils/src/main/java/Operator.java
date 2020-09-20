@@ -9,8 +9,8 @@ public enum Operator {
     MULTIPLY("*"),
     PRODUCT("**"),
     AVG("~"),
-    AND("AND"),
-    OR("OR");
+    AND("&&"),
+    OR("||");
 
     private String operator;
 
