@@ -1,3 +1,7 @@
-venv/
+*.pyc
+*.pyo
+
+
+tmp/
+.idea/
 __pycache__/
-test/__pycache__

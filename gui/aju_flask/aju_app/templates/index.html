@@ -17,12 +17,14 @@
     {% block div_show_results %}
     <div class="div_show_results">
         CodeGen log : <br />
-        <div id="codegen_log_div">
+        <div id="uploaded_result_div">
+             {{ uploaded_result }}
         </div>
     
         <textarea id="codegen_log_textarea" rows="6" cols="70"> 
                 {{ codegen_log_result }} 
         </textarea>
+
         <br/>
         <a href="download_log">Download Codegen Log</a>
         <br/>
