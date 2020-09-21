@@ -37,8 +37,39 @@ public class RelationProcessFunction extends ProcessFunction {
         this.selectConditions = selectConditions;
     }
 
-    private void validateRenamingMap() {
+    public String getName() {
+        return name;
+    }
 
+    @Nullable
+    public List<String> getThisKey() {
+        return thisKey;
+    }
+
+    @Nullable
+    public List<String> getNextKey() {
+        return nextKey;
+    }
+
+    public int getChildNodes() {
+        return childNodes;
+    }
+
+    public boolean isRoot() {
+        return isRoot;
+    }
+
+    public boolean isLast() {
+        return isLast;
+    }
+
+    @Nullable
+    public Map<String, String> getRenaming() {
+        return renaming;
+    }
+
+    public List<SelectCondition> getSelectConditions() {
+        return selectConditions;
     }
 
     @Override

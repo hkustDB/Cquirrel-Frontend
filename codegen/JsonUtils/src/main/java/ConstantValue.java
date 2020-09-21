@@ -1,13 +1,7 @@
-import java.text.DateFormat;
-import java.util.Date;
-
 public class ConstantValue implements Value {
-    private final Object value;
+    private final String value;
     private final Class type;
-
-    private static final DateFormat date_format = new java.text.SimpleDateFormat("yyyy-MM-dd");
-
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -20,19 +14,12 @@ public class ConstantValue implements Value {
         CheckerUtils.checkNullOrEmpty(type, "type");
 
         String typeLower = type.toLowerCase();
-        Object value;
         Class clss = Type.getClass(typeLower);
         if (clss == null) {
             throw new RuntimeException("Unknown data type: " + type);
         }
 
-        if (clss.equals(Date.class)) {
-            value = date_format.parse(val);
-        } else {
-            value = clss.getConstructor(String.class).newInstance(val);
-        }
-
-        return new ConstantValue(value, clss);
+        return new ConstantValue(val, clss);
     }
 
     @Override
@@ -43,7 +30,7 @@ public class ConstantValue implements Value {
                 '}';
     }
 
-    private ConstantValue(Object value, Class type) {
+    private ConstantValue(String value, Class type) {
         this.value = value;
         this.type = type;
     }

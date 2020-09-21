@@ -12,7 +12,7 @@
     "is_Last": true,
     "rename_attribute": null,
     "select_conditions": {
-      "operator": "AND",
+      "operator": "&&",
       "value1": {
         "left_field": {
           "type": "attribute",

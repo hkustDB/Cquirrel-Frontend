@@ -12,6 +12,14 @@ public class Node {
         this.aggregateProcessFunction = aggregateProcessFunction;
     }
 
+    public RelationProcessFunction getRelationProcessFunction() {
+        return (RelationProcessFunction) relationProcessFunction;
+    }
+
+    public AggregateProcessFunction getAggregateProcessFunction() {
+        return (AggregateProcessFunction) aggregateProcessFunction;
+    }
+
     @Override
     public String toString() {
         return "Node{" +

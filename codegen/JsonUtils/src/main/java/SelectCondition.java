@@ -15,4 +15,19 @@ public class SelectCondition {
         this.operator = operator;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public Operator getOperator() {
+        return operator;
+    }
+
+    @Override
+    public String toString() {
+        return "SelectCondition{" +
+                "expression=" + expression +
+                ", operator=" + operator +
+                '}';
+    }
 }
