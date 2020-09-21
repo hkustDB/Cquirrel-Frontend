@@ -1,0 +1,34 @@
+{%- extends "base.html" %}
+
+<div class="container">
+
+    {% block div_uploaded_file %}
+
+    <form action="" enctype="multipart/form-data" method="POST">
+        <label for="selected_uploaded_file"> Please select the json file which you want to upload.</label>
+        <input type="file" accept=".json" name="json_file" id="selected_uploaded_file">
+        <input type="submit" class="btn btn-default" value="upload">
+    </form>
+
+    {% endblock %}
+
+    
+    
+    {% block div_show_results %}
+    <div class="div_show_results">
+        CodeGen log : <br />
+        <div id="codegen_log_div">
+        </div>
+    
+        <textarea id="codegen_log_textarea" rows="6" cols="70"> 
+                {{ codegen_log_result }} 
+        </textarea>
+        <br/>
+        <a href="download_log">Download Codegen Log</a>
+        <br/>
+        <a href="download_generated_jar">Download Generated Jar</a>
+    </div>
+    <hr/>
+
+    {% endblock %}
+</div>
