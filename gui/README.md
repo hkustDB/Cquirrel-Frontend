@@ -1,7 +1,9 @@
 # AJU-GUI
+
 This is the gui part of the AJU project. 
 
 The project only supports Chrome now.
+
 
 # Environment
 Ubuntu 20.04.1 LTS

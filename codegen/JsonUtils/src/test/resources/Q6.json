@@ -12,16 +12,66 @@
     "is_Last": true,
     "rename_attribute": null,
     "select_conditions": {
-      "l_shipdate": {
-        "operator": ">=",
+      "operator": "AND",
+      "value1": {
         "left_field": {
-          "type": "attribute"
+          "type": "attribute",
+          "name": "l_shipdate"
         },
         "right_field": {
           "type": "constant",
           "var_type": "Date",
           "value": "1994-01-01"
-        }
+        },
+        "operator": ">="
+      },
+      "value2": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_shipdate"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Date",
+          "value": "1995-01-01"
+        },
+        "operator": "<"
+      },
+      "value3": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_discount"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Double",
+          "value": "0.05"
+        },
+        "operator": ">"
+      },
+      "value4": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_discount"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "Double",
+          "value": "0.07"
+        },
+        "operator": "<"
+      },
+      "value5": {
+        "left_field": {
+          "type": "attribute",
+          "name": "l_quantity"
+        },
+        "right_field": {
+          "type": "constant",
+          "var_type": "int",
+          "value": "24"
+        },
+        "operator": "<"
       }
     }
   },
@@ -30,17 +80,15 @@
     "this_key": null,
     "next_key": null,
     "AggregateValue": {
-      "type" : "expression",
+      "type": "expression",
       "value1": {
         "type": "attribute",
         "name": "L_EXTENDEDPRICE"
       },
-
       "value2": {
         "type": "attribute",
         "name": "L_DISCOUNT"
       },
-
       "operator": "*"
     },
     "aggregation": "+",

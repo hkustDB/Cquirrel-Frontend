@@ -2,7 +2,6 @@ import java.text.DateFormat;
 import java.util.Date;
 
 public class ConstantValue implements Value {
-    private final String columnName;
     private final Object value;
     private final Class type;
 
@@ -16,10 +15,9 @@ public class ConstantValue implements Value {
         return type;
     }
 
-    public static ConstantValue newInstance(final String val, final String type, final String columnName) throws Exception {
+    public static ConstantValue newInstance(final String val, final String type) throws Exception {
         CheckerUtils.checkNullOrEmpty(val, "val");
         CheckerUtils.checkNullOrEmpty(type, "type");
-        CheckerUtils.checkNullOrEmpty(columnName, "columnName");
 
         String typeLower = type.toLowerCase();
         Object value;
@@ -34,7 +32,7 @@ public class ConstantValue implements Value {
             value = clss.getConstructor(String.class).newInstance(val);
         }
 
-        return new ConstantValue(value, clss, columnName);
+        return new ConstantValue(value, clss);
     }
 
     @Override
@@ -45,9 +43,8 @@ public class ConstantValue implements Value {
                 '}';
     }
 
-    private ConstantValue(Object value, Class type, String columnName) {
+    private ConstantValue(Object value, Class type) {
         this.value = value;
         this.type = type;
-        this.columnName = columnName;
     }
 }

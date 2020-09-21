@@ -4,6 +4,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -62,9 +63,9 @@ public class JsonParser {
                     if (valueType.equals("attribute")) {
                         values.add(new AttributeValue((String) entryMap.get("name")));
                     } else if (valueType.equals("constant")) {
-                        values.add(ConstantValue.newInstance((String) entryMap.get("value"), (String) entryMap.get("var_type"), (String) entryMap.get("column_name")));
+                        values.add(ConstantValue.newInstance((String) entryMap.get("value"), (String) entryMap.get("var_type")));
                     } else {
-                        throw new RuntimeException("Unknown type for AggregateValue." + name + ", currently only supporting attribute and constant types. Got: ");
+                        throw new RuntimeException("Unknown type for AggregateValue." + name + ", currently only supporting attribute and constant types. Got: " + valueType);
                     }
                 }
             }
@@ -75,29 +76,32 @@ public class JsonParser {
 
     private static List<SelectCondition> makeSelectConditions(LinkedTreeMap scMap) throws Exception {
         List<SelectCondition> selectConditions = new ArrayList<>();
+        Operator nextOperator = Operator.getOperator((String) scMap.get("operator"));
         for (Object entryObject : scMap.entrySet()) {
             Map.Entry entry = (Map.Entry) entryObject;
-            String name = (String) entry.getKey();
-            LinkedTreeMap value = (LinkedTreeMap) entry.getValue();
-            Operator operator = Operator.getOperator((String) value.get("operator"));
-            Value left = makeValue((LinkedTreeMap) value.get("left_field"), name);
-            Value right = makeValue((LinkedTreeMap) value.get("right_field"), name);
-            SelectCondition sc = new SelectCondition(operator, left, right);
-            selectConditions.add(sc);
+            if (((String) entry.getKey()).startsWith("value")) {
+                LinkedTreeMap value = (LinkedTreeMap) entry.getValue();
+                Operator operator = Operator.getOperator((String) value.get("operator"));
+                Value left = makeValue((LinkedTreeMap) value.get("left_field"));
+                Value right = makeValue((LinkedTreeMap) value.get("right_field"));
+                SelectCondition sc = new SelectCondition(new Expression(Arrays.asList(left, right), operator), nextOperator);
+                selectConditions.add(sc);
+            }
         }
 
         return selectConditions;
     }
 
-    private static Value makeValue(LinkedTreeMap field, String name) throws Exception {
+    private static Value makeValue(LinkedTreeMap field) throws Exception {
         String type = (String) field.get("type");
         Value value;
         if (type.equals("attribute")) {
+            String name = (String) field.get("name");
             value = new AttributeValue(name);
         } else if (type.equals("constant")) {
-            value = ConstantValue.newInstance((String) field.get("value"), (String) field.get("var_type"), name);
+            value = ConstantValue.newInstance((String) field.get("value"), (String) field.get("var_type"));
         } else {
-            throw new RuntimeException("Unknown field type " + type + " for " + name);
+            throw new RuntimeException("Unknown field type " + type );
         }
 
         return value;

@@ -1,10 +1,12 @@
 import org.junit.jupiter.api.Test;
 
-public class JsonParserTest {
-    final String Q6_JSON = "C:\\Users\\Danish Ibrahim\\Desktop\\gui-codegen\\codegen\\JsonUtils\\src\\test\\resources\\Q6.json";
+import java.io.File;
+
+class JsonParserTest {
+    private final String resourceFolder = new File("src/test/resources").getAbsolutePath();
 
     @Test
-    void parseTest() throws Exception {
-        JsonParser.parse(Q6_JSON);
+    void q6json() throws Exception {
+        JsonParser.parse(resourceFolder + File.separator + "Q6.json");
     }
 }
