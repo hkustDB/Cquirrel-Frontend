@@ -76,10 +76,11 @@
     }
   },
   "AggregateProcessFunction": {
-    "name": "Q1AggregateFunction",
+    "name": "Q6AggregateFunction",
     "this_key": null,
     "next_key": null,
     "AggregateValue": {
+      "name": "revenue",
       "type": "expression",
       "value1": {
         "type": "attribute",

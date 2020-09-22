@@ -8,42 +8,31 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public class RelationProcessFunctionWriter implements CodeGenerator {
+public class RelationProcessFunctionWriter implements ProcessFunctionWriter {
     private final String className;
     private final String relationName;
-    private final PicoWriter writer;
+    private final static PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
+    //TODO: simplify: make methods static, consider giving the generated class a generic name e.g. simply RelationProcessFunction
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
         this.relationName = relationProcessFunction.getName();
         this.className = relationProcessFunction.getName() + "ProcessFunction";
-        this.writer = new PicoWriter();
     }
 
     @Override
     public void generateCode(final String filePath) throws IOException {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports();
-        makeConstructor();
-        makeIsValidFunction(relationProcessFunction.getSelectConditions(), "value");
+        addConstructorAndOpenClass();
+        addIsValidFunction(relationProcessFunction.getSelectConditions(), "value");
         writer.writeln_r("}");
         Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
     }
 
-    private void makeConstructor() {
-
-        String stringBuilder = "class " + className + " extends RelationFKProcessFunction[Any](\"" +
-                relationName + "\"," +
-                "Array()" + "," +
-                "Array()" + "," +
-                "true)" +
-                "{";
-        writer.writeln(stringBuilder);
-    }
-
-    private void makeIsValidFunction(List<SelectCondition> selectConditions, String param) {
+    private void addIsValidFunction(List<SelectCondition> selectConditions, String param) {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");
@@ -95,4 +84,14 @@ public class RelationProcessFunctionWriter implements CodeGenerator {
         writer.writeln("import org.hkust.RelationType.Payload");
     }
 
+
+    private void addConstructorAndOpenClass() {
+        String stringBuilder = "class " + className + " extends RelationFKProcessFunction[Any](\"" +
+                relationName + "\"," +
+                "Array()" + "," +
+                "Array()" + "," +
+                "true)" +
+                "{";
+        writer.writeln(stringBuilder);
+    }
 }

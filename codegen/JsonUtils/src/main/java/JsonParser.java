@@ -41,6 +41,7 @@ public class JsonParser {
                 (String) apfMap.get("name"),
                 (List) apfMap.get("this_key"),
                 (List) apfMap.get("next_key"),
+                //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
                 makeAggregateValue((LinkedTreeMap) apfMap.get("AggregateValue")),
                 Operator.getOperator((String) apfMap.get("aggregation")),
                 Type.getClass((String) apfMap.get("value_type"))
@@ -49,10 +50,12 @@ public class JsonParser {
         return apf;
     }
 
-    private static Expression makeAggregateValue(LinkedTreeMap avMap) throws Exception {
+    private static List<AggregateProcessFunction.AggregateValue> makeAggregateValue(LinkedTreeMap avMap) throws Exception {
         String type = (String) avMap.get("type");
-        List<Value> values = new ArrayList<>();
+        List<AggregateProcessFunction.AggregateValue> aggregateValues = new ArrayList<>();
+        String aggregateName = (String) avMap.get("name");
         if ("expression".equals(type)) {
+            List<Value> values = new ArrayList<>();
             Operator operator = Operator.getOperator((String) avMap.get("operator"));
             for (Object entryObject : avMap.entrySet()) {
                 Map.Entry entry = (Map.Entry) entryObject;
@@ -69,7 +72,8 @@ public class JsonParser {
                     }
                 }
             }
-            return new Expression(values, operator);
+            aggregateValues.add(new AggregateProcessFunction.AggregateValue(aggregateName, type, new Expression(values, operator)));
+            return aggregateValues;
         }
         throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
     }
@@ -101,7 +105,7 @@ public class JsonParser {
         } else if (type.equals("constant")) {
             value = ConstantValue.newInstance((String) field.get("value"), (String) field.get("var_type"));
         } else {
-            throw new RuntimeException("Unknown field type " + type );
+            throw new RuntimeException("Unknown field type " + type);
         }
 
         return value;
