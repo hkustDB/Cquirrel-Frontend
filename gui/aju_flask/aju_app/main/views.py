@@ -19,6 +19,10 @@ def upload_json_file():
     uploaded_json_filename = secure_filename(f.filename)
     uploaded_json_file_save_path = os.path.join(config.JSON_FILE_UPLOAD_PATH, uploaded_json_filename)
 
+    # check if the upload dir exists or not
+    if not os.path.exists(config.JSON_FILE_UPLOAD_PATH):
+        os.makedirs(config.JSON_FILE_UPLOAD_PATH)
+
     # check if the uploaded file is empty
     if uploaded_json_filename == '':
         return render_template('index.html', uploaded_result="The uploaded json file is empty. Please upload again.")

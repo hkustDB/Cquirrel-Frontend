@@ -6,4 +6,5 @@
 tmp/
 .idea/
 __pycache__/
+log/codegen.log
 
