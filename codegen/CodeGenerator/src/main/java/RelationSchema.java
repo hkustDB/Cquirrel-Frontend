@@ -71,5 +71,13 @@ public class RelationSchema {
             this.type = type;
             this.position = position;
         }
+
+        public Class getType() {
+            return type;
+        }
+
+        public int getPosition() {
+            return position;
+        }
     }
 }

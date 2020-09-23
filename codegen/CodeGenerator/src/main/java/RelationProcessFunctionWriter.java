@@ -28,6 +28,7 @@ public class RelationProcessFunctionWriter implements ProcessFunctionWriter {
         addImports();
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions(), "value");
+        //class closing
         writer.writeln_r("}");
         Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
     }
