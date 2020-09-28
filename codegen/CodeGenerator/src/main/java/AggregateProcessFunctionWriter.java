@@ -8,7 +8,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public class AggregateProcessFunctionWriter implements ProcessFunctionWriter {
+public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private static final String CLASS_NAME = "AggregateProcessFunction";
     private static final PicoWriter writer = new PicoWriter();
     private final AggregateProcessFunction aggregateProcessFunction;
@@ -31,23 +31,36 @@ public class AggregateProcessFunctionWriter implements ProcessFunctionWriter {
         addAdditionFunction();
         addSubtractionFunction();
         addInitStateFunction();
-        //class closing
-        writer.writeln_l("}");
+        closeClass(writer);
         Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
     }
 
-    private void addImports() {
+    @Override
+    void addImports() {
         writer.writeln("import org.hkust.RelationType.Payload");
         writer.writeln("import org.apache.flink.api.common.state.ValueStateDescriptor");
         writer.writeln("import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}");
         writer.writeln("import org.hkust.BasedProcessFunctions.AggregateProcessFunction");
     }
 
-    private void addConstructorAndOpenClass() {
+    @Override
+    void addConstructorAndOpenClass() {
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
-        writer.writeln_r("class " + className + " extends AggregateProcessFunction[Any, " + aggregateType + "](\"" + className + "\", Array(), Array(),aggregateName = \""
-                + (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_")
-                + "\") {");
+        String code = "class " +
+                className +
+                " extends AggregateProcessFunction[Any, " +
+                aggregateType +
+                "](\"" +
+                className +
+                "\", " +
+                keyListToCode(aggregateProcessFunction.getThisKey()) +
+                ", " +
+                keyListToCode(aggregateProcessFunction.getNextKey()) +
+                "," +
+                " aggregateName = \"" +
+                (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") +
+                "\") {";
+        writer.writeln_r(code);
     }
 
     private void addAggregateFunction() {

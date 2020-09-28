@@ -8,7 +8,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public class RelationProcessFunctionWriter implements ProcessFunctionWriter {
+public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final String relationName;
     private final static PicoWriter writer = new PicoWriter();
@@ -28,8 +28,7 @@ public class RelationProcessFunctionWriter implements ProcessFunctionWriter {
         addImports();
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions(), "value");
-        //class closing
-        writer.writeln_r("}");
+        closeClass(writer);
         Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
     }
 
@@ -79,20 +78,24 @@ public class RelationProcessFunctionWriter implements ProcessFunctionWriter {
         writer.writeln_l("}");
     }
 
-    private void addImports() {
+    @Override
+    void addImports() {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
         writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
         writer.writeln("import org.hkust.RelationType.Payload");
     }
 
 
-    private void addConstructorAndOpenClass() {
-        String stringBuilder = "class " + className + " extends RelationFKProcessFunction[Any](\"" +
+    @Override
+    void addConstructorAndOpenClass() {
+        String code = "class " +
+                className +
+                " extends RelationFKProcessFunction[Any](\"" +
                 relationName + "\"," +
-                "Array()" + "," +
-                "Array()" + "," +
-                "true)" +
-                "{";
-        writer.writeln(stringBuilder);
+                keyListToCode(relationProcessFunction.getThisKey()) +
+                "," +
+                keyListToCode(relationProcessFunction.getNextKey()) +
+                "," + "true)" + "{";
+        writer.writeln(code);
     }
 }
