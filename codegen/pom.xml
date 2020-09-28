@@ -38,12 +38,11 @@
                 </executions>
             </plugin>
         </plugins>
-
-
-
     </build>
     <modules>
         <module>CodeGenerator</module>
+        <module>JsonUtils</module>
+        <module>CheckerUtils</module>
     </modules>
     <dependencies>
         <dependency>

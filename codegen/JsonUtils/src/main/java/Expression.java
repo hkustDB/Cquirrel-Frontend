@@ -2,7 +2,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public class Expression implements Value{
+public class Expression implements Value {
     private final List<Value> values;
     private final Operator operator;
 
