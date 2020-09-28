@@ -1,11 +1,7 @@
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.map.MultiValueMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.jetbrains.annotations.Nullable;
 
-import javax.naming.directory.AttributeInUseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +24,7 @@ public class RelationSchema {
             put("l_tax", new Attribute(Type.getClass("double"), 7));
             put("l_returnflag", new Attribute(Type.getClass("char"), 8));
             put("l_linestatus", new Attribute(Type.getClass("char"), 9));
-            put("shipdate", new Attribute(Type.getClass("date"), 10));
+            put("l_shipdate", new Attribute(Type.getClass("date"), 10));
             put("l_commitdate", new Attribute(Type.getClass("date"), 11));
             put("l_receiptdate", new Attribute(Type.getClass("date"), 12));
             put("l_shipinstruct", new Attribute(Type.getClass("String"), 13));

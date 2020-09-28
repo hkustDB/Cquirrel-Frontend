@@ -9,7 +9,7 @@ public class RelationProcessFunctionWriterTest {
     void q6() throws Exception {
         Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
         RelationProcessFunctionWriter rpfw = new RelationProcessFunctionWriter(node.getRelationProcessFunction());
-        rpfw.generateCode(".");
+        rpfw.generateCode("src/test/resources");
     }
 
     @AfterEach

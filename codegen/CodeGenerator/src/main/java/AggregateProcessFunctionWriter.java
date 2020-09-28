@@ -32,7 +32,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         addSubtractionFunction();
         addInitStateFunction();
         closeClass(writer);
-        Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
+        writeClassFile(className,filePath,writer.toString());
     }
 
     @Override
@@ -67,31 +67,11 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         aggregateValues.forEach(aggregateValue -> {
-            StringBuilder code;
+            StringBuilder code = new StringBuilder();
             if (aggregateValue.getType().equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
-                List<Value> values = expression.getValues();
-                for (int i = 0; i < values.size(); i++) {
-                    code = new StringBuilder();
-                    Value value = values.get(i);
-                    if (!(value instanceof AttributeValue)) {
-                        throw new RuntimeException("Currently only attribute values supported for expression values");
-                    }
-                    AttributeValue attributeValue = (AttributeValue) value;
-                    String columnName = attributeValue.getName();
-                    Class type = RelationSchema.getColumnAttribute(columnName.toLowerCase()).getType();
-                    code.append("value(\"")
-                            .append(columnName.toUpperCase())
-                            .append("\")")
-                            .append(".asInstanceOf[")
-                            .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
-                            .append("]");
-                    writer.write(code.toString());
-                    if (i == values.size() - 1) {
-                        break;
-                    }
-                    writer.write(expression.getOperator().getValue());
-                }
+                expressionToCode(expression, code);
+                writer.writeln(code.toString());
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }

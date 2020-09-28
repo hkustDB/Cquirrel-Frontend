@@ -27,45 +27,23 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports();
         addConstructorAndOpenClass();
-        addIsValidFunction(relationProcessFunction.getSelectConditions(), "value");
+        addIsValidFunction(relationProcessFunction.getSelectConditions());
         closeClass(writer);
-        Files.write(Paths.get(filePath + File.separator + className + ".scala"), writer.toString().getBytes());
+        writeClassFile(className,filePath,writer.toString());
     }
 
-    private void addIsValidFunction(List<SelectCondition> selectConditions, String param) {
+    private void addIsValidFunction(List<SelectCondition> selectConditions) {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");
         SelectCondition condition;
         for (int i = 0; i < selectConditions.size(); i++) {
-            ifCondition.append(param);
+            ifCondition.append("value");
             condition = selectConditions.get(i);
-            //Ensure that in the values list the attribute value is always added first
-            Expression expression = condition.getExpression();
-            AttributeValue attributeValue = (AttributeValue) expression.getValues().get(0);
-            ConstantValue constantValue = (ConstantValue) expression.getValues().get(1);
-            ifCondition.append("(\"").append(attributeValue.getName().toUpperCase()).append("\")");
-            Class type = constantValue.getType();
-            ifCondition.append(".asInstanceOf[")
-                    //Needed to add fully qualified name of Date class but not others
-                    .append(type.getSimpleName().equals("Date") ? type.getName() : type.getSimpleName())
-                    .append("]")
-                    //operator of the select condition itself
-                    .append(expression.getOperator().getValue());
-
-            if (type.equals(Type.getClass("date"))) {
-                //Needed so generated code parses the date
-                ifCondition.append("format.parse(\"").append(constantValue.getValue()).append("\")");
-            } else if (type.equals(Type.getClass("string"))) {
-                ifCondition.append("\"").append(constantValue.getValue()).append("\"");
-            } else {
-                ifCondition.append(constantValue.getValue());
-            }
-
+            expressionToCode(condition.getExpression(), ifCondition);
             if (i < selectConditions.size() - 1) {
                 //operator that binds each select condition
                 ifCondition.append(condition.getOperator().getValue());
-
             }
         }
 
