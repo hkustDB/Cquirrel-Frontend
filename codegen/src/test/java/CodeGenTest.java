@@ -18,12 +18,10 @@ class CodeGenTest {
     private final CodeGen codeGen = new CodeGen();
 
     @BeforeAll
-    void setup() throws Exception {
-        URL fileUrl = getClass().getClassLoader().getResource(JSON_FILE_NAME);
-        requireNonNull(fileUrl);
-        File file = Paths.get(fileUrl.toURI()).toFile();
-        JSON_FILE_PATH = file.getAbsolutePath();
-        OUTPUT_DIRECTORY = file.getParent();
+    void setup() {
+        final String resourceFolder = new File("src/test/resources").getAbsolutePath();
+        JSON_FILE_PATH = resourceFolder + File.separator + JSON_FILE_NAME;
+        OUTPUT_DIRECTORY = resourceFolder;
     }
 
     @Test
