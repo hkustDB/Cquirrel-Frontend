@@ -7,3 +7,4 @@ click==7.1.2
 dominate==2.5.2 
 itsdangerous==1.1.0 
 visitor==0.1.3
+
