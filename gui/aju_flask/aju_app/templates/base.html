@@ -13,12 +13,12 @@ Acyclic Join under Updates Demo
 <meta charset="UTF-8">
 <meta name="description" content="This is the demo of acyclic join under update algorithm.">
 <meta name="author" content="">
-{% endblock %}
+{% endblock %}s
 
 {% block styles %}
 {{ super() }}
 <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-192x192.png', _external=True)}}">
-<link rel="stylesheet" href="{{url_for('.static', filename='css/aju_styles.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/aju_styles.css')}}">
 {% endblock %}
 
 {% block navbar %}
@@ -42,6 +42,8 @@ Acyclic Join under Updates Demo
 {% endblock %}
 
 {% block scripts %}
-<script src="{{url_for('.static', filename='js/aju_scripts.js')}}"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/aju_scripts.js')}}"></script>
 {{super()}}
 {% endblock %}
