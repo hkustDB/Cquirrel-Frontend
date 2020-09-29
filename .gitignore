@@ -1,9 +1,10 @@
 .DS_Store
+.idea/
 gui/junk/
 gui/junk/*
-gui/flask/__pycache__/
-gui/flask/__pycache__/*
-gui/flask/venv/
-gui/flask/venv/*
-gui/flask_project/__pycache__/
-gui/flask_project/__pycache__/*
+gui/aju_flask/__pycache__/
+gui/aju_flask/__pycache__/*
+gui/aju_flask/venv/
+gui/aju_flask/venv/*
+gui/aju_flask/__pycache__/
+gui/aju_flask/__pycache__/*
