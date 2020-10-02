@@ -9,7 +9,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 public class RelationSchema {
-    private static Map<String, Attribute> lineitemSchema;
+    private static final Map<String, Attribute> lineitemSchema;
     private static ArrayListValuedHashMap<String, Attribute> schema = new ArrayListValuedHashMap<>();
 
     static {

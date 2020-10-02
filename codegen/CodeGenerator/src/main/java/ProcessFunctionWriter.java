@@ -1,4 +1,3 @@
-import org.ainslec.picocog.PicoWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -9,17 +8,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class ProcessFunctionWriter {
-    public abstract void generateCode(final String filePath) throws IOException;
-
-    abstract void addImports();
-
-    abstract void addConstructorAndOpenClass();
-
-    void closeClass(final PicoWriter writer) {
-        writer.writeln_r("}");
-    }
-
+public abstract class ProcessFunctionWriter implements ClassWriter {
     String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");

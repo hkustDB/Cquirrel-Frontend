@@ -36,7 +36,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    void addImports() {
+    public void addImports() {
         writer.writeln("import org.hkust.RelationType.Payload");
         writer.writeln("import org.apache.flink.api.common.state.ValueStateDescriptor");
         writer.writeln("import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}");
@@ -44,7 +44,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass() {
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         String code = "class " +
                 className +

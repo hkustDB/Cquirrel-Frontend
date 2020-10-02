@@ -57,7 +57,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    void addImports() {
+    public void addImports() {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
         writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
         writer.writeln("import org.hkust.RelationType.Payload");
@@ -65,7 +65,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
 
 
     @Override
-    void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass() {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +
