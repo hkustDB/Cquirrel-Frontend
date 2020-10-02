@@ -29,7 +29,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions());
         closeClass(writer);
-        writeClassFile(className,filePath,writer.toString());
+        writeClassFile(className, filePath, writer.toString());
     }
 
     private void addIsValidFunction(List<SelectCondition> selectConditions) {
