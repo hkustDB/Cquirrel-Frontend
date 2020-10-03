@@ -3,7 +3,10 @@ import unittest
 import os
 import shutil
 import configparser
+import subprocess
+import filecmp
 
+from confluent_kafka import Consumer
 
 class TestDataGenerator(unittest.TestCase):
     def setUp(self) -> None:
@@ -137,6 +140,10 @@ class TestDataGenerator(unittest.TestCase):
         isNation = Yes
         isRegion = yes
         OutputFileName = output_data.csv
+        [KAFKA_CONF]
+        KafkaEnable = no
+        BootstrapServer = localhost:9092
+        KafkaTopic = aju_data_generator
         """
         fake_config_file_name = "fake_config.ini"
         with open(fake_config_file_name, 'w') as f:
@@ -168,6 +175,10 @@ class TestDataGenerator(unittest.TestCase):
         isNation = Yes
         isRegion = yes
         OutputFileName = output_data.csv
+        [KAFKA_CONF]
+        KafkaEnable = no
+        BootstrapServer = localhost:9092
+        KafkaTopic = aju_data_generator
         """
         fake_config_file_name = "fake_config.ini"
         with open(fake_config_file_name, 'w') as f:
@@ -376,6 +387,157 @@ class TestDataGenerator(unittest.TestCase):
                          partsupp_line_num * 5 +
                          region_line_num * 3 +
                          supplier_line_num * 7)
+
+    def test_kafka_config_section_not_exist(self):
+        fake_config_file_content = """
+        [DEFAULT]
+        DataFilePath = ./fake_data_file_path
+        WindowSize = 10
+        ScaleFactor = 0.1
+        isLineitem = yes
+        isOrders = Yes
+        isCustomer = Yes
+        isPartSupp = Yes
+        isPart = Yes
+        isSupplier = Yes
+        isNation = Yes
+        isRegion = yes
+        OutputFileName = output_data.csv
+        """
+        fake_config_file_name = "fake_config.ini"
+        with open(fake_config_file_name, 'w') as f:
+            f.write(fake_config_file_content)
+
+        self.assertRaises(Exception, DataGenerator.data_generator, fake_config_file_name)
+
+        if os.path.exists(fake_config_file_name):
+            os.remove(fake_config_file_name)
+
+    def test_kafka_config_enable_not_exist(self):
+        fake_config_file_content = """
+        [DEFAULT]
+        DataFilePath = ./fake_data_file_path
+        WindowSize = 10
+        ScaleFactor = 0.1
+        isLineitem = yes
+        isOrders = Yes
+        isCustomer = Yes
+        isPartSupp = Yes
+        isPart = Yes
+        isSupplier = Yes
+        isNation = Yes
+        isRegion = yes
+        OutputFileName = output_data.csv
+        [KAFKA_CONF]
+        """
+        fake_config_file_name = "fake_config.ini"
+        with open(fake_config_file_name, 'w') as f:
+            f.write(fake_config_file_content)
+
+        self.assertRaises(Exception, DataGenerator.data_generator, fake_config_file_name)
+
+        if os.path.exists(fake_config_file_name):
+            os.remove(fake_config_file_name)
+
+    def test_kafka_config_bootstrapserver_not_exist(self):
+        fake_config_file_content = """
+        [DEFAULT]
+        DataFilePath = ./fake_data_file_path
+        WindowSize = 10
+        ScaleFactor = 0.1
+        isLineitem = yes
+        isOrders = Yes
+        isCustomer = Yes
+        isPartSupp = Yes
+        isPart = Yes
+        isSupplier = Yes
+        isNation = Yes
+        isRegion = yes
+        OutputFileName = output_data.csv
+        [KAFKA_CONF]
+        KafkaEnable=no
+        """
+        fake_config_file_name = "fake_config.ini"
+        with open(fake_config_file_name, 'w') as f:
+            f.write(fake_config_file_content)
+
+        self.assertRaises(Exception, DataGenerator.data_generator, fake_config_file_name)
+
+        if os.path.exists(fake_config_file_name):
+            os.remove(fake_config_file_name)
+
+    def test_kafka_config_kafkatopic_not_exist(self):
+        fake_config_file_content = """
+        [DEFAULT]
+        DataFilePath = ./fake_data_file_path
+        WindowSize = 10
+        ScaleFactor = 0.1
+        isLineitem = yes
+        isOrders = Yes
+        isCustomer = Yes
+        isPartSupp = Yes
+        isPart = Yes
+        isSupplier = Yes
+        isNation = Yes
+        isRegion = yes
+        OutputFileName = output_data.csv
+        [KAFKA_CONF]
+        KafkaEnable=no
+        BootstrapServer = localhost:9092
+        """
+        fake_config_file_name = "fake_config.ini"
+        with open(fake_config_file_name, 'w') as f:
+            f.write(fake_config_file_content)
+
+        self.assertRaises(Exception, DataGenerator.data_generator, fake_config_file_name)
+
+        if os.path.exists(fake_config_file_name):
+            os.remove(fake_config_file_name)
+
+    def test_kafka_output_lines_match(self):
+        test_config_file_name = 'test_config_kafka.ini'
+
+        # delete and create kafka topic
+        KAFKA_HOME_PATH = '/Users/chaoqi/Programs/kafka_2.12-2.6.0'
+        delete_topic_cmd = KAFKA_HOME_PATH + '/' +'bin/kafka-topics.sh --delete -topic test_aju_data_generator --zookeeper localhost:2181'
+        create_topic_cmd = KAFKA_HOME_PATH + '/' + 'bin/kafka-topics.sh --create -topic test_aju_data_generator --bootstrap-server localhost:9092'
+        subprocess.run(delete_topic_cmd, shell=True)
+        subprocess.run(create_topic_cmd, shell=True)
+
+        DataGenerator.data_generator(test_config_file_name)
+
+        test_output_file_name = 'test_output_data.csv'
+        kafka_output_file_name = 'kafka_output_data.csv'
+
+        # create kafka consumer
+        kafka_consumer = Consumer({
+            'bootstrap.servers': 'localhost:9092',
+            'group.id': 'test_aju_dg_group',
+            'auto.offset.reset': 'earliest'
+        })
+        kafka_consumer.subscribe(['test_aju_data_generator'])
+        with open(kafka_output_file_name, 'w') as f:
+            kafka_consumer_count = 0
+            while True:
+                msg = kafka_consumer.poll(1)
+                if msg is None:
+                    break
+                if msg.error():
+                    print("Consumer error: {}".format(msg.error()))
+                    break
+                f.write(msg.value().decode('utf-8'))
+                kafka_consumer_count = kafka_consumer_count + 1
+                if kafka_consumer_count % 100000 == 0:
+                    print('kafka consumer consume: ' + str(kafka_consumer_count))
+            print('kafka consumer consume: ' + str(kafka_consumer_count))
+        kafka_consumer.close()
+
+        self.assertTrue(filecmp.cmp(test_output_file_name, kafka_output_file_name))
+
+        if os.path.exists(test_output_file_name):
+            os.remove(test_output_file_name)
+        if os.path.exists(kafka_output_file_name):
+            os.remove(kafka_output_file_name)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 import os
 import configparser
 
+from confluent_kafka import Producer
+
 CONFIG_PARA = ['datafilepath', 'windowsize', 'scalefactor', 'islineitem', 'isorders', 'iscustomer', 'ispartsupp',
                'ispart', 'issupplier', 'isnation', 'isregion' 'outputfilename']
 
@@ -37,6 +39,40 @@ def data_generator(config_file_name):
     isSupplier = config.getboolean('isSupplier')
     isNation = config.getboolean('isNation')
     isRegion = config.getboolean('isRegion')
+
+    # set the output file
+    output_file_path = os.path.join(data_file_path_prefix, config['OutputFileName'])
+    output = open(output_file_path, "w")
+
+    # select the section KAFKA_CONF
+    if 'KAFKA_CONF' not in conf.sections():
+        raise Exception('KAFKA_CONF section should be in the config file.')
+    config = conf['KAFKA_CONF']
+    if 'KafkaEnable' not in config:
+        raise Exception('KafkaEnable should be in the config file.')
+    kafka_enable = config.getboolean('KafkaEnable')
+    if 'BootstrapServer' not in config:
+        raise Exception('BootstrapServer should be in the config file.')
+    kafka_bootstrap_server = config['BootstrapServer']
+    if 'KafkaTopic' not in config:
+        raise Exception('KafkaTopic should be in the config file.')
+    kafka_topic = config['KafkaTopic']
+    # kafka_partition = config.getint('KafkaPartition')
+    kafka_producer = Producer({'bootstrap.servers': kafka_bootstrap_server})
+
+    # define a output func to write data to file and kafka
+    def write_to_output_and_kafka(s):
+        output.write(s)
+        if kafka_enable:
+            try:
+                kafka_producer.produce(kafka_topic, s.encode('utf-8'))
+                kafka_producer.poll(0)
+            except BufferError:
+                print('Buffer error, the queue must be full! Flushing...')
+                kafka_producer.flush()
+                print('Queue flushed, will write the message again')
+                kafka_producer.produce(kafka_topic, s.encode('utf-8'))
+                kafka_producer.poll(0)
 
     # set the size of different tables
     lineitem_size = scale_factor * 6000000
@@ -92,10 +128,6 @@ def data_generator(config_file_name):
     nation_d = open(os.path.join(data_file_path_prefix, "nation.tbl"), "r")
     region_d = open(os.path.join(data_file_path_prefix, "region.tbl"), "r")
 
-    # set the output file
-    output_file_path = os.path.join(data_file_path_prefix, config['OutputFileName'])
-    output = open(output_file_path, "w")
-
     # init the count number
     count = 0
     delete_count = 0 - window_size
@@ -137,137 +169,137 @@ def data_generator(config_file_name):
         count = count + 1
         delete_count = delete_count + 1
         if isLineitem:
-            output.write("+LI" + line_lineitem)
+            write_to_output_and_kafka("+LI" + line_lineitem)
         line_lineitem = lineitem.readline()
         if delete_count > 0:
             if isLineitem:
-                output.write("-LI" + line_lineitem_d)
+                write_to_output_and_kafka("-LI" + line_lineitem_d)
             line_lineitem_d = lineitem_d.readline()
 
         if count * orders_size / lineitem_size > orders_count and line_orders:
             orders_count = orders_count + 1
             if isOrders:
-                output.write("+OR" + line_orders)
+                write_to_output_and_kafka("+OR" + line_orders)
             line_orders = orders.readline()
             if delete_count * orders_size / lineitem_size > orders_delete_count and line_orders_d:
                 orders_delete_count = orders_delete_count + 1
                 if isOrders:
-                    output.write("-OR" + line_orders_d)
+                    write_to_output_and_kafka("-OR" + line_orders_d)
                 line_orders_d = orders_d.readline()
 
         if count * customer_size / lineitem_size > customer_count and line_customer:
             customer_count = customer_count + 1
             if isCustomer:
-                output.write("+CU" + line_customer)
+                write_to_output_and_kafka("+CU" + line_customer)
             line_customer = customer.readline()
             if delete_count * customer_size / lineitem_size > customer_delete_count and line_customer_d:
                 customer_delete_count = customer_delete_count + 1
                 if isCustomer:
-                    output.write("-CU" + line_customer_d)
+                    write_to_output_and_kafka("-CU" + line_customer_d)
                 line_customer_d = customer_d.readline()
 
         if count * part_size / lineitem_size > part_count and line_part:
             part_count = part_count + 1
             if isPart:
-                output.write("+PA" + line_part)
+                write_to_output_and_kafka("+PA" + line_part)
             line_part = part.readline()
             if delete_count * part_size / lineitem_size > part_delete_count and line_part_d:
                 part_delete_count = part_delete_count + 1
                 if isPart:
-                    output.write("-PA" + line_part_d)
+                    write_to_output_and_kafka("-PA" + line_part_d)
                 line_part_d = part_d.readline()
 
         if count * supplier_size / lineitem_size > supplier_count and line_supplier:
             supplier_count = supplier_count + 1
             if isSupplier:
-                output.write("+SU" + line_supplier)
+                write_to_output_and_kafka("+SU" + line_supplier)
             line_supplier = supplier.readline()
             if delete_count * supplier_size / lineitem_size > supplier_delete_count and line_supplier_d:
                 supplier_delete_count = supplier_delete_count + 1
                 if isSupplier:
-                    output.write("-SU" + line_supplier_d)
+                    write_to_output_and_kafka("-SU" + line_supplier_d)
                 line_supplier_d = supplier_d.readline()
 
         if count * partsupp_size / lineitem_size > partsupp_count and line_partsupp:
             partsupp_count = partsupp_count + 1
             if isPartSupp:
-                output.write("+PS" + line_partsupp)
+                write_to_output_and_kafka("+PS" + line_partsupp)
             line_partsupp = partsupp.readline()
             if delete_count * partsupp_size / lineitem_size > partsupp_delete_count and line_partsupp_d:
                 partsupp_delete_count = partsupp_delete_count + 1
                 if isPartSupp:
-                    output.write("-PS" + line_partsupp_d)
+                    write_to_output_and_kafka("-PS" + line_partsupp_d)
                 line_partsupp_d = partsupp_d.readline()
 
         if count * nation_size / lineitem_size > nation_count and line_nation:
             nation_count = nation_count + 1
             if isNation:
-                output.write("+NA" + line_nation)
+                write_to_output_and_kafka("+NA" + line_nation)
             line_nation = nation.readline()
             if delete_count * nation_size / lineitem_size > nation_delete_count and line_nation_d:
                 nation_delete_count = nation_delete_count + 1
                 if isNation:
-                    output.write("-NA" + line_nation_d)
+                    write_to_output_and_kafka("-NA" + line_nation_d)
                 line_nation_d = nation_d.readline()
 
         if count * region_size / lineitem_size > region_count and line_region:
             region_count = region_count + 1
             if isRegion:
-                output.write("+RI" + line_region)
+                write_to_output_and_kafka("+RI" + line_region)
             line_region = region.readline()
             if delete_count * region_size / lineitem_size > region_delete_count and line_region_d:
                 region_delete_count = region_delete_count + 1
                 if isRegion:
-                    output.write("-RI" + line_region_d)
+                    write_to_output_and_kafka("-RI" + line_region_d)
                 line_region_d = region_d.readline()
 
     # write the second part
     while line_lineitem_d:
         delete_count = delete_count + 1
         if isLineitem:
-            output.write("-LI" + line_lineitem_d)
+            write_to_output_and_kafka("-LI" + line_lineitem_d)
         line_lineitem_d = lineitem_d.readline()
 
         if delete_count * orders_size / lineitem_size > orders_delete_count and line_orders_d:
             orders_delete_count = orders_delete_count + 1
             if isOrders:
-                output.write("-OR" + line_orders_d)
+                write_to_output_and_kafka("-OR" + line_orders_d)
             line_orders_d = orders_d.readline()
 
         if delete_count * customer_size / lineitem_size > customer_delete_count and line_customer_d:
             customer_delete_count = customer_delete_count + 1
             if isCustomer:
-                output.write("-CU" + line_customer_d)
+                write_to_output_and_kafka("-CU" + line_customer_d)
             line_customer_d = customer_d.readline()
 
         if delete_count * part_size / lineitem_size > part_delete_count and line_part_d:
             part_delete_count = part_delete_count + 1
             if isPart:
-                output.write("-PA" + line_part_d)
+                write_to_output_and_kafka("-PA" + line_part_d)
             line_part_d = part_d.readline()
 
         if delete_count * supplier_size / lineitem_size > supplier_delete_count and line_supplier_d:
             supplier_delete_count = supplier_delete_count + 1
             if isSupplier:
-                output.write("-SU" + line_supplier_d)
+                write_to_output_and_kafka("-SU" + line_supplier_d)
             line_supplier_d = supplier_d.readline()
 
         if delete_count * partsupp_size / lineitem_size > partsupp_delete_count and line_partsupp_d:
             partsupp_delete_count = partsupp_delete_count + 1
             if isPartSupp:
-                output.write("-PS" + line_partsupp_d)
+                write_to_output_and_kafka("-PS" + line_partsupp_d)
             line_partsupp_d = partsupp_d.readline()
 
         if delete_count * nation_size / lineitem_size > nation_delete_count and line_nation_d:
             nation_delete_count = nation_delete_count + 1
             if isNation:
-                output.write("-NA" + line_nation_d)
+                write_to_output_and_kafka("-NA" + line_nation_d)
             line_nation_d = nation_d.readline()
 
         if delete_count * region_size / lineitem_size > region_delete_count and line_region_d:
             region_delete_count = region_delete_count + 1
             if isRegion:
-                output.write("-RI" + line_region_d)
+                write_to_output_and_kafka("-RI" + line_region_d)
             line_region_d = region_d.readline()
 
     # close the file
@@ -320,5 +352,11 @@ def data_generator(config_file_name):
     print("output file lines number: ", res_lines_num)
 
 
+
+
 if __name__ == '__main__':
+    import time
+    start = time.time()
     data_generator('config.ini')
+    end = time.time()
+    print("cpu time: ", end - start)
