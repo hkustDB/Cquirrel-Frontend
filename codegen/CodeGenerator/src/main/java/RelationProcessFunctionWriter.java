@@ -11,15 +11,14 @@ import static java.util.Objects.requireNonNull;
 public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final String relationName;
-    private final static PicoWriter writer = new PicoWriter();
+    private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
-    //TODO: simplify: make methods static, consider giving the generated class a generic name e.g. simply RelationProcessFunction
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
         this.relationName = relationProcessFunction.getName();
-        this.className = relationProcessFunction.getName() + "ProcessFunction";
+        this.className = makeClassName(relationProcessFunction.getName());
     }
 
     @Override

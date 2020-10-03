@@ -1,12 +1,13 @@
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RelationProcessFunction extends ProcessFunction {
     private final String name;
+    private final String relationName;
     @Nullable
     private final List<String> thisKey;
     @Nullable
@@ -19,7 +20,7 @@ public class RelationProcessFunction extends ProcessFunction {
     private final Map<String, String> renaming;
     private final List<SelectCondition> selectConditions;
 
-    public RelationProcessFunction(String name, List<String> thisKey, List<String> nextKey, int childNodes,
+    public RelationProcessFunction(String name, String relationName, List<String> thisKey, List<String> nextKey, int childNodes,
                                    boolean isRoot, boolean isLast, Map<String, String> renaming,
                                    List<SelectCondition> selectConditions) {
         super(name, thisKey, nextKey);
@@ -28,6 +29,8 @@ public class RelationProcessFunction extends ProcessFunction {
         this.nextKey = nextKey;
         if (childNodes < 0)
             throw new RuntimeException("Number of child nodes must be >=0, got: " + childNodes);
+        CheckerUtils.checkNullOrEmpty(relationName, "relationName");
+        this.relationName = relationName;
         this.childNodes = childNodes;
         this.isRoot = isRoot;
         this.isLast = isLast;
@@ -36,6 +39,7 @@ public class RelationProcessFunction extends ProcessFunction {
         CheckerUtils.checkNullOrEmpty(selectConditions, "selectConditions");
         this.selectConditions = selectConditions;
     }
+    
 
     public String getName() {
         return name;
@@ -61,6 +65,10 @@ public class RelationProcessFunction extends ProcessFunction {
 
     public boolean isLast() {
         return isLast;
+    }
+
+    public String getRelationName() {
+        return relationName;
     }
 
     @Nullable

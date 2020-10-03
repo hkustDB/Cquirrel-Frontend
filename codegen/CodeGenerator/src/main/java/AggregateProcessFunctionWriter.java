@@ -20,7 +20,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         this.aggregateProcessFunction = aggregateProcessFunction;
         Class type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
-        className = aggregateProcessFunction.getName();
+        className = makeClassName(aggregateProcessFunction.getName());
     }
 
     @Override
@@ -32,7 +32,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         addSubtractionFunction();
         addInitStateFunction();
         closeClass(writer);
-        writeClassFile(className,filePath,writer.toString());
+        writeClassFile(className, filePath, writer.toString());
     }
 
     @Override

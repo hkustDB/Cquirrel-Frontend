@@ -1,9 +1,4 @@
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -73,5 +68,10 @@ public abstract class ProcessFunctionWriter implements ClassWriter {
                 .append(".asInstanceOf[")
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
                 .append("]");
+    }
+
+    static String makeClassName(String name) {
+        CheckerUtils.checkNullOrEmpty(name, "name");
+        return name + "ProcessFunction";
     }
 }
