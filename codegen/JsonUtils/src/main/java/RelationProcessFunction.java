@@ -39,7 +39,7 @@ public class RelationProcessFunction extends ProcessFunction {
         CheckerUtils.checkNullOrEmpty(selectConditions, "selectConditions");
         this.selectConditions = selectConditions;
     }
-    
+
 
     public String getName() {
         return name;
