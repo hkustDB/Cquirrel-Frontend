@@ -8,7 +8,9 @@ import static java.util.Objects.requireNonNull;
 public class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
     private final AggregateProcessFunction aggregateProcessFunction;
+    private final String aggregateProcFuncClassName;
     private final RelationProcessFunction relationProcessFunction;
+    private final String relationProcFuncClassName;
     private final Configuration configuration;
     private final PicoWriter writer = new PicoWriter();
 
@@ -24,7 +26,9 @@ public class MainClassWriter implements ClassWriter {
     public MainClassWriter(Node query) {
         requireNonNull(query);
         this.aggregateProcessFunction = query.getAggregateProcessFunction();
+        this.aggregateProcFuncClassName = ProcessFunctionWriter.makeClassName(aggregateProcessFunction.getName());
         this.relationProcessFunction = query.getRelationProcessFunction();
+        this.relationProcFuncClassName = ProcessFunctionWriter.makeClassName(relationProcessFunction.getName());
         this.configuration = query.getConfiguration();
     }
 
@@ -44,7 +48,7 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln("import org.apache.flink.core.fs.FileSystem");
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
         writer.writeln("import org.apache.flink.streaming.api.scala._");
-        writer.writeln("import org.hkust.ProcessFunction.Q6.{" + aggregateProcessFunction.getName() + ", " + relationProcessFunction.getName() + "}");
+        writer.writeln("import org.hkust.ProcessFunction.Q6.{" + ProcessFunctionWriter.makeClassName(aggregateProcessFunction.getName()) + ", " + ProcessFunctionWriter.makeClassName(relationProcessFunction.getName()) + "}");
         writer.writeln("import org.hkust.RelationType.Payload");
     }
 
@@ -84,11 +88,11 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
+        writer.writeln("var cnt : Long = 0");
         writer.writeln("val restDS : DataStream[Payload] = data");
         writer.writeln(".map(line => {");
         writer.writeln("val header = line.substring(0,3)");
         writer.writeln("val cells : Array[String] = line.substring(3).split(\"\\\\|\")");
-        writer.writeln("var cnt : Long = 0");
         writer.writeln("val i = Tuple" + attributes.size() + "(" + tupleCode.toString() + ")");
         writer.writeln("var relation = \"\"");
         writer.writeln("var action = \"\"");

@@ -20,4 +20,5 @@ public abstract class ProcessFunction {
         this.nextKey = nextKey;
     }
 
+    public abstract String getName();
 }

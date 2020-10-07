@@ -41,6 +41,7 @@ public class RelationProcessFunction extends ProcessFunction {
     }
 
 
+    @Override
     public String getName() {
         return name;
     }
