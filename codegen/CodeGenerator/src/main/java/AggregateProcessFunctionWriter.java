@@ -90,7 +90,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private void addInitStateFunction() {
         writer.writeln_r("override def initstate(): Unit = {");
         writer.writeln("val valueDescriptor = TypeInformation.of(new TypeHint[" + aggregateType + "](){})");
-        writer.writeln("val aliveDescriptor : ValueStateDescriptor[" + aggregateType + "] = new ValueStateDescriptor[" + aggregateType + "](name+\"Alive\", valueDescriptor)");
+        writer.writeln("val aliveDescriptor : ValueStateDescriptor[" + aggregateType + "] = new ValueStateDescriptor[" + aggregateType + "](\"" + className + "\"+\"Alive\", valueDescriptor)");
         writer.writeln("alive = getRuntimeContext.getState(aliveDescriptor)");
         writer.writeln_r("}");
         //TODO: later substitute with default value for the class in question. May need to have a map for this as some don't have a default constructor e.g. Double

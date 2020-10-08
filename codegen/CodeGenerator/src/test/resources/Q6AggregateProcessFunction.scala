@@ -14,7 +14,7 @@ class Q6AggregateProcessFunction extends AggregateProcessFunction[Any, Double]("
 
   override def initstate(): Unit = {
     val valueDescriptor = TypeInformation.of(new TypeHint[Double]() {})
-    val aliveDescriptor: ValueStateDescriptor[Double] = new ValueStateDescriptor[Double](name + "Alive", valueDescriptor)
+    val aliveDescriptor: ValueStateDescriptor[Double] = new ValueStateDescriptor[Double]("Q6AggregateProcessFunction" + "Alive", valueDescriptor)
     alive = getRuntimeContext.getState(aliveDescriptor)
   }
 

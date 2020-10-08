@@ -116,7 +116,8 @@ public class MainClassWriter implements ClassWriter {
 
     private String iteratorCode(int num) {
         StringBuilder code = new StringBuilder();
-        for (int i = 0; i < num; i++) {
+        num++;
+        for (int i = 1; i < num; i++) {
             code.append("i._").append(i);
             if (i < num - 1) {
                 code.append(",");

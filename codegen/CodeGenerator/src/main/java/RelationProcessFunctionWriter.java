@@ -37,7 +37,6 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         ifCondition.append("if(");
         SelectCondition condition;
         for (int i = 0; i < selectConditions.size(); i++) {
-            ifCondition.append("value");
             condition = selectConditions.get(i);
             expressionToCode(condition.getExpression(), ifCondition);
             if (i < selectConditions.size() - 1) {
