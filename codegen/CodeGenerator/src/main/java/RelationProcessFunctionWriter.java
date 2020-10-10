@@ -1,23 +1,18 @@
 import org.ainslec.picocog.PicoWriter;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
-    private final String relationName;
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
-        this.relationName = relationProcessFunction.getName();
         this.className = makeClassName(relationProcessFunction.getName());
     }
 
@@ -67,7 +62,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +
-                relationName + "\"," +
+                relationProcessFunction.getRelationName() + "\"," +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +
