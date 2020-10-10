@@ -1,7 +1,7 @@
 {
   "RelationProcessFunction": {
-    "name": "lineitem",
-    "relation": "lineitem",
+    "name": "Q6lineitem",
+    "relation": "Lineitem",
     "this_key": [
       "orderkey",
       "l_linenumber"
@@ -76,7 +76,7 @@
     }
   },
   "AggregateProcessFunction": {
-    "name": "Q6AggregateFunction",
+    "name": "Q6Aggregate",
     "this_key": null,
     "next_key": null,
     "AggregateValue": {
@@ -94,5 +94,9 @@
     },
     "aggregation": "+",
     "value_type": "Double"
+  },
+  "Configuration": {
+    "input_path": "/Users/tom/lineitem.tbl",
+    "output_path": "/Users/tom/AggrQ6output.csv"
   }
 }

@@ -1,25 +1,9 @@
-import org.ainslec.picocog.PicoWriter;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class ProcessFunctionWriter {
-    public abstract void generateCode(final String filePath) throws IOException;
-
-    abstract void addImports();
-
-    abstract void addConstructorAndOpenClass();
-
-    void closeClass(final PicoWriter writer) {
-        writer.writeln_r("}");
-    }
-
+public abstract class ProcessFunctionWriter implements ClassWriter {
     String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");
@@ -86,10 +70,8 @@ public abstract class ProcessFunctionWriter {
                 .append("]");
     }
 
-    void writeClassFile(final String className, final String path, final String code) throws IOException {
-        CheckerUtils.checkNullOrEmpty(className, "className");
-        CheckerUtils.checkNullOrEmpty(path, "path");
-        CheckerUtils.checkNullOrEmpty(code, "code");
-        Files.write(Paths.get(path + File.separator + className + ".scala"), code.getBytes());
+    static String makeClassName(String name) {
+        CheckerUtils.checkNullOrEmpty(name, "name");
+        return name + "ProcessFunction";
     }
 }

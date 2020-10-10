@@ -3,7 +3,7 @@ import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}
 import org.hkust.BasedProcessFunctions.AggregateProcessFunction
 
-class Q6AggregateFunction extends AggregateProcessFunction[Any, Double]("Q6AggregateFunction", Array(), Array(), aggregateName = "revenue") {
+class Q6AggregateProcessFunction extends AggregateProcessFunction[Any, Double]("Q6AggregateProcessFunction", Array(), Array(), aggregateName = "revenue") {
   override def aggregate(value: Payload): Double = {
     value("L_EXTENDEDPRICE").asInstanceOf[Double] * value("L_DISCOUNT").asInstanceOf[Double]
   }
@@ -14,7 +14,7 @@ class Q6AggregateFunction extends AggregateProcessFunction[Any, Double]("Q6Aggre
 
   override def initstate(): Unit = {
     val valueDescriptor = TypeInformation.of(new TypeHint[Double]() {})
-    val aliveDescriptor: ValueStateDescriptor[Double] = new ValueStateDescriptor[Double](name + "Alive", valueDescriptor)
+    val aliveDescriptor: ValueStateDescriptor[Double] = new ValueStateDescriptor[Double]("Q6AggregateProcessFunction" + "Alive", valueDescriptor)
     alive = getRuntimeContext.getState(aliveDescriptor)
   }
 

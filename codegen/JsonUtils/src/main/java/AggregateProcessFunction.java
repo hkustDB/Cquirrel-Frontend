@@ -30,6 +30,7 @@ public class AggregateProcessFunction extends ProcessFunction {
         this.valueType = valueType;
     }
 
+    @Override
     public String getName() {
         return name;
     }

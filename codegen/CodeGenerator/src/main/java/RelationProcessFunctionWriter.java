@@ -1,25 +1,19 @@
 import org.ainslec.picocog.PicoWriter;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
-    private final String relationName;
-    private final static PicoWriter writer = new PicoWriter();
+    private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
-    //TODO: simplify: make methods static, consider giving the generated class a generic name e.g. simply RelationProcessFunction
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
-        this.relationName = relationProcessFunction.getName();
-        this.className = relationProcessFunction.getName() + "ProcessFunction";
+        this.className = makeClassName(relationProcessFunction.getName());
     }
 
     @Override
@@ -29,7 +23,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions());
         closeClass(writer);
-        writeClassFile(className,filePath,writer.toString());
+        writeClassFile(className, filePath, writer.toString());
     }
 
     private void addIsValidFunction(List<SelectCondition> selectConditions) {
@@ -38,7 +32,6 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         ifCondition.append("if(");
         SelectCondition condition;
         for (int i = 0; i < selectConditions.size(); i++) {
-            ifCondition.append("value");
             condition = selectConditions.get(i);
             expressionToCode(condition.getExpression(), ifCondition);
             if (i < selectConditions.size() - 1) {
@@ -57,7 +50,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    void addImports() {
+    public void addImports() {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
         writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
         writer.writeln("import org.hkust.RelationType.Payload");
@@ -65,11 +58,11 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
 
 
     @Override
-    void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass() {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +
-                relationName + "\"," +
+                relationProcessFunction.getRelationName() + "\"," +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +
