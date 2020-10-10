@@ -17,13 +17,15 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    public void generateCode(final String filePath) throws IOException {
+    public String generateCode(final String filePath) throws IOException {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports();
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions());
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
+
+        return className;
     }
 
     private void addIsValidFunction(List<SelectCondition> selectConditions) {

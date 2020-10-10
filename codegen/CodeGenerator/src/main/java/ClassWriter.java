@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public interface ClassWriter {
-    void generateCode(final String filePath) throws IOException;
+    String generateCode(final String filePath) throws IOException;
     void addImports();
 
     void addConstructorAndOpenClass();
@@ -20,5 +20,10 @@ public interface ClassWriter {
         CheckerUtils.checkNullOrEmpty(path, "path");
         CheckerUtils.checkNullOrEmpty(code, "code");
         Files.write(Paths.get(path + File.separator + className + ".scala"), code.getBytes());
+    }
+
+    default String makeClassName(String name) {
+        CheckerUtils.checkNullOrEmpty(name, "name");
+        return name + "ProcessFunction";
     }
 }

@@ -1,15 +1,11 @@
 import org.ainslec.picocog.PicoWriter;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
-    private static final String CLASS_NAME = "AggregateProcessFunction";
     private static final PicoWriter writer = new PicoWriter();
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateType;
@@ -24,7 +20,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    public void generateCode(String filePath) throws IOException {
+    public String generateCode(String filePath) throws IOException {
         addImports();
         addConstructorAndOpenClass();
         addAggregateFunction();
@@ -33,6 +29,8 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         addInitStateFunction();
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
+
+        return className;
     }
 
     @Override
