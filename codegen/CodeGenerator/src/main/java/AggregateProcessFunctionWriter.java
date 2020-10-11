@@ -16,11 +16,11 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         this.aggregateProcessFunction = aggregateProcessFunction;
         Class type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
-        className = makeClassName(aggregateProcessFunction.getName());
+        className = getProcessFunctionClassName(aggregateProcessFunction.getName());
     }
 
     @Override
-    public String generateCode(String filePath) throws IOException {
+    public String write(String filePath) throws IOException {
         addImports();
         addConstructorAndOpenClass();
         addAggregateFunction();

@@ -1,4 +1,4 @@
-import scala.collection.JavaConverters;
+import scala.collection.JavaConversions;
 import scala.tools.nsc.Global;
 import scala.tools.nsc.Settings;
 
@@ -14,18 +14,17 @@ public class CodeGenerator {
     public static void generate(Node node, String outputPath) throws IOException {
         requireNonNull(node);
         CheckerUtils.checkNullOrEmpty(outputPath, "outputPath");
-        new RelationProcessFunctionWriter(node.getRelationProcessFunction()).generateCode(outputPath);
-        new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).generateCode(outputPath);
-        String mainClassName = new MainClassWriter(node).generateCode(outputPath);
+        new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(outputPath);
+        new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(outputPath);
+        String mainClassName = new MainClassWriter(node).write(outputPath);
 
-        compile(outputPath + File.separator + mainClassName);
+        compile(outputPath + File.separator + mainClassName + ".scala");
     }
 
     private static void compile(String filePath) {
-        Global g = new Global(new Settings());
-        Global.Run run = g.new Run();
+        Global global = new Global(new Settings());
+        Global.Run run = global.new Run();
         List<String> fileNames = new ArrayList<>(singletonList(filePath));
-
-        run.compile(JavaConverters.asScalaBuffer(fileNames).toList());
+        run.compile(JavaConversions.asScalaBuffer(fileNames).toList());
     }
 }

@@ -8,7 +8,7 @@ public class MainClassWriterTest {
     void q6() throws Exception {
         Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
         MainClassWriter mcw = new MainClassWriter(node);
-        mcw.generateCode("src/test/resources");
+        mcw.write("src/test/resources");
     }
 
     @AfterEach
