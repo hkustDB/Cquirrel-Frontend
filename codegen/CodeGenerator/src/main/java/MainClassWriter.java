@@ -26,20 +26,22 @@ public class MainClassWriter implements ClassWriter {
     public MainClassWriter(Node query) {
         requireNonNull(query);
         this.aggregateProcessFunction = query.getAggregateProcessFunction();
-        this.aggregateProcFuncClassName = ProcessFunctionWriter.makeClassName(aggregateProcessFunction.getName());
+        this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
         this.relationProcessFunction = query.getRelationProcessFunction();
-        this.relationProcFuncClassName = ProcessFunctionWriter.makeClassName(relationProcessFunction.getName());
+        this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
         this.configuration = query.getConfiguration();
     }
 
     @Override
-    public void generateCode(String filePath) throws IOException {
+    public String write(String filePath) throws IOException {
         addImports();
         addConstructorAndOpenClass();
         addMainFunction();
         addGetStreamFunction();
         closeClass(writer);
         writeClassFile(CLASS_NAME, filePath, writer.toString());
+
+        return CLASS_NAME;
     }
 
     @Override
@@ -48,7 +50,6 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln("import org.apache.flink.core.fs.FileSystem");
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
         writer.writeln("import org.apache.flink.streaming.api.scala._");
-        writer.writeln("import org.hkust.ProcessFunction.Q6.{" + ProcessFunctionWriter.makeClassName(aggregateProcessFunction.getName()) + ", " + ProcessFunctionWriter.makeClassName(relationProcessFunction.getName()) + "}");
         writer.writeln("import org.hkust.RelationType.Payload");
     }
 
@@ -68,9 +69,9 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln("val outputpath = \"" + configuration.getOutputPath() + "\"");
         writer.writeln("val inputStream : DataStream[Payload] = getStream(env,inputpath)");
         writer.writeln("val result  = inputStream.keyBy(i => i._3)");
-        writer.writeln(".process(new " + ProcessFunctionWriter.makeClassName(relationProcessFunction.getName()) + "())");
+        writer.writeln(".process(new " + getProcessFunctionClassName(relationProcessFunction.getName()) + "())");
         writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + ProcessFunctionWriter.makeClassName(aggregateProcessFunction.getName()) + ")");
+        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunction.getName()) + ")");
         writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \")))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");

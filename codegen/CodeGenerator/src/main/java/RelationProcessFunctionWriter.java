@@ -13,17 +13,19 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
-        this.className = makeClassName(relationProcessFunction.getName());
+        this.className = getProcessFunctionClassName(relationProcessFunction.getName());
     }
 
     @Override
-    public void generateCode(final String filePath) throws IOException {
+    public String write(final String filePath) throws IOException {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports();
         addConstructorAndOpenClass();
         addIsValidFunction(relationProcessFunction.getSelectConditions());
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
+
+        return className;
     }
 
     private void addIsValidFunction(List<SelectCondition> selectConditions) {

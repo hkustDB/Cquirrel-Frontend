@@ -69,9 +69,4 @@ public abstract class ProcessFunctionWriter implements ClassWriter {
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
                 .append("]");
     }
-
-    static String makeClassName(String name) {
-        CheckerUtils.checkNullOrEmpty(name, "name");
-        return name + "ProcessFunction";
-    }
 }
