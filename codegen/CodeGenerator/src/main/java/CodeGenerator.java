@@ -9,22 +9,24 @@ import java.nio.file.StandardCopyOption;
 public class CodeGenerator {
     private static final String GENERATED_CODE = "generated-code";
 
-    public static void generate(String jsonFilePath, String outputPath) throws Exception {
+    public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
-        CheckerUtils.checkNullOrEmpty(outputPath, "outputPath");
+        CheckerUtils.checkNullOrEmpty(jarOutputPath, "jarOutputPath");
+        CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
+        CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
 
         Node node = JsonParser.parse(jsonFilePath);
 
-        String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(outputPath);
-        copyToGeneratedCode(outputPath, rpfClassName);
+        String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, rpfClassName);
 
-        String agpClassName = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(outputPath);
-        copyToGeneratedCode(outputPath, agpClassName);
+        String agpClassName = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, agpClassName);
 
-        String mainClassName = new MainClassWriter(node).write(outputPath);
-        copyToGeneratedCode(outputPath, mainClassName);
+        String mainClassName = new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, mainClassName);
 
-        compile(outputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
+        compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 
     }
 

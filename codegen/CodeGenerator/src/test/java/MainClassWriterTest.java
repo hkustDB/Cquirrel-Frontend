@@ -7,7 +7,7 @@ public class MainClassWriterTest {
     @Test
     void q6() throws Exception {
         Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
-        MainClassWriter mcw = new MainClassWriter(node);
+        MainClassWriter mcw = new MainClassWriter(node, "file:///home/data/qwangbp/lineitem.tbl","file:///home/data/qwangbp/testQ6.out");
         mcw.write("src/test/resources");
     }
 

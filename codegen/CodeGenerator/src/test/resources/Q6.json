@@ -94,9 +94,5 @@
     },
     "aggregation": "+",
     "value_type": "Double"
-  },
-  "Configuration": {
-    "input_path": "file:///home/data/qwangbp/lineitem.tbl",
-    "output_path": "file:///home/data/qwangbp/testQ6.out"
   }
 }

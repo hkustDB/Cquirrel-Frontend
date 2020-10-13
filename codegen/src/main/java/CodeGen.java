@@ -23,7 +23,7 @@ public class CodeGen {
                 "                                                                   \n");
         validateArgs(args);
 
-        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_INDEX]);
+        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
     }
 
     private void validateArgs(String[] args) {
