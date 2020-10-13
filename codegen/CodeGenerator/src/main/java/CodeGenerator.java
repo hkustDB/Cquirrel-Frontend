@@ -6,14 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import static java.util.Objects.requireNonNull;
-
 public class CodeGenerator {
     private static final String GENERATED_CODE = "generated-code";
 
-    public static void generate(Node node, String outputPath) throws IOException {
-        requireNonNull(node);
+    public static void generate(String jsonFilePath, String outputPath) throws Exception {
+        CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
         CheckerUtils.checkNullOrEmpty(outputPath, "outputPath");
+
+        Node node = JsonParser.parse(jsonFilePath);
 
         String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(outputPath);
         copyToGeneratedCode(outputPath, rpfClassName);

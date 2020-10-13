@@ -25,7 +25,7 @@ class CodeGenTest {
     }
 
     @Test
-    void mainTest() {
+    void mainTest() throws Exception {
         String[] args = getArgs();
         codeGen.main(args);
     }

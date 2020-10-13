@@ -1,9 +1,19 @@
+import com.google.common.collect.ImmutableSet;
+
 import java.io.File;
+import java.util.Arrays;
+import java.util.Set;
 
 public class CodeGen {
-    private int NUM_OF_ARGS = 2;
+    private int NUM_OF_ARGS = 5;
+    private final Set<String> IO_TYPES = ImmutableSet.of("file", "kafka");
+    private final int JSON_FILE_INDEX = 0;
+    private final int GENERATED_JAR_INDEX = 1;
+    private final int OUTPUT_PATH_INDEX = 2;
+    private final int INPUT_PATH_INDEX = 3;
+    private final int IO_TYPE_INDEX = 4;
 
-    public void main(String[] args) {
+    public void main(String[] args) throws Exception {
         System.out.println("\n" +
                 "   _     __                                 _        ___           \n" +
                 "  /_\\    \\ \\  /\\ /\\            ___ ___   __| | ___  / _ \\___ _ __  \n" +
@@ -12,15 +22,20 @@ public class CodeGen {
                 "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
                 "                                                                   \n");
         validateArgs(args);
+
+        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_INDEX]);
     }
 
     private void validateArgs(String[] args) {
         if (args.length != NUM_OF_ARGS) {
-            throw new RuntimeException("Expecting exactly 2 input strings: JSON file path and jar output path");
+            throw new RuntimeException("Expecting exactly " + NUM_OF_ARGS + " input strings: JSON file path, generated-code jar output path, flink input path, flink output path and flink I/O type");
         }
 
-        validateJsonFile(args[0]);
-        validateOutputDir(args[1]);
+        validateJsonFile(args[JSON_FILE_INDEX]);
+        validateDirectoryPath(args[GENERATED_JAR_INDEX]);
+        validateDirectoryPath(args[OUTPUT_PATH_INDEX]);
+        validateDirectoryPath(args[INPUT_PATH_INDEX]);
+        validateFlinkIOType(args[IO_TYPE_INDEX]);
     }
 
     private void validateJsonFile(String jsonFilePath) {
@@ -33,11 +48,18 @@ public class CodeGen {
         }
     }
 
-    private void validateOutputDir(String outputDirPath) {
-        CheckerUtils.checkNullOrEmpty(outputDirPath, "outputDirPath");
-        File outputDir = new File(outputDirPath);
+    private void validateDirectoryPath(String directoryPath) {
+        CheckerUtils.checkNullOrEmpty(directoryPath, "directoryPath");
+        File outputDir = new File(directoryPath);
         if (outputDir.exists() && outputDir.isDirectory()) return;
 
-        throw new RuntimeException("output directory must exist and must be a directory, got: " + outputDirPath);
+        throw new RuntimeException("output directory must exist and must be a directory, got: " + directoryPath);
+    }
+
+    private void validateFlinkIOType(String ioType) {
+        CheckerUtils.checkNullOrEmpty(ioType, "ioType");
+        if (!IO_TYPES.contains(ioType.toLowerCase())) {
+            throw new RuntimeException("Only the following flink IO types are supported: " + Arrays.toString(IO_TYPES.toArray()));
+        }
     }
 }
