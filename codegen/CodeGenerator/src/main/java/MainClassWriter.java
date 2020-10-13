@@ -50,7 +50,6 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln("import org.apache.flink.core.fs.FileSystem");
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
         writer.writeln("import org.apache.flink.streaming.api.scala._");
-        writer.writeln("import org.hkust.ProcessFunction.Q6.{" + getProcessFunctionClassName(aggregateProcessFunction.getName()) + ", " + getProcessFunctionClassName(relationProcessFunction.getName()) + "}");
         writer.writeln("import org.hkust.RelationType.Payload");
     }
 

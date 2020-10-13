@@ -31,13 +31,14 @@ public class CodeGenerator {
     private static void copyToGeneratedCode(String outputPath, String className) throws IOException {
         Files.copy(
                 Paths.get(getClassFilePath(outputPath, className)),
-                Paths.get(outputPath + File.separator + GENERATED_CODE + "/src/main/scala" + File.separator + getClassFileName(className)),
+                Paths.get(outputPath + File.separator + GENERATED_CODE + "/src/main/scala/org/hkust" + File.separator + getClassFileName(className)),
                 StandardCopyOption.REPLACE_EXISTING
         );
     }
 
     private static void compile(String pomPath) throws IOException {
         Runtime runtime = Runtime.getRuntime();
+        execute(runtime, "mvn install -f " + pomPath);
         execute(runtime, "mvn compile -f " + pomPath);
         execute(runtime, "mvn package -f " + pomPath);
     }

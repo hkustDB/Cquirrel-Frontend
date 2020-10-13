@@ -96,7 +96,7 @@
     "value_type": "Double"
   },
   "Configuration": {
-    "input_path": "/Users/tom/lineitem.tbl",
-    "output_path": "/Users/tom/AggrQ6output.csv"
+    "input_path": "file:///home/data/qwangbp/lineitem.tbl",
+    "output_path": "file:///home/data/qwangbp/testQ6.out"
   }
 }
