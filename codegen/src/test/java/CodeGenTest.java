@@ -17,7 +17,7 @@ class CodeGenTest {
 
     @BeforeAll
     void setup() {
-        final String resourceFolder = new File("src/test/resources").getAbsolutePath();
+        final String resourceFolder = new File("src" + File.separator + "test" + File.separator + "resources").getAbsolutePath();
         JSON_FILE_PATH = resourceFolder + File.separator + JSON_FILE_NAME;
         TEST_DIRECTORY = resourceFolder;
     }

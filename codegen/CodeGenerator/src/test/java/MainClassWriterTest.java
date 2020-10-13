@@ -6,9 +6,9 @@ import java.io.File;
 public class MainClassWriterTest {
     @Test
     void q6() throws Exception {
-        Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
+        Node node = JsonParser.parse(new File("src"+ File.separator +"test"+ File.separator +"resources").getAbsolutePath() + File.separator + "Q6.json");
         MainClassWriter mcw = new MainClassWriter(node, "file:///home/data/qwangbp/lineitem.tbl","file:///home/data/qwangbp/testQ6.out");
-        mcw.write("src/test/resources");
+        mcw.write("src"+ File.separator +"test"+ File.separator +"resources");
     }
 
     @AfterEach

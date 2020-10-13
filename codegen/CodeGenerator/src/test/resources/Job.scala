@@ -30,7 +30,7 @@ object Job {
       .map(line => {
       val header = line.substring(0,3)
       val cells : Array[String] = line.substring(3).split("\\|")
-      val i = Tuple4(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(4).toDouble)
+      val i = Tuple4(format.parse(cells(10)),cells(4).toDouble,cells(5).toDouble,cells(6).toDouble)
       var relation = ""
       var action = ""
       header match {
@@ -45,7 +45,7 @@ object Job {
       Payload(relation, action,
       Tuple2(cells(0).toInt, cells(3).toInt).asInstanceOf[Any],
       Array(i._1,i._2,i._3,i._4),
-      Array("L_SHIPDATE","L_EXTENDEDPRICE","L_DISCOUNT","L_QUANTITY"), cnt)
+      Array("L_SHIPDATE","L_QUANTITY","L_EXTENDEDPRICE","L_DISCOUNT"), cnt)
       }).setParallelism(1).filter(x => x._1 != "").setParallelism(1)
       restDS
    }

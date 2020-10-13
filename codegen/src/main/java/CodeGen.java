@@ -1,6 +1,10 @@
 import com.google.common.collect.ImmutableSet;
 
-import java.io.File;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -22,8 +26,50 @@ public class CodeGen {
                 "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
                 "                                                                   \n");
         validateArgs(args);
-
+        prepareEnvironment(args[GENERATED_JAR_INDEX]);
         CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
+    }
+
+    private static void prepareEnvironment(String jarPath) throws IOException, URISyntaxException {
+        StringBuilder generatedCodeBuilder = new StringBuilder();
+        String generatedCode = "generated-code";
+        generatedCodeBuilder.append(jarPath)
+                .append(File.separator)
+                .append(generatedCode)
+                .append(File.separator)
+                .append("src")
+                .append(File.separator)
+                .append("main")
+                .append(File.separator)
+                .append("scala")
+                .append(File.separator)
+                .append("org")
+                .append(File.separator)
+                .append("hkust");
+
+        File directory = new File(generatedCodeBuilder.toString());
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        extractPomFile(jarPath + File.separator + generatedCode);
+    }
+
+    private static void extractPomFile(String path) throws IOException, URISyntaxException {
+        String pomName = "pom.xml";
+        File target = new File(path + File.separator + pomName);
+        if (target.exists())
+            return;
+
+        FileOutputStream out = new FileOutputStream(target);
+        InputStream in = new FileInputStream(new File(CodeGen.class.getResource(pomName).toURI()));
+
+        byte[] buf = new byte[8 * 1024];
+        int len;
+        while ((len = in.read(buf)) != -1) {
+            out.write(buf, 0, len);
+        }
+        out.close();
+        in.close();
     }
 
     private static void validateArgs(String[] args) {

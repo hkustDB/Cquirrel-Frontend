@@ -33,7 +33,7 @@ public class CodeGenerator {
     private static void copyToGeneratedCode(String outputPath, String className) throws IOException {
         Files.copy(
                 Paths.get(getClassFilePath(outputPath, className)),
-                Paths.get(outputPath + File.separator + GENERATED_CODE + "/src/main/scala/org/hkust" + File.separator + getClassFileName(className)),
+                Paths.get(outputPath + File.separator + GENERATED_CODE + File.separator + "src"+ File.separator +"main"+ File.separator +"scala"+ File.separator +"org"+ File.separator +"hkust" + File.separator + getClassFileName(className)),
                 StandardCopyOption.REPLACE_EXISTING
         );
     }
