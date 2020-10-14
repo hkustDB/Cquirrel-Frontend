@@ -54,22 +54,96 @@ public class CodeGen {
         extractPomFile(jarPath + File.separator + generatedCode);
     }
 
-    private static void extractPomFile(String path) throws IOException, URISyntaxException {
+    static void extractPomFile(String path) throws IOException {
         String pomName = "pom.xml";
+        String content = "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n" +
+                "    <modelVersion>4.0.0</modelVersion>\n" +
+                "    <groupId>org.hkust</groupId>\n" +
+                "    <artifactId>generated-code</artifactId>\n" +
+                "    <version>1.0-SNAPSHOT</version>\n" +
+                "    <name>${project.artifactId}</name>\n" +
+                "\n" +
+                "    <properties>\n" +
+                "        <maven.compiler.source>1.8</maven.compiler.source>\n" +
+                "        <maven.compiler.target>1.8</maven.compiler.target>\n" +
+                "        <encoding>UTF-8</encoding>\n" +
+                "        <scala.version>2.12.6</scala.version>\n" +
+                "        <scala.compat.version>2.12</scala.compat.version>\n" +
+                "        <spec2.version>4.2.0</spec2.version>\n" +
+                "    </properties>\n" +
+                "\n" +
+                "    <dependencies>\n" +
+                "        <dependency>\n" +
+                "            <groupId>org.hkust</groupId>\n" +
+                "            <artifactId>AJU</artifactId>\n" +
+                "            <version>1.0-SNAPSHOT</version>\n" +
+                "        </dependency>\n" +
+                "        <dependency>\n" +
+                "            <groupId>org.apache.flink</groupId>\n" +
+                "            <artifactId>flink-streaming-scala_2.12</artifactId>\n" +
+                "            <version>1.11.2</version>\n" +
+                "            <scope>provided</scope>\n" +
+                "        </dependency>\n" +
+                "    </dependencies>\n" +
+                "\n" +
+                "    <build>\n" +
+                "        <sourceDirectory>src/main/scala</sourceDirectory>\n" +
+                "        <plugins>\n" +
+                "            <plugin>\n" +
+                "                <!-- see http://davidb.github.com/scala-maven-plugin -->\n" +
+                "                <groupId>net.alchim31.maven</groupId>\n" +
+                "                <artifactId>scala-maven-plugin</artifactId>\n" +
+                "                <version>3.3.2</version>\n" +
+                "                <executions>\n" +
+                "                    <execution>\n" +
+                "                        <goals>\n" +
+                "                            <goal>compile</goal>\n" +
+                "                        </goals>\n" +
+                "                    </execution>\n" +
+                "                </executions>\n" +
+                "            </plugin>\n" +
+                "            <plugin>\n" +
+                "                <groupId>org.apache.maven.plugins</groupId>\n" +
+                "                <artifactId>maven-surefire-plugin</artifactId>\n" +
+                "                <version>2.21.0</version>\n" +
+                "                <configuration>\n" +
+                "                    <!-- Tests will be run with scalatest-maven-plugin instead -->\n" +
+                "                    <skipTests>true</skipTests>\n" +
+                "                </configuration>\n" +
+                "            </plugin>\n" +
+                "            <plugin>\n" +
+                "                <groupId>org.apache.maven.plugins</groupId>\n" +
+                "                <artifactId>maven-assembly-plugin</artifactId>\n" +
+                "                <version>2.4</version>\n" +
+                "                <configuration>\n" +
+                "                    <descriptorRefs>\n" +
+                "                        <descriptorRef>jar-with-dependencies</descriptorRef>\n" +
+                "                    </descriptorRefs>\n" +
+                "                    <archive>\n" +
+                "                        <manifest>\n" +
+                "                            <mainClass>Job</mainClass>\n" +
+                "                        </manifest>\n" +
+                "                    </archive>\n" +
+                "                </configuration>\n" +
+                "                <executions>\n" +
+                "                    <execution>\n" +
+                "                        <phase>package</phase>\n" +
+                "                        <goals>\n" +
+                "                            <goal>single</goal>\n" +
+                "                        </goals>\n" +
+                "                    </execution>\n" +
+                "                </executions>\n" +
+                "            </plugin>\n" +
+                "        </plugins>\n" +
+                "    </build>\n" +
+                "</project>\n";
         File target = new File(path + File.separator + pomName);
-        if (target.exists())
-            return;
 
-        FileOutputStream out = new FileOutputStream(target);
-        InputStream in = new FileInputStream(new File(CodeGen.class.getResource(pomName).toURI()));
-
-        byte[] buf = new byte[8 * 1024];
-        int len;
-        while ((len = in.read(buf)) != -1) {
-            out.write(buf, 0, len);
-        }
-        out.close();
-        in.close();
+        FileOutputStream outputStream = new FileOutputStream(target);
+        byte[] bytes = content.getBytes();
+        outputStream.write(bytes);
+        outputStream.close();
     }
 
     private static void validateArgs(String[] args) {
