@@ -1,49 +1,56 @@
 {%- extends "bootstrap/base.html" %}
 
 {% block html_attribs %}
-lang="en"
+    lang="en"
 {% endblock %}
 
 {% block title %}
-Acyclic Join under Updates Demo
+    Acyclic Join under Updates Demo
 {% endblock %}
 
 {% block metas %}
-{{ super() }}
-<meta charset="UTF-8">
-<meta name="description" content="This is the demo of acyclic join under update algorithm.">
-<meta name="author" content="">
-{% endblock %}s
+    {{ super() }}
+    <meta charset="UTF-8">
+    <meta name="description" content="This is the demo of acyclic join under update algorithm.">
+    <meta name="author" content="">
+{% endblock %}
 
 {% block styles %}
-{{ super() }}
-<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-192x192.png', _external=True)}}">
-<link rel="stylesheet" href="{{url_for('static', filename='css/aju_styles.css')}}">
-{% endblock %}
+    {{ super() }}
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='images/favicon-192x192.png', _external=True) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/aju_styles.css') }}">
 
-{% block navbar %}
-<nav class="navbar navbar-inverse" role="navigation">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand">Acyclic Join under Updates Demo</a>
-        </div>
-    </div>
-</nav>
-{% endblock %}
-
-
-{% block content %}
-{{ super() }}
-{% block div_uploaded_file %}
-{% endblock %}
-
-{% block div_show_results %}
-{% endblock %}
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+            integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="{{ url_for('static', filename='js/echarts.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/aju_scripts.js') }}"></script>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
-<script src="{{url_for('static', filename='js/aju_scripts.js')}}"></script>
-{{super()}}
+    {{ super() }}
 {% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand">Acyclic Join under Updates Demo</a>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+    {% block div_uploaded_file %}
+    {% endblock %}
+
+    {% block div_show_results %}
+    {% endblock %}
+
+{% endblock %}
+
