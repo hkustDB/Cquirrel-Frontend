@@ -153,8 +153,8 @@ public class CodeGen {
 
         validateJsonFile(args[JSON_FILE_INDEX]);
         validateDirectoryPath(args[GENERATED_JAR_INDEX]);
-        validateDirectoryPath(args[OUTPUT_PATH_INDEX]);
-        validateDirectoryPath(args[INPUT_PATH_INDEX]);
+        CheckerUtils.checkNullOrEmpty(args[OUTPUT_PATH_INDEX], "flinkInputPath");
+        CheckerUtils.checkNullOrEmpty(args[INPUT_PATH_INDEX], "flinkOutputPath");
         validateFlinkIOType(args[IO_TYPE_INDEX]);
     }
 
