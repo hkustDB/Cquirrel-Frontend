@@ -11,7 +11,8 @@ public class MainClassWriter implements ClassWriter {
     private final String aggregateProcFuncClassName;
     private final RelationProcessFunction relationProcessFunction;
     private final String relationProcFuncClassName;
-    private final Configuration configuration;
+    private final String flinkInputPath;
+    private final String flinkOutputPath;
     private final PicoWriter writer = new PicoWriter();
 
     private static final Map<Class, String> stringConversionMethods = new HashMap<>();
@@ -23,13 +24,16 @@ public class MainClassWriter implements ClassWriter {
         stringConversionMethods.put(Date.class, "format.parse");
     }
 
-    public MainClassWriter(Node query) {
+    public MainClassWriter(Node query, String flinkInputPath, String flinkOutputPath) {
         requireNonNull(query);
+        CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
+        CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
+        this.flinkInputPath = flinkInputPath;
+        this.flinkOutputPath = flinkOutputPath;
         this.aggregateProcessFunction = query.getAggregateProcessFunction();
         this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
         this.relationProcessFunction = query.getRelationProcessFunction();
         this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
-        this.configuration = query.getConfiguration();
     }
 
     @Override
@@ -65,14 +69,14 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln("env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)");
         writer.writeln("var executionConfig = env.getConfig");
         writer.writeln("executionConfig.enableObjectReuse()");
-        writer.writeln("val inputpath = \"" + configuration.getInputPath() + "\"");
-        writer.writeln("val outputpath = \"" + configuration.getOutputPath() + "\"");
+        writer.writeln("val inputpath = \"" + flinkInputPath + "\"");
+        writer.writeln("val outputpath = \"" + flinkOutputPath + "\"");
         writer.writeln("val inputStream : DataStream[Payload] = getStream(env,inputpath)");
         writer.writeln("val result  = inputStream.keyBy(i => i._3)");
         writer.writeln(".process(new " + getProcessFunctionClassName(relationProcessFunction.getName()) + "())");
         writer.writeln(".keyBy(i => i._3)");
         writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunction.getName()) + ")");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \")))");
+        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");

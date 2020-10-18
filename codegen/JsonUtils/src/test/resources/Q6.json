@@ -94,9 +94,5 @@
     },
     "aggregation": "+",
     "value_type": "Double"
-  },
-  "Configuration": {
-    "input_path": "/Users/tom/lineitem.tbl",
-    "output_path": "/Users/tom/AggrQ6output.csv"
   }
 }

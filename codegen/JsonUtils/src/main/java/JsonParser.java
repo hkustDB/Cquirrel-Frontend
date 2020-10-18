@@ -16,13 +16,8 @@ public class JsonParser {
         Map map = gson.fromJson(jsonString, Map.class);
 
         return new Node(makeRelationProcessFunction((Map) map.get("RelationProcessFunction")),
-                makeAggregateProcessFunction((Map) map.get("AggregateProcessFunction")),
-                makeConfiguration((Map) map.get("Configuration"))
+                makeAggregateProcessFunction((Map) map.get("AggregateProcessFunction"))
         );
-    }
-
-    private static Configuration makeConfiguration(Map configuration) {
-        return new Configuration((String) configuration.get("input_path"), (String) configuration.get("output_path"));
     }
 
     private static RelationProcessFunction makeRelationProcessFunction(Map rpfMap) throws Exception {

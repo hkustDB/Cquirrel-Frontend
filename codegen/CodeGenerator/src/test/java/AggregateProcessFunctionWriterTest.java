@@ -7,9 +7,9 @@ public class AggregateProcessFunctionWriterTest {
 
     @Test
     void q6() throws Exception {
-        Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
+        Node node = JsonParser.parse(new File("src" + File.separator + "test" + File.separator + "resources").getAbsolutePath() + File.separator + "Q6.json");
         AggregateProcessFunctionWriter agfw = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction());
-        agfw.write("src/test/resources");
+        agfw.write("src" + File.separator + "test" + File.separator + "resources");
     }
 
     @AfterEach

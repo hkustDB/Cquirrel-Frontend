@@ -7,9 +7,9 @@ public class RelationProcessFunctionWriterTest {
 
     @Test
     void q6() throws Exception {
-        Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
+        Node node = JsonParser.parse(new File("src"+ File.separator +"test"+ File.separator +"resources").getAbsolutePath() + File.separator + "Q6.json");
         RelationProcessFunctionWriter rpfw = new RelationProcessFunctionWriter(node.getRelationProcessFunction());
-        rpfw.write("src/test/resources");
+        rpfw.write("src"+ File.separator +"test"+ File.separator +"resources");
     }
 
     @AfterEach

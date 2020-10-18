@@ -6,7 +6,9 @@ public class CodeGeneratorTest {
 
     @Test
     void q6() throws Exception {
-        Node node = JsonParser.parse(new File("src/test/resources").getAbsolutePath() + File.separator + "Q6.json");
-        CodeGenerator.generate(node, "src/test/resources");
+        CodeGenerator.generate(new File("src"+ File.separator +"test"+ File.separator +"resources").getAbsolutePath() + File.separator + "Q6.json",
+                "src"+ File.separator +"test"+ File.separator +"resources",
+                "file:///home/data/qwangbp/lineitem.tbl",
+                "file:///home/data/qwangbp/testQ6.out");
     }
 }

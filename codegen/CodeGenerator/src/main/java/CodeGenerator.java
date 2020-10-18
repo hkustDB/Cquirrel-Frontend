@@ -6,32 +6,34 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import static java.util.Objects.requireNonNull;
-
 public class CodeGenerator {
     private static final String GENERATED_CODE = "generated-code";
 
-    public static void generate(Node node, String outputPath) throws IOException {
-        requireNonNull(node);
-        CheckerUtils.checkNullOrEmpty(outputPath, "outputPath");
+    public static void generate(String jsonFilePath, String flinkInputPath, String jarOutputPath, String flinkOutputPath) throws Exception {
+        CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
+        CheckerUtils.checkNullOrEmpty(jarOutputPath, "jarOutputPath");
+        CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
+        CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
 
-        String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(outputPath);
-        copyToGeneratedCode(outputPath, rpfClassName);
+        Node node = JsonParser.parse(jsonFilePath);
 
-        String agpClassName = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(outputPath);
-        copyToGeneratedCode(outputPath, agpClassName);
+        String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, rpfClassName);
 
-        String mainClassName = new MainClassWriter(node).write(outputPath);
-        copyToGeneratedCode(outputPath, mainClassName);
+        String agpClassName = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, agpClassName);
 
-        compile(outputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
+        String mainClassName = new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(jarOutputPath);
+        copyToGeneratedCode(jarOutputPath, mainClassName);
+
+        compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 
     }
 
     private static void copyToGeneratedCode(String outputPath, String className) throws IOException {
         Files.copy(
                 Paths.get(getClassFilePath(outputPath, className)),
-                Paths.get(outputPath + File.separator + GENERATED_CODE + "/src/main/scala/org/hkust" + File.separator + getClassFileName(className)),
+                Paths.get(outputPath + File.separator + GENERATED_CODE + File.separator + "src"+ File.separator +"main"+ File.separator +"scala"+ File.separator +"org"+ File.separator +"hkust" + File.separator + getClassFileName(className)),
                 StandardCopyOption.REPLACE_EXISTING
         );
     }
