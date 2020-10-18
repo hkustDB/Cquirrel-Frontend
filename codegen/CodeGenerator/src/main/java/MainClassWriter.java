@@ -76,7 +76,7 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln(".process(new " + getProcessFunctionClassName(relationProcessFunction.getName()) + "())");
         writer.writeln(".keyBy(i => i._3)");
         writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunction.getName()) + ")");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \")))");
+        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
