@@ -4,6 +4,7 @@ import config
 from flask import render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
+
 import os
 import subprocess
 
@@ -42,8 +43,12 @@ def upload_json_file():
     cmd_str = 'java -jar' + ' ' \
               + config.CODEGEN_FILE + ' ' \
               + uploaded_json_file_save_path + ' ' \
-              + config.GENERATED_JAR_PATH
+              + config.GENERATED_JAR_PATH + ' ' \
+              + 'file://' + config.OUTPUT_DATA_FILE + ' ' \
+              + 'file://' + config.INPUT_DATA_FILE + ' ' + 'file'
 
+
+    print(cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
     codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
@@ -55,6 +60,7 @@ def upload_json_file():
     if os.path.exists(uploaded_json_file_save_path):
         os.remove(uploaded_json_file_save_path)
 
+    aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
     return render_template('index.html', codegen_log_result=codegen_log_result,
                            uploaded_result="The json file uploaded successfully.")
 
@@ -69,3 +75,5 @@ def download_log():
 def download_generated_jar():
     if os.path.exists(config.GENERATED_JAR_FILE):
         return send_from_directory(config.GENERATED_JAR_PATH, 'generated.jar', as_attachment=True)
+
+

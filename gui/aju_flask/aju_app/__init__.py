@@ -37,7 +37,7 @@ def send_kafka_data():
 
 
 def background_send_kafka_data_thread():
-    with open("/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/aju_flask/aju_app/resources/AggrQ3output.csv", 'r') as f:
+    with open("/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/aju_flask/aju_app/resources/output_data_q6_all_insert.csv", 'r') as f:
         while True:
             time.sleep(1)
             line = f.readline()
