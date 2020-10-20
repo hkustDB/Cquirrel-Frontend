@@ -1,3 +1,4 @@
+import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 
 import java.io.IOException;
@@ -16,19 +17,29 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
     }
 
+    /**
+     * Meant to be used for testing only
+     */
+
+    RelationProcessFunctionWriter() {
+        this.className = null;
+        this.relationProcessFunction = null;
+    }
+
     @Override
     public String write(final String filePath) throws IOException {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports();
         addConstructorAndOpenClass();
-        addIsValidFunction(relationProcessFunction.getSelectConditions());
+        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
 
         return className;
     }
 
-    private void addIsValidFunction(List<SelectCondition> selectConditions) {
+    @VisibleForTesting
+    void addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");

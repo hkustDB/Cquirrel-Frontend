@@ -9,7 +9,7 @@ public class ConstantValue implements Value {
         return type;
     }
 
-    public static ConstantValue newInstance(final String val, final String type) throws Exception {
+    public static ConstantValue newInstance(final String val, final String type) {
         CheckerUtils.checkNullOrEmpty(val, "val");
         CheckerUtils.checkNullOrEmpty(type, "type");
 
