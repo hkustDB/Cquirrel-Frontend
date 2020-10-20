@@ -4,8 +4,8 @@ import config
 from flask import render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
-
 import os
+import shutil
 import subprocess
 
 
@@ -39,14 +39,18 @@ def upload_json_file():
         return render_template('index.html',
                                uploaded_result="The uploaded file is not a json file. Please upload again.")
 
+    # remove the older generated-code directory
+    if os.path.isdir(config.GENERATED_CODE_DIR):
+        shutil.rmtree(config.GENERATED_CODE_DIR)
+        print('remove the generated-code directory.')
+
     # call the codegen to generate a jar file
     cmd_str = 'java -jar' + ' ' \
               + config.CODEGEN_FILE + ' ' \
               + uploaded_json_file_save_path + ' ' \
               + config.GENERATED_JAR_PATH + ' ' \
-              + 'file://' + config.OUTPUT_DATA_FILE + ' ' \
-              + 'file://' + config.INPUT_DATA_FILE + ' ' + 'file'
-
+              + 'file://' + config.INPUT_DATA_FILE + ' ' \
+              + 'file://' + config.OUTPUT_DATA_FILE + ' ' + 'file'
 
     print(cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
@@ -75,5 +79,3 @@ def download_log():
 def download_generated_jar():
     if os.path.exists(config.GENERATED_JAR_FILE):
         return send_from_directory(config.GENERATED_JAR_PATH, 'generated.jar', as_attachment=True)
-
-

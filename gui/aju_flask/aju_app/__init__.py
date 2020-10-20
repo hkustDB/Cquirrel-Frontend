@@ -5,6 +5,8 @@ import time
 from threading import Lock
 import psutil
 from confluent_kafka import Consumer
+import os
+import time
 
 from config import config_options
 
@@ -37,13 +39,21 @@ def send_kafka_data():
 
 
 def background_send_kafka_data_thread():
-    with open("/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/aju_flask/aju_app/resources/output_data_q6_all_insert.csv", 'r') as f:
+    from config import OUTPUT_DATA_FILE
+    if os.path.exists(OUTPUT_DATA_FILE):
+        os.truncate(OUTPUT_DATA_FILE, 0)
+        print('truncate OUTPUT_DATA_FILE.')
+    else :
+        with open(OUTPUT_DATA_FILE, 'w') as f:
+            pass
+
+    with open(OUTPUT_DATA_FILE, 'r') as f:
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
             line = f.readline()
             if line:
-                line_list = line.replace('\n', '').replace('\r', '').split(',')
-                print("send: ", str(line_list))
+                line_list = line.strip().lstrip('(').rstrip(')').split(',')
+                print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "  send: " + str(line_list))
                 socketio.emit('result_figure_data', {'data': line_list})
             else:
                 f.seek(0)

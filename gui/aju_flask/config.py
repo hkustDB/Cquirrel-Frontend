@@ -6,6 +6,7 @@ FLINK_HOME_PATH = os.environ.get('FLINK_HOME') or '/Users/chaoqi/Programs/flink-
 GUI_FLASK_PATH = os.path.abspath(os.path.dirname(__file__))
 JSON_FILE_UPLOAD_PATH = os.path.join(GUI_FLASK_PATH, 'uploads')
 GENERATED_JAR_PATH = os.path.join(GUI_FLASK_PATH, 'jar')
+GENERATED_CODE_DIR = os.path.join(GENERATED_JAR_PATH, 'generated-code')
 GENERATED_JAR_FILE = os.path.join(GUI_FLASK_PATH, 'jar/generated-code/target/generated-code-1.0-SNAPSHOT-jar-with-dependencies.jar')
 CODEGEN_FILE = os.path.join(GUI_FLASK_PATH, 'jar/codegen.jar')
 CODEGEN_LOG_PATH = os.path.join(GUI_FLASK_PATH, 'log')
