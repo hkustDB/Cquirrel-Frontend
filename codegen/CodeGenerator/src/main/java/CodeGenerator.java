@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption;
 public class CodeGenerator {
     private static final String GENERATED_CODE = "generated-code";
 
-    public static void generate(String jsonFilePath, String flinkInputPath, String jarOutputPath, String flinkOutputPath) throws Exception {
+    public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
         CheckerUtils.checkNullOrEmpty(jarOutputPath, "jarOutputPath");
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
