@@ -79,7 +79,7 @@ public class AggregateProcessFunction extends ProcessFunction {
             CheckerUtils.checkNullOrEmpty(type, "type");
             this.name = name;
             this.type = type;
-            if (!type.equals("expression")) {
+            if (!type.toLowerCase().equals("expression")) {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }
             requireNonNull(value);

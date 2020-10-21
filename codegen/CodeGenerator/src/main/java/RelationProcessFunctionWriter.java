@@ -4,15 +4,12 @@ import org.ainslec.picocog.PicoWriter;
 import java.io.IOException;
 import java.util.List;
 
-import static java.util.Objects.requireNonNull;
-
 public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
     public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
-        requireNonNull(relationProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
     }
@@ -21,16 +18,11 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
      * Meant to be used for testing only
      */
 
-    RelationProcessFunctionWriter() {
-        this.className = null;
-        this.relationProcessFunction = null;
-    }
-
     @Override
     public String write(final String filePath) throws IOException {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
-        addImports();
-        addConstructorAndOpenClass();
+        addImports(writer);
+        addConstructorAndOpenClass(writer);
         addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
@@ -63,7 +55,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    public void addImports() {
+    public void addImports(final PicoWriter writer) {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
         writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
         writer.writeln("import org.hkust.RelationType.Payload");
@@ -71,7 +63,7 @@ public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
 
 
     @Override
-    public void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass(final PicoWriter writer) {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +

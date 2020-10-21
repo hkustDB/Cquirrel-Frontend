@@ -1,18 +1,19 @@
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.ainslec.picocog.PicoWriter;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.File;
+import java.util.Collections;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class MainClassWriterTest {
-    @Test
-    void q6() throws Exception {
-        Node node = JsonParser.parse(new File("src"+ File.separator +"test"+ File.separator +"resources").getAbsolutePath() + File.separator + "Q6.json");
-        MainClassWriter mcw = new MainClassWriter(node, "file:///home/data/qwangbp/lineitem.tbl","file:///home/data/qwangbp/testQ6.out");
-        mcw.write("src"+ File.separator +"test"+ File.separator +"resources");
-    }
 
-    @AfterEach
-    void message() {
-        System.out.println("inspect the generated class manually at the specified path and remove it");
-    }
+
+
 }

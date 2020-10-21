@@ -25,7 +25,6 @@ public class MainClassWriter implements ClassWriter {
     }
 
     public MainClassWriter(Node query, String flinkInputPath, String flinkOutputPath) {
-        requireNonNull(query);
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
@@ -38,10 +37,10 @@ public class MainClassWriter implements ClassWriter {
 
     @Override
     public String write(String filePath) throws IOException {
-        addImports();
-        addConstructorAndOpenClass();
-        addMainFunction();
-        addGetStreamFunction();
+        addImports(writer);
+        addConstructorAndOpenClass(writer);
+        addMainFunction(writer);
+        addGetStreamFunction(writer);
         closeClass(writer);
         writeClassFile(CLASS_NAME, filePath, writer.toString());
 
@@ -49,7 +48,7 @@ public class MainClassWriter implements ClassWriter {
     }
 
     @Override
-    public void addImports() {
+    public void addImports(final PicoWriter writer) {
         writer.writeln("import org.apache.flink.api.java.utils.ParameterTool");
         writer.writeln("import org.apache.flink.core.fs.FileSystem");
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
@@ -58,11 +57,11 @@ public class MainClassWriter implements ClassWriter {
     }
 
     @Override
-    public void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass(final PicoWriter writer) {
         writer.writeln_r("object " + CLASS_NAME + " {");
     }
 
-    private void addMainFunction() {
+    void addMainFunction(final PicoWriter writer) {
         writer.writeln_r("def main(args: Array[String]) {");
         writer.writeln("val env = StreamExecutionEnvironment.getExecutionEnvironment");
         writer.writeln("val params: ParameterTool = ParameterTool.fromArgs(args)");
@@ -83,7 +82,7 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
-    private void addGetStreamFunction() {
+    void addGetStreamFunction(final PicoWriter writer) {
         Set<RelationSchema.Attribute> attributes = extractAttributes();
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
@@ -131,7 +130,7 @@ public class MainClassWriter implements ClassWriter {
         return code.toString();
     }
 
-    private void attributeCode(Set<RelationSchema.Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+    void attributeCode(Set<RelationSchema.Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Iterator<RelationSchema.Attribute> iterator = attributes.iterator();
         while (iterator.hasNext()) {
             RelationSchema.Attribute attribute = iterator.next();
