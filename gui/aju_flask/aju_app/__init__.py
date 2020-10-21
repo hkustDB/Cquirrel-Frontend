@@ -9,6 +9,7 @@ import os
 import time
 
 from config import config_options
+from config import OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
@@ -17,6 +18,14 @@ thread_lock = Lock()
 
 
 def create_app(config_name):
+
+    if os.path.exists(OUTPUT_DATA_FILE):
+        os.truncate(OUTPUT_DATA_FILE, 0)
+        print('truncate OUTPUT_DATA_FILE.')
+    else:
+        f = open(OUTPUT_DATA_FILE, 'w')
+        f.close()
+
     app = Flask(__name__)
     app.config.from_object(config_options[config_name])
     config_options[config_name].init_app(app)
@@ -39,14 +48,6 @@ def send_kafka_data():
 
 
 def background_send_kafka_data_thread():
-    from config import OUTPUT_DATA_FILE
-    if os.path.exists(OUTPUT_DATA_FILE):
-        os.truncate(OUTPUT_DATA_FILE, 0)
-        print('truncate OUTPUT_DATA_FILE.')
-    else :
-        with open(OUTPUT_DATA_FILE, 'w') as f:
-            pass
-
     with open(OUTPUT_DATA_FILE, 'r') as f:
         while True:
             time.sleep(0.1)

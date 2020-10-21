@@ -1,6 +1,8 @@
 import os
 import subprocess
 import json
+
+import aju_app
 import config
 
 
@@ -33,4 +35,5 @@ def run_flink_task(filename):
 
     print(cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+    aju_app.background_send_kafka_data_thread()
     return ret
