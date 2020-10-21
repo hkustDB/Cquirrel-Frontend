@@ -13,8 +13,8 @@ public class CodeGen {
     private static final Set<String> IO_TYPES = ImmutableSet.of("file", "kafka");
     private static final int JSON_FILE_INDEX = 0;
     private static final int GENERATED_JAR_INDEX = 1;
-    private static final int OUTPUT_PATH_INDEX = 2;
-    private static final int INPUT_PATH_INDEX = 3;
+    private static final int INPUT_PATH_INDEX = 2;
+    private static final int OUTPUT_PATH_INDEX = 3;
     private static final int IO_TYPE_INDEX = 4;
 
     public static void main(String[] args) throws Exception {
