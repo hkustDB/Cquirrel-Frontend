@@ -23,6 +23,13 @@ class CodeGenTest {
     }
 
     @Test
+    void integrationTest() {
+        //test with real arguments
+        //verify output --> store generated code for a query that is supports e.g. store the currently being produced code for q6 as a resource to verify against each time and ensure "backwards" compatibility
+        //clean up after test
+    }
+
+    @Test
     void invalidJsonFile() {
         String[] args = getArgs();
         args[0] = args[0].substring(0, args[0].length() - 2);

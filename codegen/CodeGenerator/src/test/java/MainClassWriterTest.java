@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -90,10 +91,7 @@ public class MainClassWriterTest {
                 "   Array(), cnt)\n" +
                 "   }).setParallelism(1).filter(x => x._1 != \"\").setParallelism(1)\n" +
                 "   restDS\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "Process finished with exit code 0\n").replaceAll("\\s+", ""));
+                "}\n").replaceAll("\\s+", ""));
     }
 
     @Test
@@ -106,8 +104,12 @@ public class MainClassWriterTest {
 
         mainClassWriter.attributeCode(new HashSet<>(Arrays.asList(mockAttribute1, mockAttribute2)), columnNamesCode, tupleCode);
 
-        assertEquals(columnNamesCode.toString(), "\"ATTRIBUTE1\",\"ATTRIBUTE2\"");
-        assertEquals(tupleCode.toString(), "cells(0).toInt,format.parse(cells(1))");
+        String columnsResult = columnNamesCode.toString();
+        //Order of printed code isn't guaranteed so check for contains and do not tightly couple the exact string
+        assertTrue(columnsResult.contains("ATTRIBUTE1") && columnsResult.contains("ATTRIBUTE2"));
+
+        String tupleResult = tupleCode.toString();
+        assertTrue(tupleResult.contains("cells(0).toInt") && tupleResult.contains("format.parse(cells(1))"));
     }
 
     @NotNull
