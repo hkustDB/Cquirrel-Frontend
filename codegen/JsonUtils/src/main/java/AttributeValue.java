@@ -1,20 +1,20 @@
 public class AttributeValue implements Value {
 
-    private final String name;
+    private final String columnName;
 
-    public AttributeValue(String name) {
-        CheckerUtils.checkNullOrEmpty(name,"name");
-        this.name = name;
+    public AttributeValue(String columnName) {
+        CheckerUtils.checkNullOrEmpty(columnName,"name");
+        this.columnName = columnName;
     }
 
     @Override
     public String toString() {
         return "AttributeValue{" +
-                "name='" + name + '\'' +
+                "name='" + columnName + '\'' +
                 '}';
     }
 
-    public String getName() {
-        return name;
+    public String getColumnName() {
+        return columnName;
     }
 }

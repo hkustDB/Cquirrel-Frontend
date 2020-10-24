@@ -10,7 +10,8 @@ public enum Operator {
     PRODUCT("**"),
     AVG("~"),
     AND("&&"),
-    OR("||");
+    OR("||"),
+    NOT("!");
 
     private String operator;
 

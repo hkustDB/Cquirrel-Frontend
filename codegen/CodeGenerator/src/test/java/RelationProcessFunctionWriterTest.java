@@ -40,7 +40,7 @@ public class RelationProcessFunctionWriterTest {
     public void isValidFunctionWithSingleCondition() {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
-        values.add(ConstantValue.newInstance("1", "int"));
+        values.add(new ConstantValue("1", "int"));
         values.add(new AttributeValue(attributeName));
         SelectCondition condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         RelationSchema.Attribute mockAttribute = new RelationSchema.Attribute(Integer.class, 0, attributeName);
@@ -53,7 +53,7 @@ public class RelationProcessFunctionWriterTest {
 
         values.clear();
         values.add(new AttributeValue(attributeName));
-        values.add(ConstantValue.newInstance("1", "int"));
+        values.add(new ConstantValue("1", "int"));
         condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         isValidFunctionTest(Collections.singletonList(condition), ("override def isValid(value: Payload): Boolean = {\n" +
                         "   if(value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]<1){\n" +
@@ -67,7 +67,7 @@ public class RelationProcessFunctionWriterTest {
     public void isValidFunctionWithMultipleConditions() {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
-        values.add(ConstantValue.newInstance("1", "int"));
+        values.add(new ConstantValue("1", "int"));
         values.add(new AttributeValue(attributeName));
         SelectCondition condition1 = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         SelectCondition condition2 = new SelectCondition(new Expression(values, Operator.EQUALS), Operator.AND);

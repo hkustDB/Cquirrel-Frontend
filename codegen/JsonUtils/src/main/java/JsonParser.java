@@ -65,7 +65,7 @@ public class JsonParser {
                     if (valueType.equals("attribute")) {
                         values.add(new AttributeValue((String) entryMap.get("name")));
                     } else if (valueType.equals("constant")) {
-                        values.add(ConstantValue.newInstance((String) entryMap.get("value"), (String) entryMap.get("var_type")));
+                        values.add(new ConstantValue((String) entryMap.get("value"), (String) entryMap.get("var_type")));
                     } else {
                         throw new RuntimeException("Unknown type for AggregateValue." + name + ", currently only supporting attribute and constant types. Got: " + valueType);
                     }
@@ -101,7 +101,7 @@ public class JsonParser {
             String name = (String) field.get("name");
             value = new AttributeValue(name);
         } else if (type.equals("constant")) {
-            value = ConstantValue.newInstance((String) field.get("value"), (String) field.get("var_type"));
+            value = new ConstantValue((String) field.get("value"), (String) field.get("var_type"));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }

@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-public class CodeGenerator {
+class CodeGenerator {
     private static final String GENERATED_CODE = "generated-code";
 
     public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
@@ -40,6 +40,7 @@ public class CodeGenerator {
 
     private static void compile(String pomPath) throws IOException {
         Runtime runtime = Runtime.getRuntime();
+        //TODO: do we need to do all 3? Wouldn't package alone be sufficient?
         execute(runtime, "mvn install -f " + pomPath);
         execute(runtime, "mvn compile -f " + pomPath);
         execute(runtime, "mvn package -f " + pomPath);

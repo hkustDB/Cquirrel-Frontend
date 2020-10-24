@@ -1,9 +1,10 @@
+import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 
 import java.io.IOException;
 import java.util.List;
 
-public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
+class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private final PicoWriter writer = new PicoWriter();
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateType;
@@ -58,6 +59,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln_r(code);
     }
 
+    @VisibleForTesting
     void addAggregateFunction(final PicoWriter writer) {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
@@ -73,15 +75,15 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         });
         writer.writeln_l("}");
     }
-
+    @VisibleForTesting
     void addAdditionFunction(final PicoWriter writer) {
         writer.writeln("override def addition(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 + value2");
     }
-
+    @VisibleForTesting
     void addSubtractionFunction(final PicoWriter writer) {
         writer.writeln("override def subtraction(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 - value2");
     }
-
+    @VisibleForTesting
     void addInitStateFunction(final PicoWriter writer) {
         writer.writeln_r("override def initstate(): Unit = {");
         writer.writeln("val valueDescriptor = TypeInformation.of(new TypeHint[" + aggregateType + "](){})");

@@ -4,7 +4,7 @@ import org.ainslec.picocog.PicoWriter;
 import java.io.IOException;
 import java.util.List;
 
-public class RelationProcessFunctionWriter extends ProcessFunctionWriter {
+class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
