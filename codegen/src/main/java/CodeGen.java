@@ -2,9 +2,6 @@ import com.google.common.collect.ImmutableSet;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -12,7 +9,7 @@ public class CodeGen {
     private static int NUM_OF_ARGS = 5;
     private static final Set<String> IO_TYPES = ImmutableSet.of("file", "kafka");
     private static final int JSON_FILE_INDEX = 0;
-    private static final int GENERATED_JAR_INDEX = 1;
+    private static final int GENERATED_JAR_PATH_INDEX = 1;
     private static final int INPUT_PATH_INDEX = 2;
     private static final int OUTPUT_PATH_INDEX = 3;
     private static final int IO_TYPE_INDEX = 4;
@@ -26,8 +23,8 @@ public class CodeGen {
                 "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
                 "                                                                   \n");
         validateArgs(args);
-        prepareEnvironment(args[GENERATED_JAR_INDEX]);
-        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
+        prepareEnvironment(args[GENERATED_JAR_PATH_INDEX]);
+        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_PATH_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
     }
 
     private static void prepareEnvironment(String jarPath) throws IOException, URISyntaxException {
@@ -152,7 +149,7 @@ public class CodeGen {
         }
 
         validateJsonFile(args[JSON_FILE_INDEX]);
-        validateDirectoryPath(args[GENERATED_JAR_INDEX]);
+        validateDirectoryPath(args[GENERATED_JAR_PATH_INDEX]);
         CheckerUtils.checkNullOrEmpty(args[OUTPUT_PATH_INDEX], "flinkInputPath");
         CheckerUtils.checkNullOrEmpty(args[INPUT_PATH_INDEX], "flinkOutputPath");
         validateFlinkIOType(args[IO_TYPE_INDEX]);
