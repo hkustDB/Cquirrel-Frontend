@@ -1,3 +1,4 @@
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
@@ -20,13 +21,14 @@ public class JsonParser {
         );
     }
 
-    private static RelationProcessFunction makeRelationProcessFunction(Map rpfMap) throws Exception {
+    @VisibleForTesting
+    static RelationProcessFunction makeRelationProcessFunction(Map<String, Object> rpfMap) throws Exception {
         RelationProcessFunction rpf = new RelationProcessFunction(
                 (String) rpfMap.get("name"),
                 (String) rpfMap.get("relation"),
                 (List) rpfMap.get("this_key"),
                 (List) rpfMap.get("next_key"),
-                ((Double) rpfMap.get("child_nodes")).intValue(),
+                ((Integer) rpfMap.get("child_nodes")),
                 (boolean) rpfMap.get("is_Root"),
                 (boolean) rpfMap.get("is_Last"),
                 (Map) rpfMap.get("rename_attribute"),
@@ -36,13 +38,14 @@ public class JsonParser {
         return rpf;
     }
 
-    private static AggregateProcessFunction makeAggregateProcessFunction(Map apfMap) throws Exception {
+    @VisibleForTesting
+    static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap) throws Exception {
         AggregateProcessFunction apf = new AggregateProcessFunction(
                 (String) apfMap.get("name"),
                 (List) apfMap.get("this_key"),
                 (List) apfMap.get("next_key"),
                 //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
-                makeAggregateValue((LinkedTreeMap) apfMap.get("AggregateValue")),
+                makeAggregateValue((Map) apfMap.get("AggregateValue")),
                 Operator.getOperator((String) apfMap.get("aggregation")),
                 Type.getClass((String) apfMap.get("value_type"))
         );
@@ -50,7 +53,8 @@ public class JsonParser {
         return apf;
     }
 
-    private static List<AggregateProcessFunction.AggregateValue> makeAggregateValue(LinkedTreeMap<String, Object> avMap) throws Exception {
+    @VisibleForTesting
+    static List<AggregateProcessFunction.AggregateValue> makeAggregateValue(Map<String, Object> avMap) {
         String type = (String) avMap.get("type");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = new ArrayList<>();
         String aggregateName = (String) avMap.get("name");
@@ -71,13 +75,17 @@ public class JsonParser {
                     }
                 }
             }
+            if (values.isEmpty()) {
+                throw new RuntimeException("List of values supplied to Expression in AggregateValue cannot be empty");
+            }
             aggregateValues.add(new AggregateProcessFunction.AggregateValue(aggregateName, type, new Expression(values, operator)));
             return aggregateValues;
         }
         throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
     }
 
-    private static List<SelectCondition> makeSelectConditions(LinkedTreeMap<String, Object> scMap) throws Exception {
+    @VisibleForTesting
+    static List<SelectCondition> makeSelectConditions(Map<String, Object> scMap) {
         List<SelectCondition> selectConditions = new ArrayList<>();
         Operator nextOperator = Operator.getOperator((String) scMap.get("operator"));
         for (Map.Entry<String, Object> entry : scMap.entrySet()) {
@@ -94,7 +102,8 @@ public class JsonParser {
         return selectConditions;
     }
 
-    private static Value makeValue(LinkedTreeMap<String, Object> field) throws Exception {
+    @VisibleForTesting
+    static Value makeValue(Map<String, Object> field) {
         String type = (String) field.get("type");
         Value value;
         if (type.equals("attribute")) {

@@ -26,8 +26,6 @@
             <version>3.5.15</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>org.ainslec</groupId>
             <artifactId>picocog</artifactId>
