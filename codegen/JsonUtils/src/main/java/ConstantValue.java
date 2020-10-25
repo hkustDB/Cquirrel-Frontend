@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class ConstantValue implements Value {
     private final String value;
     private final Class type;
@@ -7,14 +9,6 @@ public class ConstantValue implements Value {
 
     public Class getType() {
         return type;
-    }
-
-    @Override
-    public String toString() {
-        return "ConstantValue{" +
-                "value=" + value +
-                ", type=" + type +
-                '}';
     }
 
     public ConstantValue(String val, String type) {
@@ -28,5 +22,27 @@ public class ConstantValue implements Value {
         }
         this.value = val;
         this.type = clss;
+    }
+
+    @Override
+    public String toString() {
+        return "ConstantValue{" +
+                "value=" + value +
+                ", type=" + type +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConstantValue)) return false;
+        ConstantValue that = (ConstantValue) o;
+        return Objects.equals(value, that.value) &&
+                Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, type);
     }
 }

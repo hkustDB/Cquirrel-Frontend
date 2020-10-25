@@ -1,3 +1,4 @@
+import com.google.gson.internal.LinkedTreeMap;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,11 +13,8 @@ import java.util.*;
 import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.google.gson.internal.LinkedTreeMap;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,14 +42,11 @@ public class JsonParserTest {
         when(mockMap.get("is_Root")).thenReturn(true);
         when(mockMap.get("is_Last")).thenReturn(false);
         when(mockMap.get("rename_attribute")).thenReturn(null);
-        when(mockMap.get("select_conditions")).thenReturn(new HashMap<>());
-        try (MockedStatic<JsonParser> mock = Mockito.mockStatic(JsonParser.class)) {
-            mock.when(() -> JsonParser.makeSelectConditions(any())).thenReturn(Collections.singletonList(new SelectCondition(
-                    new Expression(Arrays.asList(new AttributeValue("attributeValue1"), new AttributeValue("attributeValue2")), Operator.AND),
-                    Operator.AND
-            )));
-            requireNonNull(JsonParser.makeRelationProcessFunction(mockMap));
-        }
+        List<SelectCondition> selectConditions = Collections.singletonList(new SelectCondition(
+                getExpression(),
+                Operator.AND
+        ));
+        requireNonNull(JsonParser.makeRelationProcessFunction(mockMap, selectConditions));
     }
 
     @Test
@@ -61,37 +56,27 @@ public class JsonParserTest {
         when(mockMap.get("next_key")).thenReturn(Collections.singletonList("next_key"));
         when(mockMap.get("aggregation")).thenReturn("*");
         when(mockMap.get("value_type")).thenReturn("Double");
-        when(mockMap.get("AggregateValue")).thenReturn(new HashMap<>());
-        try (MockedStatic<JsonParser> mock = Mockito.mockStatic(JsonParser.class)) {
-            mock.when(() -> JsonParser.makeAggregateValue(any())).thenReturn(Collections.singletonList(
-                    new AggregateProcessFunction.AggregateValue("AggregateValue",
-                            "expression",
-                            new AttributeValue("attributeValue"))
-            ));
-            requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap));
-        }
+        List<AggregateProcessFunction.AggregateValue> aggregateValues = Collections.singletonList(
+                new AggregateProcessFunction.AggregateValue("AggregateValue",
+                        "expression",
+                        new AttributeValue("attributeValue"))
+        );
+        requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap, aggregateValues));
     }
 
     @Test
     public void makeAggregateValueTest() {
         when(mockMap.get("type")).thenReturn("expression");
         when(mockMap.get("name")).thenReturn("AggregateValue");
-        when(mockMap.get("operator")).thenReturn("*");
-        when(mockMap.entrySet()).thenReturn(new HashSet<>(Arrays.asList(
-                getEntry("value1", "attribute"),
-                getEntry("value2", "constant")
-        )));
 
-        List<AggregateProcessFunction.AggregateValue> result = JsonParser.makeAggregateValue(mockMap);
+        List<AggregateProcessFunction.AggregateValue> result = JsonParser.makeAggregateValue(mockMap,
+                Collections.singletonList(new Expression(Collections.singletonList(new AttributeValue("attributeValue")), Operator.NOT)));
         assertEquals(result.size(), 1);
         AggregateProcessFunction.AggregateValue aggregateValue = result.get(0);
         Value value = aggregateValue.getValue();
         assertTrue(value instanceof Expression);
         Expression expression = (Expression) value;
-        assertEquals(expression.getValues().size(), 2);
-
-        JsonParser.makeAggregateValue(mockMap);
-
+        assertEquals(expression.getValues().size(), 1);
     }
 
     @Test
@@ -99,44 +84,32 @@ public class JsonParserTest {
         when(mockMap.get("type")).thenReturn("wrongType");
         thrownException.expect(RuntimeException.class);
         thrownException.expectMessage("Unknown AggregateValue type. Currently only supporting expression type.");
-        JsonParser.makeAggregateValue(mockMap);
-
-        when(mockMap.get("type")).thenReturn("expression");
-        when(mockMap.get("name")).thenReturn("AggregateValue");
-        when(mockMap.get("operator")).thenReturn("*");
-        when(mockMap.entrySet()).thenReturn(new HashSet<>());
-        thrownException.expect(RuntimeException.class);
-        thrownException.expectMessage("List of values supplied to Expression in AggregateValue cannot be empty");
-        JsonParser.makeAggregateValue(mockMap);
-
-
-        when(mockMap.entrySet()).thenReturn(new HashSet<>(Arrays.asList(
-                getEntry("value1", "wrongType"),
-                getEntry("value2", "constant")
-        )));
-        thrownException.expect(RuntimeException.class);
-        thrownException.expectMessage("Unknown type for AggregateValue");
-        JsonParser.makeAggregateValue(mockMap);
+        JsonParser.makeAggregateValue(mockMap, null);
     }
 
     @Test
     public void makeSelectConditionsTest() {
         when(mockMap.get("operator")).thenReturn("<");
-        when(mockMap.entrySet()).thenReturn(new HashSet<>(Arrays.asList(
-                getEntry("value1", "attribute"))
-        ));
-
-        List<SelectCondition> result;
-        try (MockedStatic<JsonParser> mock = Mockito.mockStatic(JsonParser.class)) {
-            mock.when(() -> JsonParser.makeValue(any())).thenReturn(new AttributeValue("attributeValue"));
-            result = JsonParser.makeSelectConditions(mockMap);
-        }
-
+        List<SelectCondition> result = JsonParser.makeSelectConditions(mockMap, Collections.singletonList(getExpression()));
         assertEquals(result.size(), 1);
+        assertEquals(result.get(0).getExpression().getValues().size(), 2);
+    }
+
+    @Test
+    public void makeExpressions() {
+        List<Expression> result = JsonParser.makeExpressions(new HashSet<>(Arrays.asList(
+                getEntry("value1"),
+                getEntry("value2")
+        )));
+
+        assertEquals(result.size(),2);
+        assertEquals(result.get(0).getValues().size(), 2);
+        assertEquals(result.get(1).getValues().size(), 2);
+        assertEquals(result.get(0).getValues(), result.get(1).getValues());
     }
 
     @NotNull
-    private Map.Entry<String, Object> getEntry(String key, String type) {
+    private Map.Entry<String, Object> getEntry(String key) {
         return new Map.Entry<String, Object>() {
             @Override
             public String getKey() {
@@ -146,12 +119,23 @@ public class JsonParserTest {
             @Override
             public Object getValue() {
                 LinkedTreeMap map = mock(LinkedTreeMap.class);
-                //mocking for AttributeValue, ConstantValue and SelectConditions
-                when(map.get("type")).thenReturn(type);
-                when(map.get("name")).thenReturn(type + "Name");
-                when(map.get("value")).thenReturn(type + "Value");
-                when(map.get("var_type")).thenReturn("Date");
                 when(map.get("operator")).thenReturn("<");
+                when(map.get("left_field")).thenReturn(new HashMap<String, Object>(){
+                    {
+                        put("type", "attribute");
+                        put("name", "attributeName");
+
+                    }
+                });
+
+                when(map.get("right_field")).thenReturn(new HashMap<String, Object>(){
+                    {
+                        put("type", "constant");
+                        put("value", "0.07");
+                        put("var_type", "Double");
+
+                    }
+                });
 
                 return map;
             }
@@ -161,5 +145,10 @@ public class JsonParserTest {
                 return null;
             }
         };
+    }
+
+    @NotNull
+    private Expression getExpression() {
+        return new Expression(Arrays.asList(new AttributeValue("attributeValue1"), new AttributeValue("attributeValue2")), Operator.AND);
     }
 }

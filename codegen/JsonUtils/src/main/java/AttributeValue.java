@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class AttributeValue implements Value {
 
     private final String columnName;
@@ -12,6 +14,19 @@ public class AttributeValue implements Value {
         return "AttributeValue{" +
                 "name='" + columnName + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AttributeValue)) return false;
+        AttributeValue that = (AttributeValue) o;
+        return Objects.equals(columnName, that.columnName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(columnName);
     }
 
     public String getColumnName() {
