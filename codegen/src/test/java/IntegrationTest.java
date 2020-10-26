@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class IntegrationTest {
@@ -40,6 +41,10 @@ public class IntegrationTest {
     private void verifyResult(String expectedResultDirName, List<String> fileNames) {
         String expectedDirPath = RESOURCE_FOLDER + File.separator + expectedResultDirName;
         String resultDirPath = GENERATED_CODE_PATH + File.separator + "src" + File.separator + "main" + File.separator + "scala" + File.separator + "org" + File.separator + "hkust";
+
+        File pom = new File(GENERATED_CODE_PATH + File.separator + "pom.xml");
+        assertTrue(pom.exists() && pom.isFile());
+        assertTrue(pom.length() != 0);
 
         fileNames.forEach(file -> {
             File resultFile = new File(resultDirPath + File.separator + file);
