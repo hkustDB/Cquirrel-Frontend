@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class ConstantValue implements Value {
     private final String value;
     private final Class type;
@@ -9,7 +11,7 @@ public class ConstantValue implements Value {
         return type;
     }
 
-    public static ConstantValue newInstance(final String val, final String type) throws Exception {
+    public ConstantValue(String val, String type) {
         CheckerUtils.checkNullOrEmpty(val, "val");
         CheckerUtils.checkNullOrEmpty(type, "type");
 
@@ -18,8 +20,8 @@ public class ConstantValue implements Value {
         if (clss == null) {
             throw new RuntimeException("Unknown data type: " + type);
         }
-
-        return new ConstantValue(val, clss);
+        this.value = val;
+        this.type = clss;
     }
 
     @Override
@@ -30,8 +32,17 @@ public class ConstantValue implements Value {
                 '}';
     }
 
-    private ConstantValue(String value, Class type) {
-        this.value = value;
-        this.type = type;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConstantValue)) return false;
+        ConstantValue that = (ConstantValue) o;
+        return Objects.equals(value, that.value) &&
+                Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, type);
     }
 }

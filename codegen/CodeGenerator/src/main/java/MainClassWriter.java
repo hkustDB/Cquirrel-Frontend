@@ -1,11 +1,10 @@
+import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 
 import java.io.IOException;
 import java.util.*;
 
-import static java.util.Objects.requireNonNull;
-
-public class MainClassWriter implements ClassWriter {
+class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateProcFuncClassName;
@@ -24,24 +23,23 @@ public class MainClassWriter implements ClassWriter {
         stringConversionMethods.put(Date.class, "format.parse");
     }
 
-    public MainClassWriter(Node query, String flinkInputPath, String flinkOutputPath) {
-        requireNonNull(query);
+    public MainClassWriter(Node node, String flinkInputPath, String flinkOutputPath) {
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
         this.flinkOutputPath = flinkOutputPath;
-        this.aggregateProcessFunction = query.getAggregateProcessFunction();
+        this.aggregateProcessFunction = node.getAggregateProcessFunction();
         this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
-        this.relationProcessFunction = query.getRelationProcessFunction();
+        this.relationProcessFunction = node.getRelationProcessFunction();
         this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
     }
 
     @Override
     public String write(String filePath) throws IOException {
-        addImports();
-        addConstructorAndOpenClass();
-        addMainFunction();
-        addGetStreamFunction();
+        addImports(writer);
+        addConstructorAndOpenClass(writer);
+        addMainFunction(writer);
+        addGetStreamFunction(writer);
         closeClass(writer);
         writeClassFile(CLASS_NAME, filePath, writer.toString());
 
@@ -49,7 +47,7 @@ public class MainClassWriter implements ClassWriter {
     }
 
     @Override
-    public void addImports() {
+    public void addImports(final PicoWriter writer) {
         writer.writeln("import org.apache.flink.api.java.utils.ParameterTool");
         writer.writeln("import org.apache.flink.core.fs.FileSystem");
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
@@ -58,11 +56,12 @@ public class MainClassWriter implements ClassWriter {
     }
 
     @Override
-    public void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass(final PicoWriter writer) {
         writer.writeln_r("object " + CLASS_NAME + " {");
     }
 
-    private void addMainFunction() {
+    @VisibleForTesting
+    void addMainFunction(final PicoWriter writer) {
         writer.writeln_r("def main(args: Array[String]) {");
         writer.writeln("val env = StreamExecutionEnvironment.getExecutionEnvironment");
         writer.writeln("val params: ParameterTool = ParameterTool.fromArgs(args)");
@@ -83,7 +82,8 @@ public class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
-    private void addGetStreamFunction() {
+    @VisibleForTesting
+    void addGetStreamFunction(final PicoWriter writer) {
         Set<RelationSchema.Attribute> attributes = extractAttributes();
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
@@ -130,8 +130,8 @@ public class MainClassWriter implements ClassWriter {
         }
         return code.toString();
     }
-
-    private void attributeCode(Set<RelationSchema.Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+    @VisibleForTesting
+    void attributeCode(Set<RelationSchema.Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Iterator<RelationSchema.Attribute> iterator = attributes.iterator();
         while (iterator.hasNext()) {
             RelationSchema.Attribute attribute = iterator.next();
@@ -178,8 +178,9 @@ public class MainClassWriter implements ClassWriter {
     }
 
     private void attributeFromValue(Set<RelationSchema.Attribute> columnNames, Value value) {
+        //Only AttributeValue entertained. Perhaps visitor pattern to avoid multiple if/else blocks?
         if (value instanceof AttributeValue) {
-            String lowerName = ((AttributeValue) value).getName().toLowerCase();
+            String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
             RelationSchema.Attribute attribute = RelationSchema.getColumnAttribute(lowerName);
             if (attribute == null) {
                 throw new RuntimeException("Unable to find attribute/column name in schema for: " + lowerName);

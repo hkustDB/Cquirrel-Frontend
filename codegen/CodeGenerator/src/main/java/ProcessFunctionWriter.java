@@ -1,10 +1,11 @@
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class ProcessFunctionWriter implements ClassWriter {
-    String keyListToCode(@Nullable List<String> keyList) {
+abstract class ProcessFunctionWriter implements ClassWriter {
+    static String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");
         if (keyList != null) {
@@ -22,18 +23,26 @@ public abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    void expressionToCode(final Expression expression, StringBuilder code) {
-        requireNonNull(code);
-        requireNonNull(expression);
+    static void expressionToCode(final Expression expression, StringBuilder code) {
         List<Value> values = expression.getValues();
-        valueToCode(values.get(0), code);
-        code.append(expression.getOperator().getValue());
-        valueToCode(values.get(1), code);
+        int size = values.size();
+        for (int i = 0; i < size; i++) {
+            Value value = values.get(i);
+            if (value instanceof Expression) {
+                expressionToCode((Expression) value, code);
+            } else {
+                valueToCode(value, code);
+            }
+            if (i != size - 1) {
+                code.append(expression.getOperator().getValue());
+            }
+        }
     }
 
-    void valueToCode(Value value, StringBuilder code) {
+    static void valueToCode(Value value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
+        //Note: expression can have an expression as one of its values, currently it is not being handled
         if (value instanceof ConstantValue) {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
@@ -43,7 +52,7 @@ public abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    void constantValueToCode(ConstantValue value, StringBuilder code) {
+    static void constantValueToCode(ConstantValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
         Class type = value.getType();
@@ -57,10 +66,10 @@ public abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    void attributeValueToCode(AttributeValue value, StringBuilder code) {
+    static void attributeValueToCode(AttributeValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
-        final String columnName = value.getName();
+        final String columnName = value.getColumnName();
         final Class type = RelationSchema.getColumnAttribute(columnName.toLowerCase()).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())

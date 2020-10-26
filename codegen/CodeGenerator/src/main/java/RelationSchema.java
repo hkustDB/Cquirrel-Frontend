@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
-public class RelationSchema {
+class RelationSchema {
     private static final Map<String, Attribute> lineitemSchema;
     private static ArrayListValuedHashMap<String, Attribute> schema = new ArrayListValuedHashMap<>();
 
@@ -89,12 +89,13 @@ public class RelationSchema {
             if (!(o instanceof Attribute)) return false;
             Attribute attribute = (Attribute) o;
             return position == attribute.position &&
-                    Objects.equals(type, attribute.type);
+                    Objects.equals(type, attribute.type) &&
+                    Objects.equals(name, attribute.name);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(type, position);
+            return Objects.hash(type, position, name);
         }
     }
 }

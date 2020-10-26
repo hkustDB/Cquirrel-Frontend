@@ -2,14 +2,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
-public class CodeGenerator {
-    private static final String GENERATED_CODE = "generated-code";
+class CodeGenerator {
+    static final String GENERATED_CODE = "generated-code";
 
-    public static void generate(String jsonFilePath, String flinkInputPath, String jarOutputPath, String flinkOutputPath) throws Exception {
+    public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
         CheckerUtils.checkNullOrEmpty(jarOutputPath, "jarOutputPath");
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
@@ -17,29 +14,20 @@ public class CodeGenerator {
 
         Node node = JsonParser.parse(jsonFilePath);
 
-        String rpfClassName = new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(jarOutputPath);
-        copyToGeneratedCode(jarOutputPath, rpfClassName);
+        String codeFilesPath = jarOutputPath + File.separator + GENERATED_CODE + File.separator + "src" + File.separator + "main" + File.separator + "scala" + File.separator + "org" + File.separator + "hkust";
+        new RelationProcessFunctionWriter(node.getRelationProcessFunction()).write(codeFilesPath);
 
-        String agpClassName = new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(jarOutputPath);
-        copyToGeneratedCode(jarOutputPath, agpClassName);
+        new AggregateProcessFunctionWriter(node.getAggregateProcessFunction()).write(codeFilesPath);
 
-        String mainClassName = new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(jarOutputPath);
-        copyToGeneratedCode(jarOutputPath, mainClassName);
+        new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(codeFilesPath);
 
         compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 
     }
 
-    private static void copyToGeneratedCode(String outputPath, String className) throws IOException {
-        Files.copy(
-                Paths.get(getClassFilePath(outputPath, className)),
-                Paths.get(outputPath + File.separator + GENERATED_CODE + File.separator + "src"+ File.separator +"main"+ File.separator +"scala"+ File.separator +"org"+ File.separator +"hkust" + File.separator + getClassFileName(className)),
-                StandardCopyOption.REPLACE_EXISTING
-        );
-    }
-
     private static void compile(String pomPath) throws IOException {
         Runtime runtime = Runtime.getRuntime();
+        //TODO: do we need to do all 3? Wouldn't package alone be sufficient?
         execute(runtime, "mvn install -f " + pomPath);
         execute(runtime, "mvn compile -f " + pomPath);
         execute(runtime, "mvn package -f " + pomPath);

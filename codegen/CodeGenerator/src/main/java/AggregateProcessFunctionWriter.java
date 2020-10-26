@@ -1,18 +1,16 @@
+import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 
 import java.io.IOException;
 import java.util.List;
 
-import static java.util.Objects.requireNonNull;
-
-public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
-    private static final PicoWriter writer = new PicoWriter();
+class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
+    private final PicoWriter writer = new PicoWriter();
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateType;
     private final String className;
 
     public AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction) {
-        requireNonNull(aggregateProcessFunction);
         this.aggregateProcessFunction = aggregateProcessFunction;
         Class type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
@@ -21,12 +19,12 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
 
     @Override
     public String write(String filePath) throws IOException {
-        addImports();
-        addConstructorAndOpenClass();
-        addAggregateFunction();
-        addAdditionFunction();
-        addSubtractionFunction();
-        addInitStateFunction();
+        addImports(writer);
+        addConstructorAndOpenClass(writer);
+        addAggregateFunction(writer);
+        addAdditionFunction(writer);
+        addSubtractionFunction(writer);
+        addInitStateFunction(writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
 
@@ -34,7 +32,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    public void addImports() {
+    public void addImports(final PicoWriter writer) {
         writer.writeln("import org.hkust.RelationType.Payload");
         writer.writeln("import org.apache.flink.api.common.state.ValueStateDescriptor");
         writer.writeln("import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}");
@@ -42,7 +40,7 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @Override
-    public void addConstructorAndOpenClass() {
+    public void addConstructorAndOpenClass(final PicoWriter writer) {
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         String code = "class " +
                 className +
@@ -61,7 +59,8 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln_r(code);
     }
 
-    private void addAggregateFunction() {
+    @VisibleForTesting
+    void addAggregateFunction(final PicoWriter writer) {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         aggregateValues.forEach(aggregateValue -> {
@@ -76,16 +75,16 @@ public class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         });
         writer.writeln_l("}");
     }
-
-    private void addAdditionFunction() {
+    @VisibleForTesting
+    void addAdditionFunction(final PicoWriter writer) {
         writer.writeln("override def addition(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 + value2");
     }
-
-    private void addSubtractionFunction() {
+    @VisibleForTesting
+    void addSubtractionFunction(final PicoWriter writer) {
         writer.writeln("override def subtraction(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 - value2");
     }
-
-    private void addInitStateFunction() {
+    @VisibleForTesting
+    void addInitStateFunction(final PicoWriter writer) {
         writer.writeln_r("override def initstate(): Unit = {");
         writer.writeln("val valueDescriptor = TypeInformation.of(new TypeHint[" + aggregateType + "](){})");
         writer.writeln("val aliveDescriptor : ValueStateDescriptor[" + aggregateType + "] = new ValueStateDescriptor[" + aggregateType + "](\"" + className + "\"+\"Alive\", valueDescriptor)");
