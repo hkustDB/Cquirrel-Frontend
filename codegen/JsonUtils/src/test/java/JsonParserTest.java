@@ -96,8 +96,8 @@ public class JsonParserTest {
     }
 
     @Test
-    public void makeExpressions() {
-        List<Expression> result = JsonParser.makeExpressions(new HashSet<>(Arrays.asList(
+    public void makeSelectConditionsExpressionsTest() {
+        List<Expression> result = JsonParser.makeSelectConditionsExpressions(new HashSet<>(Arrays.asList(
                 getEntry("value1"),
                 getEntry("value2")
         )));

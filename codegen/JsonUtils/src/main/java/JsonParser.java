@@ -15,14 +15,14 @@ public class JsonParser {
 
         Map<String, Object> rpfMap = (Map) map.get("RelationProcessFunction");
         Map<String, Object> scMap = (LinkedTreeMap) rpfMap.get("select_conditions");
-        List<Expression> scExpressions = makeExpressions(scMap.entrySet());
+        List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
         List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
 
 
-        Map<String, Object> apfMap = (Map) map.get("AggregateProcessFunction");
-        Map<String, Object> agMap = (Map) apfMap.get("AggregateValue");
-        List<Expression> agExpressions = makeExpressions(agMap.entrySet());
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, agExpressions);
+        Map<String, Object> apfMap = (LinkedTreeMap) map.get("AggregateProcessFunction");
+        Map<String, Object> agMap = (LinkedTreeMap) apfMap.get("AggregateValue");
+        Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
+        List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
 
         return new Node(makeRelationProcessFunction(rpfMap, selectConditions),
                 makeAggregateProcessFunction(apfMap, aggregateValues)
@@ -30,13 +30,14 @@ public class JsonParser {
     }
 
     @VisibleForTesting
-    static RelationProcessFunction makeRelationProcessFunction(Map<String, Object> rpfMap, List<SelectCondition> selectConditions) throws Exception {
+    static RelationProcessFunction makeRelationProcessFunction(Map<String, Object> rpfMap, List<SelectCondition> selectConditions) {
         RelationProcessFunction rpf = new RelationProcessFunction(
                 (String) rpfMap.get("name"),
                 (String) rpfMap.get("relation"),
                 (List) rpfMap.get("this_key"),
                 (List) rpfMap.get("next_key"),
-                ((Integer) rpfMap.get("child_nodes")),
+                //Data type coming from json is a double
+                ((Double) rpfMap.get("child_nodes")).intValue(),
                 (boolean) rpfMap.get("is_Root"),
                 (boolean) rpfMap.get("is_Last"),
                 (Map) rpfMap.get("rename_attribute"),
@@ -88,7 +89,7 @@ public class JsonParser {
     }
 
     @VisibleForTesting
-    static List<Expression> makeExpressions(Set<Map.Entry<String, Object>> entrySet) {
+    static List<Expression> makeSelectConditionsExpressions(Set<Map.Entry<String, Object>> entrySet) {
         List<Expression> expressions = new ArrayList<>();
         for (Map.Entry<String, Object> entry : entrySet) {
             if ((entry.getKey()).startsWith("value")) {
@@ -102,6 +103,23 @@ public class JsonParser {
 
         return expressions;
     }
+
+    @VisibleForTesting
+    static Expression makeAggregateValueExpression(Set<Map.Entry<String, Object>> entrySet) {
+        List<Value> values = new ArrayList<>();
+        Operator operator = null;
+        for (Map.Entry<String, Object> entry : entrySet) {
+            if ((entry.getKey()).startsWith("value")) {
+                values.add(makeValue((Map<String, Object>) entry.getValue()));
+            }
+            if ((entry.getKey()).equals("operator")) {
+                operator = Operator.getOperator((String) entry.getValue());
+            }
+        }
+
+        return new Expression(values, operator);
+    }
+
 
     private static Value makeValue(Map<String, Object> field) {
         String type = (String) field.get("type");

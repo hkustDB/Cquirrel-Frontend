@@ -89,12 +89,13 @@ class RelationSchema {
             if (!(o instanceof Attribute)) return false;
             Attribute attribute = (Attribute) o;
             return position == attribute.position &&
-                    Objects.equals(type, attribute.type);
+                    Objects.equals(type, attribute.type) &&
+                    Objects.equals(name, attribute.name);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(type, position);
+            return Objects.hash(type, position, name);
         }
     }
 }

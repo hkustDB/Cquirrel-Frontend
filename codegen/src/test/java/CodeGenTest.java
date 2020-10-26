@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class CodeGenTest {
-    private final String JSON_FILE_NAME = "Q6.json";
+    private final String JSON_FILE_NAME = "q6/Q6.json";
     private String JSON_FILE_PATH;
     private String TEST_DIRECTORY;
 
@@ -17,13 +17,6 @@ public class CodeGenTest {
         final String resourceFolder = new File("src" + File.separator + "test" + File.separator + "resources").getAbsolutePath();
         JSON_FILE_PATH = resourceFolder + File.separator + JSON_FILE_NAME;
         TEST_DIRECTORY = resourceFolder;
-    }
-
-    @Test
-    public void integrationTest() {
-        //test with real arguments
-        //verify output --> store generated code for a query that is supports e.g. store the currently being produced code for q6 as a resource to verify against each time and ensure "backwards" compatibility
-        //clean up after test
     }
 
     @Test
