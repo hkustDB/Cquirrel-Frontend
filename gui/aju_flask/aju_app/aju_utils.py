@@ -18,7 +18,6 @@ def is_json_file(the_file):
 
 
 def run_flink_task(filename):
-
     # TODO check the flink is running or not
 
     if filename == '':
@@ -37,4 +36,27 @@ def run_flink_task(filename):
     logging.info("flink command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     aju_app.background_send_kafka_data_thread()
+    return ret
+
+
+def run_codegen_to_generate_jar(uploaded_json_file_save_path):
+    cmd_str = 'java -jar' + ' ' \
+              + config.CODEGEN_FILE + ' ' \
+              + uploaded_json_file_save_path + ' ' \
+              + config.GENERATED_JAR_PATH + ' ' \
+              + 'file://' + config.INPUT_DATA_FILE + ' ' \
+              + 'file://' + config.OUTPUT_DATA_FILE + ' ' + 'file'
+
+    logging.info("codegen command: " + cmd_str)
+    ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+    codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
+    codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
+    codegen_log_result = codegen_log_stdout + codegen_log_stderr
+    with open("./log/codegen.log", "w") as f:
+        f.write(codegen_log_result)
+
+    # remove the uploaded file
+    if os.path.exists(uploaded_json_file_save_path):
+        os.remove(uploaded_json_file_save_path)
+
     return ret
