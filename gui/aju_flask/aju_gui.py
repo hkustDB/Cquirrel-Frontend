@@ -12,6 +12,13 @@ if os.environ.get('FLASK_COVERAGE'):
     COV = coverage.coverage(branch=True, include='aju_app/*')
     COV.start()
 
+
+# setting the log
+import logging
+LOG_FORMAT = "%(asctime)s %(levelname)s : %(message)s"
+DATE_FORMAT = "%Y/%m/%d %H:%M:%S"
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=DATE_FORMAT)
+
 import sys
 import click
 from aju_app import create_app

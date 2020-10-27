@@ -1,6 +1,7 @@
 import os
-import subprocess
 import json
+import subprocess
+import logging
 
 import aju_app
 import config
@@ -33,7 +34,7 @@ def run_flink_task(filename):
     flink_command_path = os.path.join(config.FLINK_HOME_PATH, "bin/flink")
     cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
 
-    print(cmd_str)
+    logging.info("flink command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     aju_app.background_send_kafka_data_thread()
     return ret

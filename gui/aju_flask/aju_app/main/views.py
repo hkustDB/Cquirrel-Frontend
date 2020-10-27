@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 import os
 import shutil
 import subprocess
+import logging
 
 
 @main.route('/')
@@ -42,7 +43,7 @@ def upload_json_file():
     # remove the older generated-code directory
     if os.path.isdir(config.GENERATED_CODE_DIR):
         shutil.rmtree(config.GENERATED_CODE_DIR)
-        print('remove the generated-code directory.')
+        logging.info('remove the generated-code directory.')
 
     # call the codegen to generate a jar file
     cmd_str = 'java -jar' + ' ' \
@@ -52,7 +53,7 @@ def upload_json_file():
               + 'file://' + config.INPUT_DATA_FILE + ' ' \
               + 'file://' + config.OUTPUT_DATA_FILE + ' ' + 'file'
 
-    print(cmd_str)
+    logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
     codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"

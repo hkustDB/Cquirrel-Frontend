@@ -1,12 +1,11 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
-import time
 from threading import Lock
-import psutil
 from confluent_kafka import Consumer
 import os
 import time
+import logging
 
 from config import config_options
 from config import OUTPUT_DATA_FILE
@@ -21,7 +20,7 @@ def create_app(config_name):
 
     if os.path.exists(OUTPUT_DATA_FILE):
         os.truncate(OUTPUT_DATA_FILE, 0)
-        print('truncate OUTPUT_DATA_FILE.')
+        logging.info('truncate the output data file : ' + OUTPUT_DATA_FILE)
     else:
         f = open(OUTPUT_DATA_FILE, 'w')
         f.close()
@@ -48,13 +47,14 @@ def send_kafka_data():
 
 
 def background_send_kafka_data_thread():
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
     with open(OUTPUT_DATA_FILE, 'r') as f:
         while True:
-            time.sleep(0.1)
+            time.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
             line = f.readline()
             if line:
                 line_list = line.strip().lstrip('(').rstrip(')').split(',')
-                print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "  send: " + str(line_list))
+                logging.info("send: " + str(line_list))
                 socketio.emit('result_figure_data', {'data': line_list})
             else:
                 f.seek(0)
@@ -66,6 +66,7 @@ def background_send_kafka_data_thread_real():
     KAFKA_CONSUMER_GROUP_ID = 'aju_generated_jar_output_group'
     KAFKA_CONSUMER_TOPIC = 'aju_generated_jar_output'
     KAFKA_CONSUMER_AUTO_OFFSET_RESET = 'earliest'
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
 
     kafka_consumer = Consumer({
         'bootstrap.servers': KAFKA_CONSUMER_BOOTSTRAP_SERVERS,
@@ -75,10 +76,9 @@ def background_send_kafka_data_thread_real():
     kafka_consumer.subscribe([KAFKA_CONSUMER_TOPIC])
 
     while True:
-        time.sleep(1)
+        time.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
         msg = kafka_consumer.poll(1)
         if msg:
-            print(msg)
-            msg_list = msg.value().decode('utf-8').replace('\n', '').replace('\r', '').split(',')
-            print("send: ", str(msg_list))
+            msg_list = msg.value().decode('utf-8').strip().lstrip('(').rstrip(')').split(',')
+            logging.info("send: ", str(msg_list))
             socketio.emit('result_figure_data', {'data': msg_list})
