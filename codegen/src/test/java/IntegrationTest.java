@@ -1,3 +1,4 @@
+import org.hkust.codegenerator.CodeGenerator;
 import org.junit.After;
 import org.junit.Test;
 
