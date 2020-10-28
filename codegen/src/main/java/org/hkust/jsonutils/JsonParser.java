@@ -3,27 +3,29 @@ package org.hkust.jsonutils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class JsonParser {
     private static final Gson gson = new Gson();
 
     public static Node parse(final String jsonPath) throws Exception {
         String jsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
-        Map<String, Object> map = gson.fromJson(jsonString, Map.class);
+        LinkedTreeMap<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>(){}.getType());
 
-        Map<String, Object> rpfMap = (Map) map.get("RelationProcessFunction");
-        Map<String, Object> scMap = (LinkedTreeMap) rpfMap.get("select_conditions");
+        Map<String, Object> rpfMap = (Map<String, Object>) map.get("RelationProcessFunction");
+        Map<String, Object> scMap = (Map<String, Object>) rpfMap.get("select_conditions");
         List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
         List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
 
 
-        Map<String, Object> apfMap = (LinkedTreeMap) map.get("AggregateProcessFunction");
-        Map<String, Object> agMap = (LinkedTreeMap) apfMap.get("AggregateValue");
+        Map<String, Object> apfMap = (Map<String, Object>) map.get("AggregateProcessFunction");
+        Map<String, Object> agMap = (Map<String, Object>) apfMap.get("AggregateValue");
         Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
         List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
 
@@ -34,35 +36,33 @@ public class JsonParser {
 
     @VisibleForTesting
     static RelationProcessFunction makeRelationProcessFunction(Map<String, Object> rpfMap, List<SelectCondition> selectConditions) {
-        RelationProcessFunction rpf = new RelationProcessFunction(
+
+        return new RelationProcessFunction(
                 (String) rpfMap.get("name"),
                 (String) rpfMap.get("relation"),
-                (List) rpfMap.get("this_key"),
-                (List) rpfMap.get("next_key"),
+                (List<String>) rpfMap.get("this_key"),
+                (List<String>) rpfMap.get("next_key"),
                 //Data type coming from json is a double
                 ((Double) rpfMap.get("child_nodes")).intValue(),
                 (boolean) rpfMap.get("is_Root"),
                 (boolean) rpfMap.get("is_Last"),
-                (Map) rpfMap.get("rename_attribute"),
+                (Map<String, String>) rpfMap.get("rename_attribute"),
                 selectConditions
         );
-
-        return rpf;
     }
 
     @VisibleForTesting
     static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateProcessFunction.AggregateValue> aggregateValues) {
-        AggregateProcessFunction apf = new AggregateProcessFunction(
+
+        return new AggregateProcessFunction(
                 (String) apfMap.get("name"),
-                (List) apfMap.get("this_key"),
-                (List) apfMap.get("next_key"),
+                (List<String>) apfMap.get("this_key"),
+                (List<String>) apfMap.get("next_key"),
                 //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
                 aggregateValues,
                 Operator.getOperator((String) apfMap.get("aggregation")),
                 Type.getClass((String) apfMap.get("value_type"))
         );
-
-        return apf;
     }
 
     @VisibleForTesting
