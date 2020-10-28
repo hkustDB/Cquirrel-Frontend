@@ -7,7 +7,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-abstract public class ProcessFunctionWriter implements ClassWriter {
+abstract class ProcessFunctionWriter implements ClassWriter {
     static String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");

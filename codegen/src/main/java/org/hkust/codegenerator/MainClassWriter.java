@@ -8,7 +8,7 @@ import org.hkust.jsonutils.*;
 import java.io.IOException;
 import java.util.*;
 
-public class MainClassWriter implements ClassWriter {
+class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateProcFuncClassName;
@@ -27,7 +27,7 @@ public class MainClassWriter implements ClassWriter {
         stringConversionMethods.put(Date.class, "format.parse");
     }
 
-    public MainClassWriter(Node node, String flinkInputPath, String flinkOutputPath) {
+    MainClassWriter(Node node, String flinkInputPath, String flinkOutputPath) {
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
@@ -157,7 +157,7 @@ public class MainClassWriter implements ClassWriter {
     }
 
     private Set<RelationSchema.Attribute> extractAttributes() {
-        Set<RelationSchema.Attribute> columnNames = new HashSet<>();
+        Set<RelationSchema.Attribute> columnNames = new LinkedHashSet<>();
 
         relationProcessFunction.getSelectConditions().forEach(condition -> {
             attributeFromExpression(columnNames, condition.getExpression());

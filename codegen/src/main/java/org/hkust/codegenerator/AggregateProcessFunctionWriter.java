@@ -15,7 +15,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private final String aggregateType;
     private final String className;
 
-    public AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction) {
+    AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction) {
         this.aggregateProcessFunction = aggregateProcessFunction;
         Class type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();

@@ -14,7 +14,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
-    public RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
+    RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
         this.relationProcessFunction = relationProcessFunction;
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
     }
