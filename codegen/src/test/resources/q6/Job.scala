@@ -35,10 +35,10 @@ object Job {
       var action = ""
       header match {
       case "+LI" =>
-      relation = "Lineitem"
+      relation = "lineitem"
       action = "Insert"
       case "-LI" =>
-      relation = "Lineitem"
+      relation = "lineitem"
       action = "Delete"
       }
       cnt = cnt + 1

@@ -93,7 +93,6 @@ class MainClassWriter implements ClassWriter {
         StringBuilder tupleCode = new StringBuilder();
         attributeCode(attributes, columnNamesCode, tupleCode);
         String lowerRelationName = relationProcessFunction.getRelationName().toLowerCase();
-        String formattedRelationName = lowerRelationName.substring(0, 1).toUpperCase() + lowerRelationName.substring(1);
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
@@ -107,10 +106,10 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("var action = \"\"");
         writer.writeln("header match {");
         writer.writeln("case \"+LI\" =>");
-        writer.writeln("relation = \"" + formattedRelationName + "\"");
+        writer.writeln("relation = \"" + lowerRelationName + "\"");
         writer.writeln("action = \"Insert\"");
         writer.writeln("case \"-LI\" =>");
-        writer.writeln("relation = \"" + formattedRelationName + "\"");
+        writer.writeln("relation = \"" + lowerRelationName + "\"");
         writer.writeln("action = \"Delete\"");
         writer.writeln("}");
         writer.writeln("cnt = cnt + 1");

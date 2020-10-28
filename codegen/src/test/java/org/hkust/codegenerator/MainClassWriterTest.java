@@ -83,10 +83,10 @@ public class MainClassWriterTest {
                 "   var action = \"\"\n" +
                 "   header match {\n" +
                 "   case \"+LI\" =>\n" +
-                "   relation = \"Relation\"\n" +
+                "   relation = \"relation\"\n" +
                 "   action = \"Insert\"\n" +
                 "   case \"-LI\" =>\n" +
-                "   relation = \"Relation\"\n" +
+                "   relation = \"relation\"\n" +
                 "   action = \"Delete\"\n" +
                 "   }\n" +
                 "   cnt = cnt + 1\n" +
