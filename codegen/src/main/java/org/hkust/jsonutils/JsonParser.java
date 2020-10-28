@@ -2,7 +2,6 @@ package org.hkust.jsonutils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
 
@@ -16,7 +15,7 @@ public class JsonParser {
 
     public static Node parse(final String jsonPath) throws Exception {
         String jsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
-        LinkedTreeMap<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>(){}.getType());
+        Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>(){}.getType());
 
         Map<String, Object> rpfMap = (Map<String, Object>) map.get("RelationProcessFunction");
         Map<String, Object> scMap = (Map<String, Object>) rpfMap.get("select_conditions");

@@ -1,6 +1,5 @@
 package org.hkust.jsonutils;
 
-import com.google.gson.internal.LinkedTreeMap;
 import org.hkust.objects.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -17,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
+@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
 public class JsonParserTest {
 
@@ -34,7 +33,7 @@ public class JsonParserTest {
 
 
     @Test
-    public void makeRelationProcessFunctionTest() throws Exception {
+    public void makeRelationProcessFunctionTest() {
         Mockito.when(mockMap.get("name")).thenReturn("RelationProcessFunction");
         Mockito.when(mockMap.get("relation")).thenReturn("relation");
         Mockito.when(mockMap.get("this_key")).thenReturn(Collections.singletonList("this_key"));
@@ -51,7 +50,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void makeAggregateProcessFunctionTest() throws Exception {
+    public void makeAggregateProcessFunctionTest() {
         Mockito.when(mockMap.get("name")).thenReturn("AggregateProcessFunction");
         Mockito.when(mockMap.get("this_key")).thenReturn(Collections.singletonList("this_key"));
         Mockito.when(mockMap.get("next_key")).thenReturn(Collections.singletonList("next_key"));
@@ -119,7 +118,7 @@ public class JsonParserTest {
 
             @Override
             public Object getValue() {
-                LinkedTreeMap map = Mockito.mock(LinkedTreeMap.class);
+                Map<String, Object> map = Mockito.mock(Map.class);
                 Mockito.when(map.get("operator")).thenReturn("<");
                 Mockito.when(map.get("left_field")).thenReturn(new HashMap<String, Object>(){
                     {
