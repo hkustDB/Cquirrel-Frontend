@@ -3,7 +3,7 @@ package org.hkust.codegenerator;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.hkust.checkerutils.CheckerUtils;
-import org.hkust.jsonutils.Type;
+import org.hkust.objects.Type;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;

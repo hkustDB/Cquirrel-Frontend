@@ -1,8 +1,8 @@
 package org.hkust.codegenerator;
 
 import org.ainslec.picocog.PicoWriter;
-import org.hkust.jsonutils.AggregateProcessFunction;
-import org.hkust.jsonutils.AttributeValue;
+import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.AttributeValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -2,7 +2,7 @@ package org.hkust.codegenerator;
 
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.jsonutils.JsonParser;
-import org.hkust.jsonutils.Node;
+import org.hkust.objects.Node;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,6 +1,7 @@
 package org.hkust.jsonutils;
 
 import com.google.gson.internal.LinkedTreeMap;
+import org.hkust.objects.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;

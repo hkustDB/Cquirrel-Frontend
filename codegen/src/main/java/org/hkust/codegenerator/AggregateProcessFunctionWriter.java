@@ -2,9 +2,9 @@ package org.hkust.codegenerator;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
-import org.hkust.jsonutils.AggregateProcessFunction;
-import org.hkust.jsonutils.Expression;
-import org.hkust.jsonutils.Type;
+import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.Expression;
+import org.hkust.objects.Type;
 
 import java.io.IOException;
 import java.util.List;

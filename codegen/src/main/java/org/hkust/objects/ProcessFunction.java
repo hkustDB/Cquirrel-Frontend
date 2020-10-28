@@ -1,4 +1,4 @@
-package org.hkust.jsonutils;
+package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
 import org.jetbrains.annotations.Nullable;

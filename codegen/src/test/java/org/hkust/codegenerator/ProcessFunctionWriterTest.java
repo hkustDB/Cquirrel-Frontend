@@ -1,8 +1,6 @@
 package org.hkust.codegenerator;
 
-import org.hkust.codegenerator.ProcessFunctionWriter;
-import org.hkust.codegenerator.RelationSchema;
-import org.hkust.jsonutils.*;
+import org.hkust.objects.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

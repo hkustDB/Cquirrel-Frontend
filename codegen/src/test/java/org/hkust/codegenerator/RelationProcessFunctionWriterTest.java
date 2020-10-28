@@ -1,7 +1,7 @@
 package org.hkust.codegenerator;
 
 import org.ainslec.picocog.PicoWriter;
-import org.hkust.jsonutils.*;
+import org.hkust.objects.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

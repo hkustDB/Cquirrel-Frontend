@@ -3,7 +3,7 @@ package org.hkust.codegenerator;
 import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
-import org.hkust.jsonutils.*;
+import org.hkust.objects.*;
 
 import java.io.IOException;
 import java.util.*;

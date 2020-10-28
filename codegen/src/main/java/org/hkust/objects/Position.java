@@ -1,4 +1,4 @@
-package org.hkust.jsonutils;
+package org.hkust.objects;
 
 public enum Position {
     ROOT("ROOT"),

@@ -1,4 +1,4 @@
-package org.hkust.jsonutils;
+package org.hkust.objects;
 
 import static java.util.Objects.requireNonNull;
 

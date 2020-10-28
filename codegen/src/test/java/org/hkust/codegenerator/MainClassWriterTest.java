@@ -1,10 +1,9 @@
 package org.hkust.codegenerator;
 
 import org.ainslec.picocog.PicoWriter;
-import org.hkust.codegenerator.MainClassWriter;
-import org.hkust.jsonutils.AggregateProcessFunction;
-import org.hkust.jsonutils.Node;
-import org.hkust.jsonutils.RelationProcessFunction;
+import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.Node;
+import org.hkust.objects.RelationProcessFunction;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;

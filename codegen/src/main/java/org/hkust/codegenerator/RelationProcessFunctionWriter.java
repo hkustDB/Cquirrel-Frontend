@@ -3,8 +3,8 @@ package org.hkust.codegenerator;
 import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
-import org.hkust.jsonutils.RelationProcessFunction;
-import org.hkust.jsonutils.SelectCondition;
+import org.hkust.objects.RelationProcessFunction;
+import org.hkust.objects.SelectCondition;
 
 import java.io.IOException;
 import java.util.List;

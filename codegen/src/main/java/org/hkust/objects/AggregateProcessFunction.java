@@ -1,4 +1,4 @@
-package org.hkust.jsonutils;
+package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
 import org.jetbrains.annotations.Nullable;
@@ -83,7 +83,7 @@ public class AggregateProcessFunction extends ProcessFunction {
             this.name = name;
             this.type = type;
             if (!type.toLowerCase().equals("expression")) {
-                throw new RuntimeException("Only org.hkust.jsonutils.Expression type is supported for AggregateValue");
+                throw new RuntimeException("Only org.hkust.objects.Expression type is supported for AggregateValue");
             }
             requireNonNull(value);
             this.value = value;

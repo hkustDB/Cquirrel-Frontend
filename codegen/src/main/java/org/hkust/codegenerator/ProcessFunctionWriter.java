@@ -1,6 +1,6 @@
 package org.hkust.codegenerator;
 
-import org.hkust.jsonutils.*;
+import org.hkust.objects.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

@@ -3,6 +3,7 @@ package org.hkust.jsonutils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import org.hkust.objects.*;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
