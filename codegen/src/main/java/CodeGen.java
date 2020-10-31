@@ -1,11 +1,13 @@
 import com.google.common.collect.ImmutableSet;
+import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.codegenerator.CodeGenerator;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Set;
 
-public class CodeGen {
+class CodeGen {
     private static int NUM_OF_ARGS = 5;
     private static final Set<String> IO_TYPES = ImmutableSet.of("file", "kafka");
     private static final int JSON_FILE_INDEX = 0;

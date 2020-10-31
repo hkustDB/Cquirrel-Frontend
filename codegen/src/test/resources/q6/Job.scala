@@ -30,22 +30,22 @@ object Job {
       .map(line => {
       val header = line.substring(0,3)
       val cells : Array[String] = line.substring(3).split("\\|")
-      val i = Tuple4(cells(4).toDouble,cells(5).toDouble,format.parse(cells(10)),cells(6).toDouble)
+      val i = Tuple4(format.parse(cells(10)),cells(6).toDouble,cells(4).toDouble,cells(5).toDouble)
       var relation = ""
       var action = ""
       header match {
       case "+LI" =>
-      relation = "Lineitem"
+      relation = "lineitem"
       action = "Insert"
       case "-LI" =>
-      relation = "Lineitem"
+      relation = "lineitem"
       action = "Delete"
       }
       cnt = cnt + 1
       Payload(relation, action,
       Tuple2(cells(0).toInt, cells(3).toInt).asInstanceOf[Any],
       Array(i._1,i._2,i._3,i._4),
-      Array("L_QUANTITY","L_EXTENDEDPRICE","L_SHIPDATE","L_DISCOUNT"), cnt)
+      Array("L_SHIPDATE","L_DISCOUNT","L_QUANTITY","L_EXTENDEDPRICE"), cnt)
       }).setParallelism(1).filter(x => x._1 != "").setParallelism(1)
       restDS
    }
