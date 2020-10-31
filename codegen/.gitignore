@@ -5,6 +5,7 @@ target/generated-sources
 target/generated-test-sources
 target/maven-status
 target/maven-archiver
+target/surefire
 target/surefire-reports
 target/test-classes
 .idea

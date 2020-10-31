@@ -33,10 +33,7 @@ public class CodeGenerator {
 
     private static void compile(String pomPath) throws IOException {
         Runtime runtime = Runtime.getRuntime();
-        //TODO: do we need to do all 3? Wouldn't package alone be sufficient?
-        execute(runtime, "mvn install -f " + pomPath);
-        execute(runtime, "mvn compile -f " + pomPath);
-        execute(runtime, "mvn package -f " + pomPath);
+        execute(runtime, "mvn package -DskipTests -f " + pomPath);
     }
 
     private static void execute(Runtime runtime, String command) throws IOException {
@@ -56,13 +53,5 @@ public class CodeGenerator {
         while ((output = stdError.readLine()) != null) {
             System.out.println(output);
         }
-    }
-
-    private static String getClassFilePath(String outputPath, String className) {
-        return outputPath + File.separator + getClassFileName(className);
-    }
-
-    private static String getClassFileName(String name) {
-        return name + ".scala";
     }
 }
