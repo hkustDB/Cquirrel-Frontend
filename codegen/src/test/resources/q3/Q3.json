@@ -9,8 +9,8 @@
       "ForeignRelation": "Orders"
     }
   ],
-  "RelationProcessFunction": {
-    "LineitemProcessFunction": {
+  "RelationProcessFunction": [
+    {
       "name": "Q3lineitem",
       "relation": "lineitem",
       "this_key": [
@@ -39,7 +39,7 @@
         }
       }
     },
-    "OrdersProcessFunction": {
+    {
       "name": "Q3Orders",
       "relation": "orders",
       "this_key": [
@@ -68,7 +68,7 @@
         }
       }
     },
-    "CustomerProcessFunction": {
+    {
       "name": "Q3Customer",
       "relation": "orders",
       "this_key": [
@@ -97,7 +97,7 @@
         }
       }
     }
-  },
+  ],
   "AggregateProcessFunction": {
     "name": "Q3Aggregate",
     "this_key": [
