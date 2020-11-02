@@ -25,18 +25,20 @@
       "rename_attribute": null,
       "select_conditions": {
         "operator": "&&",
-        "value1": {
-          "left_field": {
-            "type": "attribute",
-            "name": "l_shipdate"
-          },
-          "right_field": {
-            "type": "constant",
-            "var_type": "Date",
-            "value": "1995-03-15"
-          },
-          "operator": ">"
-        }
+        "values": [
+          {
+            "left_field": {
+              "type": "attribute",
+              "name": "l_shipdate"
+            },
+            "right_field": {
+              "type": "constant",
+              "var_type": "Date",
+              "value": "1995-03-15"
+            },
+            "operator": ">"
+          }
+        ]
       }
     },
     {
@@ -54,19 +56,22 @@
       "rename_attribute": null,
       "select_conditions": {
         "operator": "&&",
-        "value1": {
-          "left_field": {
-            "type": "attribute",
-            "name": "o_orderdate"
-          },
-          "right_field": {
-            "type": "constant",
-            "var_type": "Date",
-            "value": "1995-03-15"
-          },
-          "operator": "<"
-        }
+        "values": [
+          {
+            "left_field": {
+              "type": "attribute",
+              "name": "o_orderdate"
+            },
+            "right_field": {
+              "type": "constant",
+              "var_type": "Date",
+              "value": "1995-03-15"
+            },
+            "operator": "<"
+          }
+        ]
       }
+    }
     },
     {
       "name": "Q3Customer",
@@ -114,6 +119,7 @@
     "AggregateValue": {
       "name": "revenue",
       "type": "expression",
+      "values": [],
       "value1": {
         "type": "attribute",
         "name": "L_EXTENDEDPRICE"
