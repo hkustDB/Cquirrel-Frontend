@@ -3,6 +3,11 @@ import os
 # path settings
 FLINK_HOME_PATH = os.environ.get('FLINK_HOME') or '/Users/chaoqi/Programs/flink-1.11.2'
 
+# remote flink
+REMOTE_FLINK = False
+REMOTE_FLINK_URL = '47.93.121.10:8081'
+
+# path setting
 GUI_FLASK_PATH = os.path.abspath(os.path.dirname(__file__))
 JSON_FILE_UPLOAD_PATH = os.path.join(GUI_FLASK_PATH, 'uploads')
 GENERATED_JAR_PATH = os.path.join(GUI_FLASK_PATH, 'jar')
