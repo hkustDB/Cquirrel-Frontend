@@ -83,18 +83,20 @@
       "rename_attribute": null,
       "select_conditions": {
         "operator": "&&",
-        "value1": {
-          "left_field": {
-            "type": "attribute",
-            "name": "c_mktsegment"
-          },
-          "right_field": {
-            "type": "constant",
-            "var_type": "varchar",
-            "value": "BUILDING"
-          },
-          "operator": "="
-        }
+        "values": [
+          {
+            "left_field": {
+              "type": "attribute",
+              "name": "c_mktsegment"
+            },
+            "right_field": {
+              "type": "constant",
+              "var_type": "varchar",
+              "value": "BUILDING"
+            },
+            "operator": "="
+          }
+        ]
       }
     }
   ],
