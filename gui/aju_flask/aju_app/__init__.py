@@ -12,8 +12,8 @@ from config import OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
-thread = None
-thread_lock = Lock()
+# thread = None
+# thread_lock = Lock()
 
 
 def create_app(config_name):
@@ -40,17 +40,18 @@ def create_app(config_name):
 
 @socketio.on('connect')
 def send_kafka_data():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_send_kafka_data_thread)
+    socketio.start_background_task(target=background_send_kafka_data_thread)
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         thread = socketio.start_background_task(target=background_send_kafka_data_thread)
 
 
 def background_send_kafka_data_thread():
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
     with open(OUTPUT_DATA_FILE, 'r') as f:
         while True:
-            time.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+            socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
             line = f.readline()
             if line:
                 line_list = line.strip().lstrip('(').rstrip(')').split(',')
@@ -76,7 +77,7 @@ def background_send_kafka_data_thread_real():
     kafka_consumer.subscribe([KAFKA_CONSUMER_TOPIC])
 
     while True:
-        time.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+        socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
         msg = kafka_consumer.poll(1)
         if msg:
             msg_list = msg.value().decode('utf-8').strip().lstrip('(').rstrip(')').split(',')
