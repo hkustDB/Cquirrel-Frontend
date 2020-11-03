@@ -5,7 +5,9 @@ from flask import render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
 import os
+import shutil
 import subprocess
+import logging
 
 
 @main.route('/')
@@ -38,22 +40,16 @@ def upload_json_file():
         return render_template('index.html',
                                uploaded_result="The uploaded file is not a json file. Please upload again.")
 
+    # remove the older generated-code directory
+    if os.path.isdir(config.GENERATED_CODE_DIR):
+        shutil.rmtree(config.GENERATED_CODE_DIR)
+        logging.info('remove the generated-code directory.')
+
     # call the codegen to generate a jar file
-    cmd_str = 'java -jar' + ' ' \
-              + config.CODEGEN_FILE + ' ' \
-              + uploaded_json_file_save_path + ' ' \
-              + config.GENERATED_JAR_PATH
+    aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
 
-    ret = subprocess.run(cmd_str, shell=True, capture_output=True)
-    codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
-    codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
-    codegen_log_result = codegen_log_stdout + codegen_log_stderr
-    with open("./log/codegen.log", "w") as f:
-        f.write(codegen_log_result)
-
-    # remove the uploaded file
-    if os.path.exists(uploaded_json_file_save_path):
-        os.remove(uploaded_json_file_save_path)
+    # cal the flink to run the generated_jar
+    aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
 
     return render_template('index.html', codegen_log_result=codegen_log_result,
                            uploaded_result="The json file uploaded successfully.")
