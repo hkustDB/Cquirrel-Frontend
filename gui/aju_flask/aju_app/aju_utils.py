@@ -63,4 +63,4 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path):
     if os.path.exists(uploaded_json_file_save_path):
         os.remove(uploaded_json_file_save_path)
 
-    return ret
+    return codegen_log_result

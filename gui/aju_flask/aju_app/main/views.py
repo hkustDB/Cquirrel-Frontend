@@ -46,7 +46,7 @@ def upload_json_file():
         logging.info('remove the generated-code directory.')
 
     # call the codegen to generate a jar file
-    aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
+    codegen_log_result = aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
 
     # cal the flink to run the generated_jar
     aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
