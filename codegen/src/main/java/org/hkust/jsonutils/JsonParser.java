@@ -31,7 +31,7 @@ public class JsonParser {
         List<RelationProcessFunction> result = new ArrayList<>();
         rpfList.forEach(rpf -> {
             Map<String, Object> scMap = (Map<String, Object>) rpf.get("select_conditions");
-            List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
+            List<Expression> scExpressions = makeSelectConditionsExpressions((List<Map<String, Object>>) scMap.get("values"));
             List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
             result.add(makeRelationProcessFunction(rpf, selectConditions));
         });
@@ -59,9 +59,8 @@ public class JsonParser {
     private static List<AggregateProcessFunction> makeAggregateProcessFunctions(List<Map<String, Object>> apfList) {
         List<AggregateProcessFunction> result = new ArrayList<>();
         apfList.forEach(apf -> {
-            Map<String, Object> agMap = (Map<String, Object>) apf.get("AggregateValue");
-            Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
-            List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
+            List<Map<String, Object>> agMap = (List<Map<String, Object>> ) apf.get("AggregateValue");
+            List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValues(agMap);
             result.add(makeAggregateProcessFunction(apf, aggregateValues));
         });
 
@@ -83,16 +82,23 @@ public class JsonParser {
         );
     }
 
+    private static List<AggregateProcessFunction.AggregateValue> makeAggregateValues(List<Map<String, Object>> aggregateValues) {
+        List<AggregateProcessFunction.AggregateValue> result = new ArrayList<>();
+        for (Map<String, Object> aggValue : aggregateValues) {
+            Expression agExpression = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
+            result.add(makeAggregateValue(aggValue, agExpression));
+        }
+
+        return result;
+    }
+
     @VisibleForTesting
-    static List<AggregateProcessFunction.AggregateValue> makeAggregateValue(Map<String, Object> avMap, List<Expression> expressions) {
+    static AggregateProcessFunction.AggregateValue makeAggregateValue(Map<String, Object> avMap, Expression expression) {
         String type = (String) avMap.get("type");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = new ArrayList<>();
         String aggregateName = (String) avMap.get("name");
         if ("expression".equals(type)) {
-            for (Expression expression : expressions) {
-                aggregateValues.add(new AggregateProcessFunction.AggregateValue(aggregateName, type, expression));
-            }
-            return aggregateValues;
+            return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
         }
         throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
     }
@@ -110,35 +116,26 @@ public class JsonParser {
     }
 
     @VisibleForTesting
-    static List<Expression> makeSelectConditionsExpressions(Set<Map.Entry<String, Object>> entrySet) {
+    static List<Expression> makeSelectConditionsExpressions(List<Map<String, Object>> values) {
         List<Expression> expressions = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : entrySet) {
-            if ((entry.getKey()).startsWith("value")) {
-                Map<String, Object> value = (Map<String, Object>) entry.getValue();
-                Operator operator = Operator.getOperator((String) value.get("operator"));
-                Value left = makeValue((Map<String, Object>) value.get("left_field"));
-                Value right = makeValue((Map<String, Object>) value.get("right_field"));
-                expressions.add(new Expression(Arrays.asList(left, right), operator));
-            }
+        for (Map<String, Object> value : values) {
+            Operator operator = Operator.getOperator((String) value.get("operator"));
+            Value left = makeValue((Map<String, Object>) value.get("left_field"));
+            Value right = makeValue((Map<String, Object>) value.get("right_field"));
+            expressions.add(new Expression(Arrays.asList(left, right), operator));
         }
 
         return expressions;
     }
 
     @VisibleForTesting
-    static Expression makeAggregateValueExpression(Set<Map.Entry<String, Object>> entrySet) {
+    static Expression makeAggregateValueExpression(List<Map<String, Object>> valuesList, String operator) {
         List<Value> values = new ArrayList<>();
-        Operator operator = null;
-        for (Map.Entry<String, Object> entry : entrySet) {
-            if ((entry.getKey()).startsWith("value")) {
-                values.add(makeValue((Map<String, Object>) entry.getValue()));
-            }
-            if ((entry.getKey()).equals("operator")) {
-                operator = Operator.getOperator((String) entry.getValue());
-            }
+        for (Map<String, Object> value : valuesList) {
+            values.add(makeValue(value));
         }
 
-        return new Expression(values, operator);
+        return new Expression(values, Operator.getOperator(operator));
     }
 
 
