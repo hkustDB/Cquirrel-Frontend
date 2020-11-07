@@ -1,21 +1,23 @@
 package org.hkust.objects;
 
+import java.util.List;
+
 import static java.util.Objects.requireNonNull;
 
 public class Node {
-    private final ProcessFunction relationProcessFunction;
+    private final List<RelationProcessFunction>  relationProcessFunction;
     private final ProcessFunction aggregateProcessFunction;
 
 
-    public Node(ProcessFunction relationProcessFunction, ProcessFunction aggregateProcessFunction) {
+    public Node(List<RelationProcessFunction> relationProcessFunction, ProcessFunction aggregateProcessFunction) {
         requireNonNull(relationProcessFunction);
         requireNonNull(aggregateProcessFunction);
         this.relationProcessFunction = relationProcessFunction;
         this.aggregateProcessFunction = aggregateProcessFunction;
     }
 
-    public RelationProcessFunction getRelationProcessFunction() {
-        return (RelationProcessFunction) relationProcessFunction;
+    public List<RelationProcessFunction> getRelationProcessFunctions() {
+        return relationProcessFunction;
     }
 
     public AggregateProcessFunction getAggregateProcessFunction() {

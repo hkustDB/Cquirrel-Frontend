@@ -34,7 +34,8 @@ class MainClassWriter implements ClassWriter {
         this.flinkOutputPath = flinkOutputPath;
         this.aggregateProcessFunction = node.getAggregateProcessFunction();
         this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
-        this.relationProcessFunction = node.getRelationProcessFunction();
+        //TODO: to be changed to handle multiple process functions
+        this.relationProcessFunction = node.getRelationProcessFunctions().get(0);
         this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
     }
 

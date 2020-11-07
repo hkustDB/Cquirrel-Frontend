@@ -104,44 +104,46 @@
       }
     }
   ],
-  "AggregateProcessFunction": {
-    "name": "Q3Aggregate",
-    "this_key": [
-      "orderkey"
-    ],
-    "next_key": [
-      "orderkey",
-      "orderdate",
-      "shippriority"
-    ],
-    "delta_output": true,
-    "AggregateValue": {
-      "name": "revenue",
-      "type": "expression",
-      "values": [
-        {
-          "type": "attribute",
-          "name": "L_EXTENDEDPRICE"
-        },
-        {
-          "type": "expression",
-          "operator": "-",
-          "values": [
-            {
-              "type": "constant",
-              "var_type": "int",
-              "value": 1
-            },
-            {
-              "type": "attribute",
-              "name": "L_DISCOUNT"
-            }
-          ]
-        }
+  "AggregateProcessFunction": [
+    {
+      "name": "Q3Aggregate",
+      "this_key": [
+        "orderkey"
       ],
-      "operator": "*"
-    },
-    "aggregation": "+",
-    "value_type": "Double"
-  }
+      "next_key": [
+        "orderkey",
+        "orderdate",
+        "shippriority"
+      ],
+      "delta_output": true,
+      "AggregateValue": {
+        "name": "revenue",
+        "type": "expression",
+        "values": [
+          {
+            "type": "attribute",
+            "name": "L_EXTENDEDPRICE"
+          },
+          {
+            "type": "expression",
+            "operator": "-",
+            "values": [
+              {
+                "type": "constant",
+                "var_type": "int",
+                "value": 1
+              },
+              {
+                "type": "attribute",
+                "name": "L_DISCOUNT"
+              }
+            ]
+          }
+        ],
+        "operator": "*"
+      },
+      "aggregation": "+",
+      "value_type": "Double"
+    }
+  ]
 }

@@ -15,12 +15,14 @@ public class JsonParser {
 
     public static Node parse(final String jsonPath) throws Exception {
         String jsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
-        Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>(){}.getType());
+        Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>() {
+        }.getType());
 
-        Map<String, Object> rpfMap = (Map<String, Object>) map.get("RelationProcessFunction");
-        Map<String, Object> scMap = (Map<String, Object>) rpfMap.get("select_conditions");
-        List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
-        List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
+        List<Map<String, Object>> rpfMap = (List<Map<String, Object>>) map.get("RelationProcessFunction");
+        List<RelationProcessFunction> rpfs = makeRelationProcessFunctions(rpfMap);
+        //Map<String, Object> scMap = (Map<String, Object>) rpfMap.get("select_conditions");
+        //List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
+        //List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
 
 
         Map<String, Object> apfMap = (Map<String, Object>) map.get("AggregateProcessFunction");
@@ -28,9 +30,20 @@ public class JsonParser {
         Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
         List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
 
-        return new Node(makeRelationProcessFunction(rpfMap, selectConditions),
-                makeAggregateProcessFunction(apfMap, aggregateValues)
+        return new Node(rpfs, makeAggregateProcessFunction(apfMap, aggregateValues)
         );
+    }
+
+    static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
+        List<RelationProcessFunction> result = new ArrayList<>();
+        rpfList.forEach(rpf -> {
+            Map<String, Object> scMap = (Map<String, Object>) rpf.get("select_conditions");
+            List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
+            List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
+            result.add(makeRelationProcessFunction(rpf, selectConditions));
+        });
+
+        return result;
     }
 
     @VisibleForTesting

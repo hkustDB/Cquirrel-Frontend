@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -120,7 +121,8 @@ public class MainClassWriterTest {
     @NotNull
     private MainClassWriter getMainClassWriter() {
         when(node.getAggregateProcessFunction()).thenReturn(aggregateProcessFunction);
-        when(node.getRelationProcessFunction()).thenReturn(relationProcessFunction);
+        //TODO: to be changed to handle multiple process functions
+        when(node.getRelationProcessFunctions()).thenReturn(Collections.singletonList(relationProcessFunction));
         when(aggregateProcessFunction.getName()).thenReturn("aggregateProcessFunction");
         when(relationProcessFunction.getName()).thenReturn("relationProcessFunction");
         return new MainClassWriter(node, "flinkInput", "flinkOutput");
