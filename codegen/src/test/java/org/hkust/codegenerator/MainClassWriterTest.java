@@ -120,7 +120,8 @@ public class MainClassWriterTest {
 
     @NotNull
     private MainClassWriter getMainClassWriter() {
-        when(node.getAggregateProcessFunction()).thenReturn(aggregateProcessFunction);
+        //TODO: to be changed to handle multiple process functions
+        when(node.getAggregateProcessFunctions()).thenReturn(Collections.singletonList(aggregateProcessFunction));
         //TODO: to be changed to handle multiple process functions
         when(node.getRelationProcessFunctions()).thenReturn(Collections.singletonList(relationProcessFunction));
         when(aggregateProcessFunction.getName()).thenReturn("aggregateProcessFunction");

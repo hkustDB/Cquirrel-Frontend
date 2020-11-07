@@ -32,7 +32,8 @@ class MainClassWriter implements ClassWriter {
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
         this.flinkOutputPath = flinkOutputPath;
-        this.aggregateProcessFunction = node.getAggregateProcessFunction();
+        //TODO: to be changed to handle multiple process functions
+        this.aggregateProcessFunction = node.getAggregateProcessFunctions().get(0);
         this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
         //TODO: to be changed to handle multiple process functions
         this.relationProcessFunction = node.getRelationProcessFunctions().get(0);

@@ -5,30 +5,30 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class Node {
-    private final List<RelationProcessFunction>  relationProcessFunction;
-    private final ProcessFunction aggregateProcessFunction;
+    private final List<RelationProcessFunction> relationProcessFunctions;
+    private final List<AggregateProcessFunction> aggregateProcessFunctions;
 
 
-    public Node(List<RelationProcessFunction> relationProcessFunction, ProcessFunction aggregateProcessFunction) {
-        requireNonNull(relationProcessFunction);
-        requireNonNull(aggregateProcessFunction);
-        this.relationProcessFunction = relationProcessFunction;
-        this.aggregateProcessFunction = aggregateProcessFunction;
+    public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions) {
+        requireNonNull(relationProcessFunctions);
+        requireNonNull(aggregateProcessFunctions);
+        this.relationProcessFunctions = relationProcessFunctions;
+        this.aggregateProcessFunctions = aggregateProcessFunctions;
     }
 
     public List<RelationProcessFunction> getRelationProcessFunctions() {
-        return relationProcessFunction;
+        return relationProcessFunctions;
     }
 
-    public AggregateProcessFunction getAggregateProcessFunction() {
-        return (AggregateProcessFunction) aggregateProcessFunction;
+    public List<AggregateProcessFunction>  getAggregateProcessFunctions() {
+        return aggregateProcessFunctions;
     }
 
     @Override
     public String toString() {
         return "Node{" +
-                "relationProcessFunction=" + relationProcessFunction +
-                ", aggregateProcessFunction=" + aggregateProcessFunction +
+                "relationProcessFunction=" + relationProcessFunctions +
+                ", aggregateProcessFunction=" + aggregateProcessFunctions +
                 '}';
     }
 }

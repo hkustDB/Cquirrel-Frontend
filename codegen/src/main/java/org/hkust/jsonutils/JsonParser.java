@@ -20,21 +20,14 @@ public class JsonParser {
 
         List<Map<String, Object>> rpfMap = (List<Map<String, Object>>) map.get("RelationProcessFunction");
         List<RelationProcessFunction> rpfs = makeRelationProcessFunctions(rpfMap);
-        //Map<String, Object> scMap = (Map<String, Object>) rpfMap.get("select_conditions");
-        //List<Expression> scExpressions = makeSelectConditionsExpressions(scMap.entrySet());
-        //List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
 
+        List<Map<String, Object>> apfMap = (List<Map<String, Object>>) map.get("AggregateProcessFunction");
+        List<AggregateProcessFunction> apfs = makeAggregateProcessFunctions(apfMap);
 
-        Map<String, Object> apfMap = (Map<String, Object>) map.get("AggregateProcessFunction");
-        Map<String, Object> agMap = (Map<String, Object>) apfMap.get("AggregateValue");
-        Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
-
-        return new Node(rpfs, makeAggregateProcessFunction(apfMap, aggregateValues)
-        );
+        return new Node(rpfs, apfs);
     }
 
-    static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
+    private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
         List<RelationProcessFunction> result = new ArrayList<>();
         rpfList.forEach(rpf -> {
             Map<String, Object> scMap = (Map<String, Object>) rpf.get("select_conditions");
@@ -62,6 +55,19 @@ public class JsonParser {
                 selectConditions
         );
     }
+
+    private static List<AggregateProcessFunction> makeAggregateProcessFunctions(List<Map<String, Object>> apfList) {
+        List<AggregateProcessFunction> result = new ArrayList<>();
+        apfList.forEach(apf -> {
+            Map<String, Object> agMap = (Map<String, Object>) apf.get("AggregateValue");
+            Expression agExpression = makeAggregateValueExpression(agMap.entrySet());
+            List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValue(agMap, Collections.singletonList(agExpression));
+            result.add(makeAggregateProcessFunction(apf, aggregateValues));
+        });
+
+        return result;
+    }
+
 
     @VisibleForTesting
     static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateProcessFunction.AggregateValue> aggregateValues) {

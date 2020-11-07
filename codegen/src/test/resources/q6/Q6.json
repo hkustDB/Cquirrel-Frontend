@@ -77,7 +77,7 @@
       }
     }
   ],
-  "AggregateProcessFunction": {
+  "AggregateProcessFunction": [{
     "name": "Q6Aggregate",
     "this_key": null,
     "next_key": null,
@@ -96,5 +96,5 @@
     },
     "aggregation": "+",
     "value_type": "Double"
-  }
+  }]
 }
