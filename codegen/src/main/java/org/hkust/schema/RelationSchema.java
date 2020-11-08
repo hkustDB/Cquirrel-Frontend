@@ -1,18 +1,21 @@
 package org.hkust.schema;
 
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.hkust.objects.Type;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class RelationSchema {
-    public static final Schema lineitem;
-    public static final Schema orders;
-    public static final Schema customer;
-    private static ArrayListValuedHashMap<String, Attribute> schema = new ArrayListValuedHashMap<>();
+    public final Schema lineitem;
+    public final Schema orders;
+    public final Schema customer;
+    public static RelationSchema SCHEMA = new RelationSchema();
 
-    static {
+    public static RelationSchema getInstance() {
+        return SCHEMA;
+    }
+
+    private RelationSchema() {
         Attribute lineitemPrimaryKey1 = new Attribute(Type.getClass("int"), 3, "l_linenumber");
         Attribute lineitemPrimaryKey2 = new Attribute(Type.getClass("long"), 0, "orderkey");
         lineitem = Schema.builder()
@@ -73,21 +76,8 @@ public class RelationSchema {
 
     }
 
-    /*@Nullable
-    public static Attribute getColumnAttribute(String columnName) {
-        List<Attribute> result = schema.get(columnName);
-        if (result.size() == 0) {
-            return null;
-        }
-        if (result.size() > 1) {
-            throw new RuntimeException("More than one attribute found for " + columnName + ": " + result
-                    + ". Use public static Attribute getColumnAttribute(String relationName, String columnName)");
-        }
-        return result.get(0);
-    }*/
-
     @Nullable
-    public static Attribute getColumnAttribute(Relation relation, String columnName) {
+    public Attribute getColumnAttribute(Relation relation, String columnName) {
         switch (relation) {
             case LINEITEM:
                 return lineitem.getAttributes().get(columnName);

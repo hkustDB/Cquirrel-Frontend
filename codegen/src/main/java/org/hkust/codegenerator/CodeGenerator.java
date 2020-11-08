@@ -5,6 +5,7 @@ import org.hkust.jsonutils.JsonParser;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
+import org.hkust.schema.RelationSchema;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,16 +27,18 @@ public class CodeGenerator {
         String codeFilesPath = jarOutputPath + File.separator + GENERATED_CODE + File.separator + "src" + File.separator + "main" + File.separator + "scala" + File.separator + "org" + File.separator + "hkust";
         List<RelationProcessFunction> relationProcessFunctions = node.getRelationProcessFunctions();
 
+        RelationSchema schema = RelationSchema.getInstance();
+
         for (RelationProcessFunction relationProcessFunction : relationProcessFunctions) {
-            new RelationProcessFunctionWriter(relationProcessFunction).write(codeFilesPath);
+            new RelationProcessFunctionWriter(relationProcessFunction, schema).write(codeFilesPath);
         }
 
         List<AggregateProcessFunction> aggregateProcessFunctions = node.getAggregateProcessFunctions();
         for (AggregateProcessFunction aggregateProcessFunction : aggregateProcessFunctions) {
-            new AggregateProcessFunctionWriter(aggregateProcessFunction).write(codeFilesPath);
+            new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
         }
 
-        new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(codeFilesPath);
+        new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath).write(codeFilesPath);
 
         compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 

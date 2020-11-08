@@ -19,6 +19,7 @@ class MainClassWriter implements ClassWriter {
     private final String flinkInputPath;
     private final String flinkOutputPath;
     private final PicoWriter writer = new PicoWriter();
+    private final RelationSchema schema;
 
     private static final Map<Class, String> stringConversionMethods = new HashMap<>();
 
@@ -29,7 +30,7 @@ class MainClassWriter implements ClassWriter {
         stringConversionMethods.put(Date.class, "format.parse");
     }
 
-    MainClassWriter(Node node, String flinkInputPath, String flinkOutputPath) {
+    MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath) {
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
@@ -40,6 +41,8 @@ class MainClassWriter implements ClassWriter {
         //TODO: to be changed to handle multiple process functions
         this.relationProcessFunction = node.getRelationProcessFunctions().get(0);
         this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
+
+        this.schema = schema;
     }
 
     @Override
@@ -188,7 +191,7 @@ class MainClassWriter implements ClassWriter {
         //Only AttributeValue entertained. Perhaps visitor pattern to avoid multiple if/else blocks?
         if (value instanceof AttributeValue) {
             String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
-            Attribute attribute = RelationSchema.getColumnAttribute(relation, lowerName);
+            Attribute attribute = schema.getColumnAttribute(relation, lowerName);
             if (attribute == null) {
                 throw new RuntimeException("Unable to find attribute/column name in schema for: " + lowerName);
             }

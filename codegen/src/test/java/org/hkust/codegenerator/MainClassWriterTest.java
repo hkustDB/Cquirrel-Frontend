@@ -6,6 +6,7 @@ import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
 import org.hkust.schema.Attribute;
 import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,9 @@ public class MainClassWriterTest {
 
     @Mock
     private Node node;
+
+    @Mock
+    private RelationSchema schema;
 
     @Before
     public void initialization() {
@@ -132,7 +136,7 @@ public class MainClassWriterTest {
         when(node.getRelationProcessFunctions()).thenReturn(Collections.singletonList(relationProcessFunction));
         when(aggregateProcessFunction.getName()).thenReturn("aggregateProcessFunction");
         when(relationProcessFunction.getName()).thenReturn("relationProcessFunction");
-        return new MainClassWriter(node, "flinkInput", "flinkOutput");
+        return new MainClassWriter(node, schema,"flinkInput", "flinkOutput");
     }
 
 }

@@ -10,7 +10,13 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 abstract class ProcessFunctionWriter implements ClassWriter {
-    static String keyListToCode(@Nullable List<String> keyList) {
+    private final RelationSchema schema;
+
+    ProcessFunctionWriter(RelationSchema schema) {
+        this.schema = schema;
+    }
+
+    String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");
         if (keyList != null) {
@@ -28,7 +34,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    static void expressionToCode(Relation relation, final Expression expression, StringBuilder code) throws Exception {
+    void expressionToCode(Relation relation, final Expression expression, StringBuilder code) throws Exception {
         List<Value> values = expression.getValues();
         int size = values.size();
         for (int i = 0; i < size; i++) {
@@ -44,7 +50,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void valueToCode(Relation relation, Value value, StringBuilder code) throws Exception {
+    void valueToCode(Relation relation, Value value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         //Note: expression can have an expression as one of its values, currently it is not being handled
@@ -57,7 +63,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void constantValueToCode(ConstantValue value, StringBuilder code) {
+    void constantValueToCode(ConstantValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
         Class<?> type = value.getType();
@@ -71,11 +77,11 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void attributeValueToCode(Relation relation, AttributeValue value, StringBuilder code) throws Exception {
+    void attributeValueToCode(Relation relation, AttributeValue value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         final String columnName = value.getColumnName();
-        final Class<?> type = RelationSchema.getColumnAttribute(relation, columnName.toLowerCase()).getType();
+        final Class<?> type = schema.getColumnAttribute(relation, columnName.toLowerCase()).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
                 .append("\")")

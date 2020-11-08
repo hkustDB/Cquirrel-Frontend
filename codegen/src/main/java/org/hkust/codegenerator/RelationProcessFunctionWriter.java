@@ -5,6 +5,7 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.objects.RelationProcessFunction;
 import org.hkust.objects.SelectCondition;
+import org.hkust.schema.RelationSchema;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +15,8 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
 
-    RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
+    RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction, RelationSchema schema) {
+        super(schema);
         this.relationProcessFunction = relationProcessFunction;
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
     }

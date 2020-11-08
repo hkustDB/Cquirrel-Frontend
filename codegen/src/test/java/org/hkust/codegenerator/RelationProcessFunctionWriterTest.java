@@ -26,6 +26,12 @@ public class RelationProcessFunctionWriterTest {
     @Mock
     private RelationProcessFunction relationProcessFunction;
 
+    @Mock
+    private Relation relation;
+
+    @Mock
+    private RelationSchema schema;
+
     @Before
     public void initialization() {
         MockitoAnnotations.openMocks(this);
@@ -33,7 +39,8 @@ public class RelationProcessFunctionWriterTest {
 
     @Test
     public void addConstructorAndOpenClassTest() {
-        when(relationProcessFunction.getRelation().getValue()).thenReturn("RelationName");
+        when(relationProcessFunction.getRelation()).thenReturn(relation);
+        when(relation.getValue()).thenReturn("RelationName");
         when(relationProcessFunction.getThisKey()).thenReturn(Arrays.asList("thisKey1", "thisKey2"));
         when(relationProcessFunction.getNextKey()).thenReturn(Arrays.asList("nextKey1", "nextKey2"));
         PicoWriter picoWriter = new PicoWriter();
@@ -85,15 +92,13 @@ public class RelationProcessFunctionWriterTest {
 
     private void isValidFunctionTest(List<SelectCondition> selectConditions, final String expectedCode, Attribute mockAttribute) throws Exception {
         PicoWriter picoWriter = new PicoWriter();
-        try (MockedStatic<RelationSchema> mockSchema = Mockito.mockStatic(RelationSchema.class)) {
-            mockSchema.when(() -> RelationSchema.getColumnAttribute(any(Relation.class), any(String.class))).thenReturn(mockAttribute);
-            getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
-        }
+        when(schema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
+        getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
         assertEquals(picoWriter.toString().replaceAll("\\s+", ""), expectedCode);
     }
 
     private RelationProcessFunctionWriter getRelationProcessFunctionWriter() {
         when(relationProcessFunction.getName()).thenReturn("ClassName");
-        return new RelationProcessFunctionWriter(relationProcessFunction);
+        return new RelationProcessFunctionWriter(relationProcessFunction, schema);
     }
 }

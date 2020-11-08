@@ -4,6 +4,7 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AttributeValue;
 import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,9 @@ public class AggregateProcessFunctionWriterTest {
 
     @Mock
     private Relation relation;
+
+    @Mock
+    private RelationSchema schema;
 
     @Before
     public void initialization() {
@@ -86,6 +90,6 @@ public class AggregateProcessFunctionWriterTest {
         AggregateProcessFunction.AggregateValue aggregateValue = new AggregateProcessFunction
                 .AggregateValue("aggregateName", "expression", new AttributeValue("attributeValue"), relation);
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
-        return new AggregateProcessFunctionWriter(aggregateProcessFunction);
+        return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }
 }
