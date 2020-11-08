@@ -17,13 +17,13 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
 
     AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction) {
         this.aggregateProcessFunction = aggregateProcessFunction;
-        Class type = aggregateProcessFunction.getValueType();
+        Class<?> type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
         className = getProcessFunctionClassName(aggregateProcessFunction.getName());
     }
 
     @Override
-    public String write(String filePath) throws IOException {
+    public String write(String filePath) throws Exception {
         addImports(writer);
         addConstructorAndOpenClass(writer);
         addAggregateFunction(writer);
@@ -65,19 +65,19 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @VisibleForTesting
-    void addAggregateFunction(final PicoWriter writer) {
+    void addAggregateFunction(final PicoWriter writer) throws Exception {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
-        aggregateValues.forEach(aggregateValue -> {
+        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
             if (aggregateValue.getType().equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
-                expressionToCode(expression, code);
+                expressionToCode(aggregateValue.getRelation(), expression, code);
                 writer.writeln(code.toString());
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }
-        });
+        }
         writer.writeln_l("}");
     }
     @VisibleForTesting

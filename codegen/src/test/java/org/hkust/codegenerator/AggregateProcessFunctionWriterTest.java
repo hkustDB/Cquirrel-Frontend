@@ -3,6 +3,7 @@ package org.hkust.codegenerator;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AttributeValue;
+import org.hkust.schema.Relation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,9 @@ public class AggregateProcessFunctionWriterTest {
 
     @Mock
     private AggregateProcessFunction aggregateProcessFunction;
+
+    @Mock
+    private Relation relation;
 
     @Before
     public void initialization() {
@@ -80,7 +84,7 @@ public class AggregateProcessFunctionWriterTest {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
         when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
         AggregateProcessFunction.AggregateValue aggregateValue = new AggregateProcessFunction
-                .AggregateValue("aggregateName", "expression", new AttributeValue("attributeValue"));
+                .AggregateValue("aggregateName", "expression", new AttributeValue("attributeValue"), relation);
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
         return new AggregateProcessFunctionWriter(aggregateProcessFunction);
     }

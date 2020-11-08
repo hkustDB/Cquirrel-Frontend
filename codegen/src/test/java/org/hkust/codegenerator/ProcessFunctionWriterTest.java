@@ -1,10 +1,14 @@
 package org.hkust.codegenerator;
 
 import org.hkust.objects.*;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -16,14 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(MockitoJUnitRunner.class)
-
 public class ProcessFunctionWriterTest {
 
     @Rule
     public ExpectedException thrownException = ExpectedException.none();
 
+    @Mock
+    private Relation relation;
+
     @Test
-    public void expressionToCodeTest() {
+    public void expressionToCodeTest() throws Exception {
         List<Value> values = new ArrayList<>();
         //Dummy data types to test the different code flows, they don't make sense otherwise
         values.add(new ConstantValue("constant1", "date"));
@@ -65,11 +71,11 @@ public class ProcessFunctionWriterTest {
         new Expression(values, Operator.OR);
     }
 
-    private void testExpressionToCode(Expression expression, StringBuilder code) {
+    private void testExpressionToCode(Expression expression, StringBuilder code) throws Exception {
         try (MockedStatic<RelationSchema> mockSchema = Mockito.mockStatic(RelationSchema.class)) {
-            RelationSchema.Attribute mockAttribute = new RelationSchema.Attribute(Integer.class, 0, "attributeName");
-            mockSchema.when(() -> RelationSchema.getColumnAttribute(any(String.class))).thenReturn(mockAttribute);
-            ProcessFunctionWriter.expressionToCode(expression, code);
+            Attribute mockAttribute = new Attribute(Integer.class, 0, "attributeName");
+            mockSchema.when(() -> RelationSchema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
+            ProcessFunctionWriter.expressionToCode(relation, expression, code);
         }
     }
 

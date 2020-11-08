@@ -4,8 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.objects.*;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 
-import java.io.IOException;
 import java.util.*;
 
 class MainClassWriter implements ClassWriter {
@@ -41,7 +43,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     @Override
-    public String write(String filePath) throws IOException {
+    public String write(String filePath) throws Exception {
         addImports(writer);
         addConstructorAndOpenClass(writer);
         addMainFunction(writer);
@@ -89,12 +91,12 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    void addGetStreamFunction(final PicoWriter writer) {
-        Set<RelationSchema.Attribute> attributes = extractAttributes();
+    void addGetStreamFunction(final PicoWriter writer) throws Exception {
+        Set<Attribute> attributes = extractAttributes(relationProcessFunction.getRelation());
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
         attributeCode(attributes, columnNamesCode, tupleCode);
-        String lowerRelationName = relationProcessFunction.getRelationName().toLowerCase();
+        String lowerRelationName = relationProcessFunction.getRelation().getValue();
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
@@ -136,10 +138,10 @@ class MainClassWriter implements ClassWriter {
         return code.toString();
     }
     @VisibleForTesting
-    void attributeCode(Set<RelationSchema.Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
-        Iterator<RelationSchema.Attribute> iterator = attributes.iterator();
+    void attributeCode(Set<Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+        Iterator<Attribute> iterator = attributes.iterator();
         while (iterator.hasNext()) {
-            RelationSchema.Attribute attribute = iterator.next();
+            Attribute attribute = iterator.next();
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();
             String conversionMethod = stringConversionMethods.get(type);
@@ -157,36 +159,36 @@ class MainClassWriter implements ClassWriter {
         }
     }
 
-    private Set<RelationSchema.Attribute> extractAttributes() {
-        Set<RelationSchema.Attribute> columnNames = new LinkedHashSet<>();
+    private Set<Attribute> extractAttributes(Relation relation) throws Exception {
+        Set<Attribute> columnNames = new LinkedHashSet<>();
 
-        relationProcessFunction.getSelectConditions().forEach(condition -> {
-            attributeFromExpression(columnNames, condition.getExpression());
-        });
+        for (SelectCondition condition : relationProcessFunction.getSelectConditions()) {
+            attributeFromExpression(relation, columnNames, condition.getExpression());
+        }
 
-        aggregateProcessFunction.getAggregateValues().forEach(aggregateValue -> {
+        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             Value value = aggregateValue.getValue();
             if (value instanceof Expression) {
-                attributeFromExpression(columnNames, (Expression) value);
-                return;
+                attributeFromExpression(relation, columnNames, (Expression) value);
+                continue;
             }
-            attributeFromValue(columnNames, value);
-        });
+            attributeFromValue(relation, columnNames, value);
+        }
 
         return columnNames;
     }
 
-    private void attributeFromExpression(Set<RelationSchema.Attribute> columnNames, Expression expression) {
-        expression.getValues().forEach(value -> {
-            attributeFromValue(columnNames, value);
-        });
+    private void attributeFromExpression(Relation relation, Set<Attribute> columnNames, Expression expression) throws Exception {
+        for (Value value : expression.getValues()) {
+            attributeFromValue(relation, columnNames, value);
+        }
     }
 
-    private void attributeFromValue(Set<RelationSchema.Attribute> columnNames, Value value) {
+    private void attributeFromValue(Relation relation, Set<Attribute> columnNames, Value value) throws Exception {
         //Only AttributeValue entertained. Perhaps visitor pattern to avoid multiple if/else blocks?
         if (value instanceof AttributeValue) {
             String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
-            RelationSchema.Attribute attribute = RelationSchema.getColumnAttribute(lowerName);
+            Attribute attribute = RelationSchema.getColumnAttribute(relation, lowerName);
             if (attribute == null) {
                 throw new RuntimeException("Unable to find attribute/column name in schema for: " + lowerName);
             }

@@ -1,6 +1,8 @@
 package org.hkust.codegenerator;
 
 import org.hkust.objects.*;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -26,15 +28,15 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    static void expressionToCode(final Expression expression, StringBuilder code) {
+    static void expressionToCode(Relation relation, final Expression expression, StringBuilder code) throws Exception {
         List<Value> values = expression.getValues();
         int size = values.size();
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
-                expressionToCode((Expression) value, code);
+                expressionToCode(relation, (Expression) value, code);
             } else {
-                valueToCode(value, code);
+                valueToCode(relation, value, code);
             }
             if (i != size - 1) {
                 code.append(expression.getOperator().getValue());
@@ -42,14 +44,14 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void valueToCode(Value value, StringBuilder code) {
+    static void valueToCode(Relation relation, Value value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         //Note: expression can have an expression as one of its values, currently it is not being handled
         if (value instanceof ConstantValue) {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
-            attributeValueToCode((AttributeValue) value, code);
+            attributeValueToCode(relation, (AttributeValue) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -58,7 +60,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
     static void constantValueToCode(ConstantValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
-        Class type = value.getType();
+        Class<?> type = value.getType();
         if (type.equals(Type.getClass("date"))) {
             //Needed so generated code parses the date
             code.append("format.parse(\"").append(value.getValue()).append("\")");
@@ -69,11 +71,11 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void attributeValueToCode(AttributeValue value, StringBuilder code) {
+    static void attributeValueToCode(Relation relation, AttributeValue value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         final String columnName = value.getColumnName();
-        final Class type = RelationSchema.getColumnAttribute(columnName.toLowerCase()).getType();
+        final Class<?> type = RelationSchema.getColumnAttribute(relation, columnName.toLowerCase()).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
                 .append("\")")

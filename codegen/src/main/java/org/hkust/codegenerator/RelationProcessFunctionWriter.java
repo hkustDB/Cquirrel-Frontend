@@ -24,7 +24,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
      */
 
     @Override
-    public String write(final String filePath) throws IOException {
+    public String write(final String filePath) throws Exception {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports(writer);
         addConstructorAndOpenClass(writer);
@@ -36,14 +36,14 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @VisibleForTesting
-    void  addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) {
+    void  addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) throws Exception {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");
         SelectCondition condition;
         for (int i = 0; i < selectConditions.size(); i++) {
             condition = selectConditions.get(i);
-            expressionToCode(condition.getExpression(), ifCondition);
+            expressionToCode(relationProcessFunction.getRelation(), condition.getExpression(), ifCondition);
             if (i < selectConditions.size() - 1) {
                 //operator that binds each select condition
                 ifCondition.append(condition.getOperator().getValue());
@@ -72,7 +72,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +
-                relationProcessFunction.getRelationName() + "\"," +
+                relationProcessFunction.getRelation() + "\"," +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +

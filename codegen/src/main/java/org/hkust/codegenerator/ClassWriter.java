@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 interface ClassWriter {
-    String write(final String filePath) throws IOException;
+    String write(final String filePath) throws Exception;
     void addImports(final PicoWriter writer);
 
     void addConstructorAndOpenClass(final PicoWriter writer);

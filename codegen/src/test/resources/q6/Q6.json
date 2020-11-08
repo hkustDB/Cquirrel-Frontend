@@ -92,10 +92,12 @@
           "values": [
             {
               "type": "attribute",
+              "relation": "lineitem",
               "name": "L_EXTENDEDPRICE"
             },
             {
               "type": "attribute",
+              "relation": "lineitem",
               "name": "L_DISCOUNT"
             }
           ]

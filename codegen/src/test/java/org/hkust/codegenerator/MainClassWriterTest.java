@@ -4,6 +4,8 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,9 @@ public class MainClassWriterTest {
 
     @Mock
     private RelationProcessFunction relationProcessFunction;
+
+    @Mock
+    private Relation relation;
 
     @Mock
     private Node node;
@@ -65,10 +70,11 @@ public class MainClassWriterTest {
     }
 
     @Test
-    public void addGetStreamFunctionTest() {
+    public void addGetStreamFunctionTest() throws Exception {
         PicoWriter picoWriter = new PicoWriter();
         MainClassWriter mainClassWriter = getMainClassWriter();
-        when(relationProcessFunction.getRelationName()).thenReturn("relation");
+        when(relationProcessFunction.getRelation()).thenReturn(relation);
+        when(relation.getValue()).thenReturn("relation");
         mainClassWriter.addGetStreamFunction(picoWriter);
 
         assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {\n" +
@@ -103,8 +109,8 @@ public class MainClassWriterTest {
     @Test
     public void attributeCodeTest() {
         MainClassWriter mainClassWriter = getMainClassWriter();
-        RelationSchema.Attribute mockAttribute1 = new RelationSchema.Attribute(Integer.class, 0, "attribute1");
-        RelationSchema.Attribute mockAttribute2 = new RelationSchema.Attribute(Date.class, 1, "attribute2");
+        Attribute mockAttribute1 = new Attribute(Integer.class, 0, "attribute1");
+        Attribute mockAttribute2 = new Attribute(Date.class, 1, "attribute2");
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
 

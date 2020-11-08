@@ -1,6 +1,7 @@
 package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.schema.Relation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -9,7 +10,7 @@ import java.util.Map;
 
 public class RelationProcessFunction extends ProcessFunction {
     private final String name;
-    private final String relationName;
+    private final Relation relation;
     @Nullable
     private final List<String> thisKey;
     @Nullable
@@ -35,7 +36,7 @@ public class RelationProcessFunction extends ProcessFunction {
         if (childNodes < 0)
             throw new RuntimeException("Number of child nodes must be >=0, got: " + childNodes);
         CheckerUtils.checkNullOrEmpty(relationName, "relationName");
-        this.relationName = relationName;
+        this.relation = Relation.valueOf(relationName);
         this.childNodes = childNodes;
         this.isRoot = isRoot;
         this.isLast = isLast;
@@ -73,8 +74,8 @@ public class RelationProcessFunction extends ProcessFunction {
         return isLast;
     }
 
-    public String getRelationName() {
-        return relationName;
+    public Relation getRelation() {
+        return relation;
     }
 
     @Nullable

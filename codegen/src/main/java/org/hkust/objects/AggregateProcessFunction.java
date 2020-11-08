@@ -1,6 +1,7 @@
 package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.schema.Relation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -76,8 +77,9 @@ public class AggregateProcessFunction extends ProcessFunction {
         private final String name;
         private final String type;
         private final Value value;
+        private final Relation relation;
 
-        public AggregateValue(String name, String type, final Value value) {
+        public AggregateValue(String name, String type, final Value value, Relation relation) {
             CheckerUtils.checkNullOrEmpty(name, "name");
             CheckerUtils.checkNullOrEmpty(type, "type");
             this.name = name;
@@ -87,6 +89,11 @@ public class AggregateProcessFunction extends ProcessFunction {
             }
             requireNonNull(value);
             this.value = value;
+            this.relation = relation;
+        }
+
+        public Relation getRelation() {
+            return relation;
         }
 
         public String getName() {

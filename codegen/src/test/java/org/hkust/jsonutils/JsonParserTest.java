@@ -1,6 +1,7 @@
 package org.hkust.jsonutils;
 
 import org.hkust.objects.*;
+import org.hkust.schema.Relation;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,6 +27,9 @@ public class JsonParserTest {
     @Mock
     public Map<String, Object> mockMap;
 
+    @Mock
+    private Relation relation;
+
     @Before
     public void initialization() {
         MockitoAnnotations.openMocks(this);
@@ -46,6 +50,7 @@ public class JsonParserTest {
                 getExpression(),
                 Operator.AND
         ));
+
         requireNonNull(JsonParser.makeRelationProcessFunction(mockMap, selectConditions));
     }
 
@@ -59,7 +64,7 @@ public class JsonParserTest {
         List<AggregateProcessFunction.AggregateValue> aggregateValues = Collections.singletonList(
                 new AggregateProcessFunction.AggregateValue("AggregateValue",
                         "expression",
-                        new AttributeValue("attributeValue"))
+                        new AttributeValue("attributeValue"), relation)
         );
         requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap, aggregateValues));
     }

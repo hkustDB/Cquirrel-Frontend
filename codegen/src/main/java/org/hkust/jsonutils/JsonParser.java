@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
+import org.hkust.schema.Relation;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -59,7 +60,7 @@ public class JsonParser {
     private static List<AggregateProcessFunction> makeAggregateProcessFunctions(List<Map<String, Object>> apfList) {
         List<AggregateProcessFunction> result = new ArrayList<>();
         apfList.forEach(apf -> {
-            List<Map<String, Object>> agMap = (List<Map<String, Object>> ) apf.get("AggregateValue");
+            List<Map<String, Object>> agMap = (List<Map<String, Object>>) apf.get("AggregateValue");
             List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValues(agMap);
             result.add(makeAggregateProcessFunction(apf, aggregateValues));
         });
@@ -95,12 +96,13 @@ public class JsonParser {
     @VisibleForTesting
     static AggregateProcessFunction.AggregateValue makeAggregateValue(Map<String, Object> avMap, Expression expression) {
         String type = (String) avMap.get("type");
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = new ArrayList<>();
-        String aggregateName = (String) avMap.get("name");
-        if ("expression".equals(type)) {
-            return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
+        if (!"expression".equals(type)) {
+            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
+
         }
-        throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
+        String aggregateName = (String) avMap.get("name");
+        Relation relation = Relation.valueOf((String) avMap.get("relation"));
+        return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression, relation);
     }
 
     @VisibleForTesting
