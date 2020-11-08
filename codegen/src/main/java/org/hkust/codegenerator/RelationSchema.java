@@ -15,6 +15,8 @@ import static java.util.Objects.requireNonNull;
 
 public class RelationSchema {
     private static final Map<String, Attribute> lineitemSchema;
+    private static final Map<String, Attribute> OrdersSchema;
+    private static final Map<String, Attribute> CustomerSchema;
     private static ArrayListValuedHashMap<String, Attribute> schema = new ArrayListValuedHashMap<>();
 
     static {
@@ -37,6 +39,30 @@ public class RelationSchema {
             put("l_comment", new Attribute(Type.getClass("String"), 15, "l_comment"));
         }});
         schema.putAll(lineitemSchema);
+
+        OrdersSchema = ImmutableMap.copyOf(new HashMap<String, Attribute>(){{
+            put("orderkey", new Attribute(Type.getClass("long"), 0, "orderkey"));
+            put("o_custkey", new Attribute(Type.getClass("long"), 1, "o_custkey"));
+            put("o_orderstatus", new Attribute(Type.getClass("long"), 2, "o_orderstatus"));
+            put("o_totalprice", new Attribute(Type.getClass("long"), 3, "o_totalprice"));
+            put("o_orderdate", new Attribute(Type.getClass("long"), 4, "o_orderdate"));
+            put("o_orderpriority", new Attribute(Type.getClass("long"), 5, "o_orderpriority"));
+            put("o_clerk", new Attribute(Type.getClass("long"), 6, "o_clerk"));
+            put("o_shippriority", new Attribute(Type.getClass("long"), 7, "o_shippriority"));
+            put("o_comment", new Attribute(Type.getClass("long"), 8, "o_comment"));
+        }});
+        schema.putAll(OrdersSchema);
+
+        CustomerSchema = ImmutableMap.copyOf(new HashMap<String, Attribute>(){{
+            put("custkey", new Attribute(Type.getClass("long"), 0, "custkey"));
+            put("c_name", new Attribute(Type.getClass("long"), 1, "c_name"));
+            put("c_address", new Attribute(Type.getClass("long"), 2, "c_address"));
+            put("c_nationkey", new Attribute(Type.getClass("long"), 3, "c_nationkey"));
+            put("c_phone", new Attribute(Type.getClass("long"), 4, "c_phone"));
+            put("c_acctbal", new Attribute(Type.getClass("long"), 5, "c_acctbal"));
+            put("c_mktsegment", new Attribute(Type.getClass("long"), 6, "c_mktsegment"));
+            put("c_comment", new Attribute(Type.getClass("long"), 7, "c_comment"));
+        }});
     }
 
     @Nullable
