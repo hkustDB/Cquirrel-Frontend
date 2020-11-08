@@ -1,6 +1,7 @@
 import com.google.common.collect.ImmutableList;
 import org.hkust.codegenerator.CodeGenerator;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -26,6 +27,11 @@ public class IntegrationTest {
             GENERATED_CODE_PATH + File.separator + "target" + File.separator + "generated-code-1.0-SNAPSHOT-jar-with-dependencies.jar"
     );
 
+    @Before
+    public void packageJar() throws IOException {
+        execute(runtime, "mvn package -DskipTests -f .");
+    }
+
     @After
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(new File(GENERATED_CODE_PATH));
@@ -37,7 +43,7 @@ public class IntegrationTest {
                 "file:///home/data/qwangbp/lineitem.tbl",
                 "file:///home/data/qwangbp/testQ6.out",
                 "file",
-                false);
+                true);
 
         verifyResult("q6", Arrays.asList("Job.scala", "Q6AggregateProcessFunction.scala", "Q6lineitemProcessFunction"));
     }

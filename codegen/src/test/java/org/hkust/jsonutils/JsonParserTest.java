@@ -69,10 +69,8 @@ public class JsonParserTest {
         Mockito.when(mockMap.get("type")).thenReturn("expression");
         Mockito.when(mockMap.get("name")).thenReturn("AggregateValue");
 
-        List<AggregateProcessFunction.AggregateValue> result = JsonParser.makeAggregateValue(mockMap,
-                Collections.singletonList(new Expression(Collections.singletonList(new AttributeValue("attributeValue")), Operator.NOT)));
-        assertEquals(result.size(), 1);
-        AggregateProcessFunction.AggregateValue aggregateValue = result.get(0);
+        AggregateProcessFunction.AggregateValue aggregateValue = JsonParser.makeAggregateValue(mockMap,
+                new Expression(Collections.singletonList(new AttributeValue("attributeValue")), Operator.NOT));
         Value value = aggregateValue.getValue();
         assertTrue(value instanceof Expression);
         Expression expression = (Expression) value;
@@ -97,54 +95,39 @@ public class JsonParserTest {
 
     @Test
     public void makeSelectConditionsExpressionsTest() {
-        List<Expression> result = JsonParser.makeSelectConditionsExpressions(new HashSet<>(Arrays.asList(
-                getEntry("value1"),
-                getEntry("value2")
-        )));
+        List<Expression> result = JsonParser.makeSelectConditionsExpressions(Arrays.asList(
+                getValue(),
+                getValue()
+        ));
 
-        assertEquals(result.size(),2);
+        assertEquals(result.size(), 2);
         assertEquals(result.get(0).getValues().size(), 2);
         assertEquals(result.get(1).getValues().size(), 2);
         assertEquals(result.get(0).getValues(), result.get(1).getValues());
     }
 
     @NotNull
-    private Map.Entry<String, Object> getEntry(String key) {
-        return new Map.Entry<String, Object>() {
-            @Override
-            public String getKey() {
-                return key;
+    private Map<String, Object> getValue() {
+        Map<String, Object> map = Mockito.mock(Map.class);
+        Mockito.when(map.get("operator")).thenReturn("<");
+        Mockito.when(map.get("left_field")).thenReturn(new HashMap<String, Object>() {
+            {
+                put("type", "attribute");
+                put("name", "attributeName");
+
             }
+        });
 
-            @Override
-            public Object getValue() {
-                Map<String, Object> map = Mockito.mock(Map.class);
-                Mockito.when(map.get("operator")).thenReturn("<");
-                Mockito.when(map.get("left_field")).thenReturn(new HashMap<String, Object>(){
-                    {
-                        put("type", "attribute");
-                        put("name", "attributeName");
+        Mockito.when(map.get("right_field")).thenReturn(new HashMap<String, Object>() {
+            {
+                put("type", "constant");
+                put("value", "0.07");
+                put("var_type", "Double");
 
-                    }
-                });
-
-                Mockito.when(map.get("right_field")).thenReturn(new HashMap<String, Object>(){
-                    {
-                        put("type", "constant");
-                        put("value", "0.07");
-                        put("var_type", "Double");
-
-                    }
-                });
-
-                return map;
             }
+        });
 
-            @Override
-            public Object setValue(Object o) {
-                return null;
-            }
-        };
+        return map;
     }
 
     @NotNull
