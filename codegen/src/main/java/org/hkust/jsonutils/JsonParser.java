@@ -101,8 +101,7 @@ public class JsonParser {
 
         }
         String aggregateName = (String) avMap.get("name");
-        Relation relation = Relation.valueOf((String) avMap.get("relation"));
-        return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression, relation);
+        return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
     }
 
     @VisibleForTesting
@@ -146,7 +145,8 @@ public class JsonParser {
         Value value;
         if (type.equals("attribute")) {
             String name = (String) field.get("name");
-            value = new AttributeValue(name);
+            Relation relation = Relation.getRelation((String) field.get("relation"));
+            value = new AttributeValue(relation, name);
         } else if (type.equals("constant")) {
             value = new ConstantValue((String) field.get("value"), (String) field.get("var_type"));
         } else {

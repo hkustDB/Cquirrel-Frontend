@@ -54,7 +54,7 @@ public class RelationProcessFunctionWriterTest {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
         values.add(new ConstantValue("1", "int"));
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         SelectCondition condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         Attribute mockAttribute = new Attribute(Integer.class, 0, attributeName);
         isValidFunctionTest(Collections.singletonList(condition), ("override def isValid(value: Payload): Boolean = {\n" +
@@ -65,7 +65,7 @@ public class RelationProcessFunctionWriterTest {
                 mockAttribute);
 
         values.clear();
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         values.add(new ConstantValue("1", "int"));
         condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         isValidFunctionTest(Collections.singletonList(condition), ("override def isValid(value: Payload): Boolean = {\n" +
@@ -81,7 +81,7 @@ public class RelationProcessFunctionWriterTest {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
         values.add(new ConstantValue("1", "int"));
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         SelectCondition condition1 = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         SelectCondition condition2 = new SelectCondition(new Expression(values, Operator.EQUALS), Operator.AND);
         Attribute mockAttribute = new Attribute(Integer.class, 0, attributeName);

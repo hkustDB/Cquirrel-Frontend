@@ -50,7 +50,7 @@ public class ProcessFunctionWriterTest {
         //Dummy data types to test the different code flows, they don't make sense otherwise
         values.add(new ConstantValue("constant1", "date"));
         values.add(new ConstantValue("constant2", "int"));
-        values.add(new AttributeValue("attributeName"));
+        values.add(new AttributeValue(Relation.LINEITEM, "attributeName"));
         Expression expression = new Expression(values, Operator.AND);
 
         ProcessFunctionWriter processFunctionWriter = getProcessFunctionWriter();
@@ -79,7 +79,7 @@ public class ProcessFunctionWriterTest {
         new Expression(values, Operator.LESS_THAN);
 
         values.add(new ConstantValue("constant2", "int"));
-        values.add(new AttributeValue("attributeName"));
+        values.add(new AttributeValue(Relation.LINEITEM, "attributeName"));
         thrownException.expect(IllegalArgumentException.class);
         thrownException.expectMessage("Expression with more than 2 values can only have && or || as the operator");
         new Expression(values, Operator.LESS_THAN);
@@ -89,11 +89,9 @@ public class ProcessFunctionWriterTest {
     }
 
     private void testExpressionToCode(ProcessFunctionWriter processFunctionWriter, Expression expression, StringBuilder code) throws Exception {
-        //try (MockedStatic<RelationSchema> mockSchema = Mockito.mockStatic(RelationSchema.class)) {
         Attribute mockAttribute = new Attribute(Integer.class, 0, "attributeName");
         when(schema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
-        processFunctionWriter.expressionToCode(relation, expression, code);
-        //}
+        processFunctionWriter.expressionToCode(expression, code);
     }
 
     private ProcessFunctionWriter getProcessFunctionWriter() {

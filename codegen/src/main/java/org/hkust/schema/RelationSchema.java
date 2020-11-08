@@ -9,13 +9,8 @@ public class RelationSchema {
     public final Schema lineitem;
     public final Schema orders;
     public final Schema customer;
-    public static RelationSchema SCHEMA = new RelationSchema();
 
-    public static RelationSchema getInstance() {
-        return SCHEMA;
-    }
-
-    private RelationSchema() {
+    public RelationSchema() {
         Attribute lineitemPrimaryKey1 = new Attribute(Type.getClass("int"), 3, "l_linenumber");
         Attribute lineitemPrimaryKey2 = new Attribute(Type.getClass("long"), 0, "orderkey");
         lineitem = Schema.builder()

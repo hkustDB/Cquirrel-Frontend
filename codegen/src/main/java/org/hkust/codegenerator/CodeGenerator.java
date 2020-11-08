@@ -15,6 +15,8 @@ import java.util.List;
 
 public class CodeGenerator {
     public static final String GENERATED_CODE = "generated-code";
+    private static final RelationSchema schema = new RelationSchema();
+
 
     public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
@@ -26,8 +28,6 @@ public class CodeGenerator {
 
         String codeFilesPath = jarOutputPath + File.separator + GENERATED_CODE + File.separator + "src" + File.separator + "main" + File.separator + "scala" + File.separator + "org" + File.separator + "hkust";
         List<RelationProcessFunction> relationProcessFunctions = node.getRelationProcessFunctions();
-
-        RelationSchema schema = RelationSchema.getInstance();
 
         for (RelationProcessFunction relationProcessFunction : relationProcessFunctions) {
             new RelationProcessFunctionWriter(relationProcessFunction, schema).write(codeFilesPath);

@@ -77,9 +77,8 @@ public class AggregateProcessFunction extends ProcessFunction {
         private final String name;
         private final String type;
         private final Value value;
-        private final Relation relation;
 
-        public AggregateValue(String name, String type, final Value value, Relation relation) {
+        public AggregateValue(String name, String type, final Value value) {
             CheckerUtils.checkNullOrEmpty(name, "name");
             CheckerUtils.checkNullOrEmpty(type, "type");
             this.name = name;
@@ -89,11 +88,6 @@ public class AggregateProcessFunction extends ProcessFunction {
             }
             requireNonNull(value);
             this.value = value;
-            this.relation = relation;
-        }
-
-        public Relation getRelation() {
-            return relation;
         }
 
         public String getName() {

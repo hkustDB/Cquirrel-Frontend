@@ -88,7 +88,7 @@ public class AggregateProcessFunctionWriterTest {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
         when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
         AggregateProcessFunction.AggregateValue aggregateValue = new AggregateProcessFunction
-                .AggregateValue("aggregateName", "expression", new AttributeValue("attributeValue"), relation);
+                .AggregateValue("aggregateName", "expression", new AttributeValue(Relation.LINEITEM, "attributeValue"));
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
         return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }

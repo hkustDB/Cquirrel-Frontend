@@ -29,6 +29,7 @@
           {
             "left_field": {
               "type": "attribute",
+              "relation": "lineitem",
               "name": "l_shipdate"
             },
             "right_field": {
@@ -60,6 +61,7 @@
           {
             "left_field": {
               "type": "attribute",
+              "relation": "orders",
               "name": "o_orderdate"
             },
             "right_field": {
@@ -91,6 +93,7 @@
           {
             "left_field": {
               "type": "attribute",
+              "relation": "customer",
               "name": "c_mktsegment"
             },
             "right_field": {

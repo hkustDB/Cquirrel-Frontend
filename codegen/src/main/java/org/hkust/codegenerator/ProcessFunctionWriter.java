@@ -34,15 +34,15 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    void expressionToCode(Relation relation, final Expression expression, StringBuilder code) throws Exception {
+    void expressionToCode(final Expression expression, StringBuilder code) throws Exception {
         List<Value> values = expression.getValues();
         int size = values.size();
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
-                expressionToCode(relation, (Expression) value, code);
+                expressionToCode((Expression) value, code);
             } else {
-                valueToCode(relation, value, code);
+                valueToCode(value, code);
             }
             if (i != size - 1) {
                 code.append(expression.getOperator().getValue());
@@ -50,14 +50,14 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    void valueToCode(Relation relation, Value value, StringBuilder code) throws Exception {
+    void valueToCode(Value value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         //Note: expression can have an expression as one of its values, currently it is not being handled
         if (value instanceof ConstantValue) {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
-            attributeValueToCode(relation, (AttributeValue) value, code);
+            attributeValueToCode((AttributeValue) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -77,11 +77,11 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    void attributeValueToCode(Relation relation, AttributeValue value, StringBuilder code) throws Exception {
+    void attributeValueToCode(AttributeValue value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         final String columnName = value.getColumnName();
-        final Class<?> type = schema.getColumnAttribute(relation, columnName.toLowerCase()).getType();
+        final Class<?> type = schema.getColumnAttribute(value.getRelation(), columnName.toLowerCase()).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
                 .append("\")")

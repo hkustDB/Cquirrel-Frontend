@@ -39,7 +39,7 @@ public class JsonParserTest {
     @Test
     public void makeRelationProcessFunctionTest() {
         Mockito.when(mockMap.get("name")).thenReturn("RelationProcessFunction");
-        Mockito.when(mockMap.get("relation")).thenReturn("relation");
+        Mockito.when(mockMap.get("relation")).thenReturn("lineitem");
         Mockito.when(mockMap.get("this_key")).thenReturn(Collections.singletonList("this_key"));
         Mockito.when(mockMap.get("next_key")).thenReturn(Collections.singletonList("next_key"));
         Mockito.when(mockMap.get("child_nodes")).thenReturn(1.0);
@@ -64,7 +64,7 @@ public class JsonParserTest {
         List<AggregateProcessFunction.AggregateValue> aggregateValues = Collections.singletonList(
                 new AggregateProcessFunction.AggregateValue("AggregateValue",
                         "expression",
-                        new AttributeValue("attributeValue"), relation)
+                        new AttributeValue(Relation.LINEITEM, "attributeValue"))
         );
         requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap, aggregateValues));
     }
@@ -75,7 +75,7 @@ public class JsonParserTest {
         Mockito.when(mockMap.get("name")).thenReturn("AggregateValue");
 
         AggregateProcessFunction.AggregateValue aggregateValue = JsonParser.makeAggregateValue(mockMap,
-                new Expression(Collections.singletonList(new AttributeValue("attributeValue")), Operator.NOT));
+                new Expression(Collections.singletonList(new AttributeValue(Relation.LINEITEM, "attributeValue")), Operator.NOT));
         Value value = aggregateValue.getValue();
         assertTrue(value instanceof Expression);
         Expression expression = (Expression) value;
@@ -118,6 +118,7 @@ public class JsonParserTest {
         Mockito.when(map.get("left_field")).thenReturn(new HashMap<String, Object>() {
             {
                 put("type", "attribute");
+                put("relation", "lineitem");
                 put("name", "attributeName");
 
             }
@@ -137,6 +138,6 @@ public class JsonParserTest {
 
     @NotNull
     private Expression getExpression() {
-        return new Expression(Arrays.asList(new AttributeValue("attributeValue1"), new AttributeValue("attributeValue2")), Operator.AND);
+        return new Expression(Arrays.asList(new AttributeValue(Relation.LINEITEM, "attributeValue1"), new AttributeValue(Relation.LINEITEM, "attributeValue2")), Operator.AND);
     }
 }

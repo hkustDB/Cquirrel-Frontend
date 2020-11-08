@@ -73,7 +73,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
             StringBuilder code = new StringBuilder();
             if (aggregateValue.getType().equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
-                expressionToCode(aggregateValue.getRelation(), expression, code);
+                expressionToCode(expression, code);
                 writer.writeln(code.toString());
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");

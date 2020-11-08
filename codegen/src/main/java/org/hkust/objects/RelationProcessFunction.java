@@ -36,7 +36,7 @@ public class RelationProcessFunction extends ProcessFunction {
         if (childNodes < 0)
             throw new RuntimeException("Number of child nodes must be >=0, got: " + childNodes);
         CheckerUtils.checkNullOrEmpty(relationName, "relationName");
-        this.relation = Relation.valueOf(relationName);
+        this.relation = Relation.getRelation(relationName);
         this.childNodes = childNodes;
         this.isRoot = isRoot;
         this.isLast = isLast;

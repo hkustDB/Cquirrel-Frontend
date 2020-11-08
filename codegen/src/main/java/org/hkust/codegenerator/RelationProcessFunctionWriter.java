@@ -45,7 +45,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         SelectCondition condition;
         for (int i = 0; i < selectConditions.size(); i++) {
             condition = selectConditions.get(i);
-            expressionToCode(relationProcessFunction.getRelation(), condition.getExpression(), ifCondition);
+            expressionToCode(condition.getExpression(), ifCondition);
             if (i < selectConditions.size() - 1) {
                 //operator that binds each select condition
                 ifCondition.append(condition.getOperator().getValue());
@@ -74,7 +74,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         String code = "class " +
                 className +
                 " extends RelationFKProcessFunction[Any](\"" +
-                relationProcessFunction.getRelation() + "\"," +
+                relationProcessFunction.getRelation().getValue() + "\"," +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +

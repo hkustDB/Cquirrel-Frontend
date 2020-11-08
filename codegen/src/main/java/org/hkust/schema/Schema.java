@@ -58,7 +58,6 @@ class Schema {
         }
 
         SchemaBuilder withParent(Schema parent) {
-            requireNonNull(parent);
             schema.setParent(parent);
 
             return this;
