@@ -27,9 +27,6 @@ public class JsonParserTest {
     @Mock
     public Map<String, Object> mockMap;
 
-    @Mock
-    private Relation relation;
-
     @Before
     public void initialization() {
         MockitoAnnotations.openMocks(this);

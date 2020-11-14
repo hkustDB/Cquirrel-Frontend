@@ -17,7 +17,7 @@ public enum Relation {
 
     public static Relation getRelation(String relation) {
         for (Relation r : values()) {
-            if (r.getValue().equals(relation)) {
+            if (r.getValue().equals(relation.toLowerCase())) {
                 return r;
             }
         }

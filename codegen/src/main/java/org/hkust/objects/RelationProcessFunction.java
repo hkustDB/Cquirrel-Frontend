@@ -74,6 +74,10 @@ public class RelationProcessFunction extends ProcessFunction {
         return isLast;
     }
 
+    public boolean isLeaf() {
+        return childNodes == 0;
+    }
+
     public Relation getRelation() {
         return relation;
     }

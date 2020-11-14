@@ -1,5 +1,6 @@
 package org.hkust.schema;
 
+import com.google.common.collect.ImmutableMap;
 import org.hkust.objects.Type;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,8 @@ public class RelationSchema {
     public final Schema lineitem;
     public final Schema orders;
     public final Schema customer;
+
+    Map<Relation, Schema> SCHEMAS;
 
     public RelationSchema() {
         Attribute lineitemPrimaryKey1 = new Attribute(Type.getClass("int"), 3, "l_linenumber");
@@ -69,21 +72,20 @@ public class RelationSchema {
                 .withPrimaryKey(Collections.singletonList(customerPrimaryKey))
                 .build();
 
+        SCHEMAS = ImmutableMap.of(Relation.LINEITEM, lineitem, Relation.ORDERS, orders, Relation.CUSTOMER, customer);
+    }
+
+    public Attribute getColumnAttribute(Relation relation, String columnName) {
+        Schema schema = SCHEMAS.get(relation);
+        if (schema != null) {
+            return schema.getAttributes().get(columnName);
+        }
+        throw new RuntimeException("Unknown relation name");
     }
 
     @Nullable
-    public Attribute getColumnAttribute(Relation relation, String columnName) {
-        switch (relation) {
-            case LINEITEM:
-                return lineitem.getAttributes().get(columnName);
-            case ORDERS:
-                return orders.getAttributes().get(columnName);
-            case CUSTOMER:
-                return customer.getAttributes().get(columnName);
-            default:
-                throw new RuntimeException("Unknown relation name");
-        }
+    public Schema getSchema(Relation relation) {
+        return SCHEMAS.get(relation);
     }
-
 
 }

@@ -60,8 +60,9 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
                 keyListToCode(aggregateProcessFunction.getNextKey()) +
                 "," +
                 " aggregateName = \"" +
-                (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") +
-                "\") {";
+                (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") + "\"" +
+                ", deltaOutput = true" +
+                ") {";
         writer.writeln_r(code);
     }
 

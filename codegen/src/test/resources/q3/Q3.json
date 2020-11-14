@@ -1,12 +1,12 @@
 {
   "join_structure": [
     {
-      "PrimaryRelation": "Orders",
-      "ForeignRelation": "Lineitem"
+      "primary": "Orders",
+      "foreign": "Lineitem"
     },
     {
-      "PrimaryRelation": "Customer",
-      "ForeignRelation": "Orders"
+      "primary": "Customer",
+      "foreign": "Orders"
     }
   ],
   "RelationProcessFunction": [
@@ -76,7 +76,7 @@
     },
     {
       "name": "Q3Customer",
-      "relation": "orders",
+      "relation": "customer",
       "this_key": [
         "custkey"
       ],
@@ -84,7 +84,7 @@
         "custkey"
       ],
       "child_nodes": 0,
-      "is_Root": true,
+      "is_Root": false,
       "is_Last": true,
       "rename_attribute": null,
       "select_conditions": {

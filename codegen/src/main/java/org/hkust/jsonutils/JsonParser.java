@@ -1,10 +1,13 @@
 package org.hkust.jsonutils;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
 import org.hkust.schema.Relation;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,13 +22,15 @@ public class JsonParser {
         Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>() {
         }.getType());
 
+        Multimap<Relation, Relation> joinStructure = makeJoinStructure((List<Map<String, String>>) map.get("join_structure"));
+
         List<Map<String, Object>> rpfMap = (List<Map<String, Object>>) map.get("RelationProcessFunction");
         List<RelationProcessFunction> rpfs = makeRelationProcessFunctions(rpfMap);
 
         List<Map<String, Object>> apfMap = (List<Map<String, Object>>) map.get("AggregateProcessFunction");
         List<AggregateProcessFunction> apfs = makeAggregateProcessFunctions(apfMap);
 
-        return new Node(rpfs, apfs);
+        return new Node(rpfs, apfs, joinStructure);
     }
 
     private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
@@ -55,6 +60,18 @@ public class JsonParser {
                 (Map<String, String>) rpfMap.get("rename_attribute"),
                 selectConditions
         );
+    }
+
+    @Nullable
+    private static Multimap<Relation, Relation> makeJoinStructure(List<Map<String, String>> joinStructure) {
+        if (joinStructure == null) {
+            return null;
+        }
+
+        Multimap<Relation, Relation> structure = ArrayListMultimap.create();
+        joinStructure.forEach(js -> structure.put(Relation.getRelation(js.get("foreign")), Relation.getRelation(js.get("primary"))));
+
+        return structure;
     }
 
     private static List<AggregateProcessFunction> makeAggregateProcessFunctions(List<Map<String, Object>> apfList) {
@@ -148,7 +165,10 @@ public class JsonParser {
             Relation relation = Relation.getRelation((String) field.get("relation"));
             value = new AttributeValue(relation, name);
         } else if (type.equals("constant")) {
-            value = new ConstantValue((String) field.get("value"), (String) field.get("var_type"));
+            //TODO: are we relying on the json data type? Should we have a proper type conversion?
+            value = new ConstantValue(field.get("value"), (String) field.get("var_type"));
+        } else if (type.equals("expression")) {
+            return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }

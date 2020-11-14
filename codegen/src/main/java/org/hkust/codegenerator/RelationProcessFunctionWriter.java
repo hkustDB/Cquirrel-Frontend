@@ -7,7 +7,6 @@ import org.hkust.objects.RelationProcessFunction;
 import org.hkust.objects.SelectCondition;
 import org.hkust.schema.RelationSchema;
 
-import java.io.IOException;
 import java.util.List;
 
 class RelationProcessFunctionWriter extends ProcessFunctionWriter {
@@ -38,7 +37,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @VisibleForTesting
-    void  addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) throws Exception {
+    void addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) throws Exception {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");
@@ -71,14 +70,17 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
 
     @Override
     public void addConstructorAndOpenClass(final PicoWriter writer) {
+        boolean isLeaf = relationProcessFunction.isLeaf();
         String code = "class " +
                 className +
-                " extends RelationFKProcessFunction[Any](\"" +
+                (isLeaf ? " extends RelationFKProcessFunction[Any](\"" : " extends RelationFKCoProcessFunction[Any](\"") +
                 relationProcessFunction.getRelation().getValue() + "\"," +
+                (isLeaf ? "" : relationProcessFunction.getChildNodes() + ",") +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +
-                "," + "true)" + "{";
+                "," + relationProcessFunction.isRoot()
+                + (isLeaf ? ") {" : ", " + relationProcessFunction.isLast() + ") {");
         writer.writeln(code);
     }
 }
