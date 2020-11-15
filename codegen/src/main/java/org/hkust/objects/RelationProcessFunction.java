@@ -23,9 +23,6 @@ public class RelationProcessFunction extends ProcessFunction {
     private final Map<String, String> renaming;
     private final List<SelectCondition> selectConditions;
 
-    @Nullable
-    private RelationProcessFunction parent = null;
-
     public RelationProcessFunction(String name, String relationName, List<String> thisKey, List<String> nextKey, int childNodes,
                                    boolean isRoot, boolean isLast, Map<String, String> renaming,
                                    List<SelectCondition> selectConditions) {

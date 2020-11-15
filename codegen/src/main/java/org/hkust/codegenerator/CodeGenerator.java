@@ -57,7 +57,7 @@ public class CodeGenerator {
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         System.out.println("Running " + command + ":\n");
-        String output = null;
+        String output;
         while ((output = stdInput.readLine()) != null) {
             System.out.println(output);
         }

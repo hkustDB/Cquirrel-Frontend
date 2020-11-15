@@ -1,8 +1,6 @@
 package org.hkust.jsonutils;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
@@ -22,7 +20,7 @@ public class JsonParser {
         Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>() {
         }.getType());
 
-        Multimap<Relation, Relation> joinStructure = makeJoinStructure((List<Map<String, String>>) map.get("join_structure"));
+        Map<Relation, Relation> joinStructure = makeJoinStructure((List<Map<String, String>>) map.get("join_structure"));
 
         List<Map<String, Object>> rpfMap = (List<Map<String, Object>>) map.get("RelationProcessFunction");
         List<RelationProcessFunction> rpfs = makeRelationProcessFunctions(rpfMap);
@@ -63,13 +61,13 @@ public class JsonParser {
     }
 
     @Nullable
-    private static Multimap<Relation, Relation> makeJoinStructure(List<Map<String, String>> joinStructure) {
+    private static Map<Relation, Relation> makeJoinStructure(List<Map<String, String>> joinStructure) {
         if (joinStructure == null) {
             return null;
         }
 
-        Multimap<Relation, Relation> structure = ArrayListMultimap.create();
-        joinStructure.forEach(js -> structure.put(Relation.getRelation(js.get("foreign")), Relation.getRelation(js.get("primary"))));
+        Map<Relation, Relation> structure = new HashMap<>();
+        joinStructure.forEach(js -> structure.put(Relation.getRelation(js.get("primary")), Relation.getRelation(js.get("foreign"))));
 
         return structure;
     }

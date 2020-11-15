@@ -1,20 +1,21 @@
 package org.hkust.objects;
 
-import com.google.common.collect.Multimap;
 import org.hkust.schema.Relation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
 public class Node {
     private final List<RelationProcessFunction> relationProcessFunctions;
     private final List<AggregateProcessFunction> aggregateProcessFunctions;
-    private final Multimap<Relation, Relation> joinStructure;
+    //Currently only supports 1 parent for each relation
+    private final Map<Relation, Relation> joinStructure;
 
 
-    public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions, Multimap<Relation, Relation> joinStructure) {
+    public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions, Map<Relation, Relation> joinStructure) {
         this.joinStructure = joinStructure;
         requireNonNull(relationProcessFunctions);
         requireNonNull(aggregateProcessFunctions);
@@ -31,7 +32,7 @@ public class Node {
     }
 
     @Nullable
-    public Multimap<Relation, Relation> getJoinStructure() {
+    public Map<Relation, Relation> getJoinStructure() {
         return joinStructure;
     }
 

@@ -1,27 +1,29 @@
 package org.hkust.codegenerator;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.objects.*;
 import org.hkust.schema.Attribute;
 import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
-    private final AggregateProcessFunction aggregateProcessFunction;
-    private final String aggregateProcFuncClassName;
-    private final RelationProcessFunction relationProcessFunction;
-    private final String relationProcFuncClassName;
+    private final List<AggregateProcessFunction> aggregateProcessFunctions;
+    private final List<RelationProcessFunction> relationProcessFunctions;
+    private final Map<Relation, Relation> joinStructure;
     private final String flinkInputPath;
     private final String flinkOutputPath;
-    private final PicoWriter writer = new PicoWriter();
     private final RelationSchema schema;
-
-    private static final Map<Class, String> stringConversionMethods = new HashMap<>();
+    private final Map<Relation, String> tagNames;
+    private final Map<String, String> ACTIONS = ImmutableMap.of("Insert", "+", "Delete", "-");
+    private static final Map<Class<?>, String> stringConversionMethods = new HashMap<>();
 
     static {
         stringConversionMethods.put(Integer.class, "toInt");
@@ -35,18 +37,20 @@ class MainClassWriter implements ClassWriter {
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
         this.flinkOutputPath = flinkOutputPath;
-        //TODO: to be changed to handle multiple process functions
-        this.aggregateProcessFunction = node.getAggregateProcessFunctions().get(0);
-        this.aggregateProcFuncClassName = getProcessFunctionClassName(aggregateProcessFunction.getName());
-        //TODO: to be changed to handle multiple process functions
-        this.relationProcessFunction = node.getRelationProcessFunctions().get(0);
-        this.relationProcFuncClassName = getProcessFunctionClassName(relationProcessFunction.getName());
-
+        this.aggregateProcessFunctions = node.getAggregateProcessFunctions();
+        this.relationProcessFunctions = node.getRelationProcessFunctions();
+        this.joinStructure = node.getJoinStructure();
         this.schema = schema;
+        this.tagNames = new HashMap<>();
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            tagNames.put(rpf.getRelation(), rpf.getRelation().getValue().toLowerCase() + "Tag");
+        }
     }
 
     @Override
     public String write(String filePath) throws Exception {
+        final PicoWriter writer = new PicoWriter();
+
         addImports(writer);
         addConstructorAndOpenClass(writer);
         addMainFunction(writer);
@@ -69,6 +73,9 @@ class MainClassWriter implements ClassWriter {
     @Override
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         writer.writeln_r("object " + CLASS_NAME + " {");
+        relationProcessFunctions.forEach(rpf -> {
+            writer.writeln(tagNames.get(rpf.getRelation()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelation().getValue() + "\")");
+        });
     }
 
     @VisibleForTesting
@@ -82,10 +89,43 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("val inputpath = \"" + flinkInputPath + "\"");
         writer.writeln("val outputpath = \"" + flinkOutputPath + "\"");
         writer.writeln("val inputStream : DataStream[Payload] = getStream(env,inputpath)");
+        tagNames.forEach((key, value) -> writer.writeln("val " + key.getValue().toLowerCase() + " : DataStream[Payload] = inputStream.getSideOutput(" + value + ")"));
+        if (relationProcessFunctions.size() == 1) {
+            writeRootStream(relationProcessFunctions.get(0), writer);
+        } else {
+            RelationProcessFunction leaf = getLeafOrParent(true);
+            RelationProcessFunction parent = getRelation(joinStructure.get(leaf.getRelation()));
+            while (parent != null) {
+                writeStream(leaf, parent, writer);
+                leaf = parent;
+                parent = getRelation(joinStructure.get(parent.getRelation()));
+            }
+            RelationProcessFunction root = getLeafOrParent(false);
+
+            writeRootStream(root, writer);
+        }
+    }
+
+    @NotNull
+    private RelationProcessFunction getLeafOrParent(boolean leaf) {
+        RelationProcessFunction relationProcessFunction = null;
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if ((leaf ? rpf.isLeaf() : rpf.isRoot())) {
+                relationProcessFunction = rpf;
+            }
+        }
+        if (relationProcessFunction == null) {
+            throw new RuntimeException("No relation process function found in " + relationProcessFunctions);
+        }
+        return relationProcessFunction;
+    }
+
+    private void writeRootStream(RelationProcessFunction root, final PicoWriter writer) {
         writer.writeln("val result  = inputStream.keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(relationProcessFunction.getName()) + "())");
+        String className = getProcessFunctionClassName(root.getName());
+        writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunction.getName()) + ")");
+        writer.writeln(".process(new " + className + "())");
         writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
@@ -93,40 +133,73 @@ class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
+    private void writeStream(RelationProcessFunction relationProcessFunction, RelationProcessFunction parent, final PicoWriter writer) {
+        String streamSuffix = "S";
+        String leafName = relationProcessFunction.getName();
+        writer.writeln("val " + leafName + streamSuffix + " = " + leafName + ".keyBy(i => i._3)");
+        writer.writeln(".process(new " + getProcessFunctionClassName(leafName) + "())");
+        Relation leafParent = joinStructure.get(relationProcessFunction.getRelation());
+        if (leafParent == null) {
+            throw new RuntimeException("No relationProcessFunction parent found for " + relationProcessFunction);
+
+        }
+        writer.writeln(".connect(" + leafParent.getValue() + ")");
+        writer.writeln(".process(new " + getProcessFunctionClassName(parent.getName()) + ")");
+    }
+
+    @Nullable
+    private RelationProcessFunction getRelation(Relation relation) {
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (rpf.getRelation() == relation) {
+                return rpf;
+            }
+        }
+        return null;
+    }
+
     @VisibleForTesting
     void addGetStreamFunction(final PicoWriter writer) throws Exception {
-        Set<Attribute> attributes = extractAttributes(relationProcessFunction.getRelation());
-        StringBuilder columnNamesCode = new StringBuilder();
-        StringBuilder tupleCode = new StringBuilder();
-        attributeCode(attributes, columnNamesCode, tupleCode);
-        String lowerRelationName = relationProcessFunction.getRelation().getValue();
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
         writer.writeln("var cnt : Long = 0");
         writer.writeln("val restDS : DataStream[Payload] = data");
-        writer.writeln(".map(line => {");
+        writer.writeln(".process((value: String, ctx: ProcessFunction[String, Payload]#Context, out: Collector[Payload]) => {");
         writer.writeln("val header = line.substring(0,3)");
         writer.writeln("val cells : Array[String] = line.substring(3).split(\"\\\\|\")");
-        writer.writeln("val i = Tuple" + attributes.size() + "(" + tupleCode.toString() + ")");
         writer.writeln("var relation = \"\"");
         writer.writeln("var action = \"\"");
-        writer.writeln("header match {");
-        writer.writeln("case \"+LI\" =>");
-        writer.writeln("relation = \"" + lowerRelationName + "\"");
-        writer.writeln("action = \"Insert\"");
-        writer.writeln("case \"-LI\" =>");
-        writer.writeln("relation = \"" + lowerRelationName + "\"");
-        writer.writeln("action = \"Delete\"");
-        writer.writeln("}");
-        writer.writeln("cnt = cnt + 1");
-        writer.writeln("Payload(relation, action,");
-        writer.writeln("Tuple2(cells(0).toInt, cells(3).toInt).asInstanceOf[Any],");
-        writer.writeln("Array(" + iteratorCode(attributes.size()) + "),");
-        writer.writeln("Array(" + columnNamesCode.toString() + "), cnt)");
-        writer.writeln("}).setParallelism(1).filter(x => x._1 != \"\").setParallelism(1)");
+        writer.writeln_r("header match {");
+
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            Relation relation = rpf.getRelation();
+            Set<Attribute> attributes = extractAttributes(rpf);
+            String lowerRelationName = relation.getValue();
+            StringBuilder columnNamesCode = new StringBuilder();
+            StringBuilder tupleCode = new StringBuilder();
+            attributeCode(attributes, columnNamesCode, tupleCode);
+            String caseLabel = caseLabel(relation);
+            ACTIONS.forEach((key, value) -> {
+                writer.writeln("case \"" + value + caseLabel + "\" =>");
+                writer.writeln("action = \"" + key + "\"");
+                writer.writeln("relation = \"" + lowerRelationName + "\"");
+                writer.writeln("val i = Tuple" + attributes.size() + "(" + tupleCode.toString() + ")");
+                writer.writeln("cnt = cnt + 1");
+                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
+                writer.writeln("Array[Any](" + iteratorCode(attributes.size()) + "),");
+                writer.writeln("Array(" + columnNamesCode.toString() + "), cnt)");
+            });
+            writer.writeln("case _ =>");
+            writer.writeln("out.collect(Payload(\"\", \"\", 0, Array(), Array(), 0))");
+            writer.writeln("}");
+        }
+        writer.writeln("}).setParallelism(1)");
         writer.writeln("restDS");
         writer.writeln_l("}");
+    }
+
+    private String caseLabel(Relation relation) {
+        return relation.getValue().substring(0, 2).toUpperCase();
     }
 
     private String iteratorCode(int num) {
@@ -140,6 +213,7 @@ class MainClassWriter implements ClassWriter {
         }
         return code.toString();
     }
+
     @VisibleForTesting
     void attributeCode(Set<Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Iterator<Attribute> iterator = attributes.iterator();
@@ -162,14 +236,15 @@ class MainClassWriter implements ClassWriter {
         }
     }
 
-    private Set<Attribute> extractAttributes(Relation relation) throws Exception {
+    private Set<Attribute> extractAttributes(RelationProcessFunction rpf) throws Exception {
         Set<Attribute> columnNames = new LinkedHashSet<>();
-
-        for (SelectCondition condition : relationProcessFunction.getSelectConditions()) {
+        Relation relation = rpf.getRelation();
+        for (SelectCondition condition : rpf.getSelectConditions()) {
             attributeFromExpression(relation, columnNames, condition.getExpression());
         }
 
-        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+        //TODO: currently only one aggregate process function is supported
+        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateProcessFunctions.get(0).getAggregateValues()) {
             Value value = aggregateValue.getValue();
             if (value instanceof Expression) {
                 attributeFromExpression(relation, columnNames, (Expression) value);
@@ -193,7 +268,9 @@ class MainClassWriter implements ClassWriter {
             String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
             Attribute attribute = schema.getColumnAttribute(relation, lowerName);
             if (attribute == null) {
-                throw new RuntimeException("Unable to find attribute/column name in schema for: " + lowerName);
+                return;
+                //TODO: do we need to throw? Currently I am adding the attributes from the AggregateValue that are also present in the relation in question's schema
+                //throw new RuntimeException("Unable to find attribute/column name in schema for: " + relation + "." + lowerName);
             }
             columnNames.add(attribute);
         }
