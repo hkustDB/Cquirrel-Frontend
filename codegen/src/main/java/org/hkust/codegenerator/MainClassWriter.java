@@ -74,7 +74,7 @@ class MainClassWriter implements ClassWriter {
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         writer.writeln_r("object " + CLASS_NAME + " {");
         relationProcessFunctions.forEach(rpf -> {
-            writer.writeln(tagNames.get(rpf.getRelation()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelation().getValue() + "\")");
+            writer.writeln("val " + tagNames.get(rpf.getRelation()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelation().getValue() + "\")");
         });
     }
 
@@ -189,10 +189,10 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("Array[Any](" + iteratorCode(attributes.size()) + "),");
                 writer.writeln("Array(" + columnNamesCode.toString() + "), cnt)");
             });
-            writer.writeln("case _ =>");
-            writer.writeln("out.collect(Payload(\"\", \"\", 0, Array(), Array(), 0))");
-            writer.writeln("}");
         }
+        writer.writeln("case _ =>");
+        writer.writeln("out.collect(Payload(\"\", \"\", 0, Array(), Array(), 0))");
+        writer.writeln("}");
         writer.writeln("}).setParallelism(1)");
         writer.writeln("restDS");
         writer.writeln_l("}");
@@ -236,21 +236,20 @@ class MainClassWriter implements ClassWriter {
         }
     }
 
-    private Set<Attribute> extractAttributes(RelationProcessFunction rpf) throws Exception {
+    private Set<Attribute> extractAttributes(RelationProcessFunction relationProcessFunction) throws Exception {
         Set<Attribute> columnNames = new LinkedHashSet<>();
-        Relation relation = rpf.getRelation();
-        for (SelectCondition condition : rpf.getSelectConditions()) {
-            attributeFromExpression(relation, columnNames, condition.getExpression());
+
+        for (SelectCondition condition : relationProcessFunction.getSelectConditions()) {
+            attributeFromExpression(relationProcessFunction.getRelation(), columnNames, condition.getExpression());
         }
 
-        //TODO: currently only one aggregate process function is supported
         for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateProcessFunctions.get(0).getAggregateValues()) {
             Value value = aggregateValue.getValue();
             if (value instanceof Expression) {
-                attributeFromExpression(relation, columnNames, (Expression) value);
+                attributeFromExpression(relationProcessFunction.getRelation(), columnNames, (Expression) value);
                 continue;
             }
-            attributeFromValue(relation, columnNames, value);
+            attributeFromValue(relationProcessFunction.getRelation(), columnNames, value);
         }
 
         return columnNames;
