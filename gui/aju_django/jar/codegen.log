@@ -1,0 +1,14 @@
+
+   _     __                                 _        ___           
+  /_\    \ \  /\ /\            ___ ___   __| | ___  / _ \___ _ __  
+ //_\\    \ \/ / \ \  _____   / __/ _ \ / _` |/ _ \/ /_\/ _ \ '_ \ 
+/  _  \/\_/ /\ \_/ / |_____| | (_| (_) | (_| |  __/ /_\\  __/ | | |
+\_/ \_/\___/  \___/           \___\___/ \__,_|\___\____/\___|_| |_|
+                                                                   
+
+
+Exception in thread "main" java.lang.NullPointerException
+	at org.hkust.jsonutils.JsonParser.parse(JsonParser.java:20)
+	at org.hkust.codegenerator.CodeGenerator.generate(CodeGenerator.java:21)
+	at CodeGen.main(CodeGen.java:29)
+
