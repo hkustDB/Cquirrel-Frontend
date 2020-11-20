@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    # path('', views.upload_json_file, name='upload_json_file'),
+    path('download_codegen_log', views.download_codegen_log, name='download_codegen_log'),
+    path('download_generated_jar', views.download_generated_jar, name='download_generated_jar'),
 ]

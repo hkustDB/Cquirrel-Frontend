@@ -155,6 +155,4 @@ def handle_uploaded_json_file(file):
     codegen_log_result = run_codegen_task(uploaded_json_file_path)
     result['codegen_log_result'] = codegen_log_result
 
-
-
     return result
