@@ -195,7 +195,7 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("cnt = cnt + 1");
                 writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
                 writer.writeln("Array[Any](" + iteratorCode(attributes.size()) + "),");
-                writer.writeln("Array([String](" + columnNamesCode.toString() + "), cnt)");
+                writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
             });
         }
         writer.writeln("case _ =>");
@@ -251,6 +251,10 @@ class MainClassWriter implements ClassWriter {
             Attribute attribute = iterator.next();
             Attribute rpfAttribute = schema.getColumnAttribute(rpf.getRelation(), attribute.getName());
             if (rpfAttribute == null || !rpfAttribute.equals(attribute)) {
+                if (!iterator.hasNext()) {
+                    columnNamesCode.delete(columnNamesCode.length() - ",".length(), columnNamesCode.length());
+                    tupleCode.delete(tupleCode.length() - ",".length(), tupleCode.length());
+                }
                 continue;
             }
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
