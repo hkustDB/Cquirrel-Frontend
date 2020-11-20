@@ -14,7 +14,6 @@ public class Node {
     //Currently only supports 1 parent for each relation
     private final Map<Relation, Relation> joinStructure;
 
-
     public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions, Map<Relation, Relation> joinStructure) {
         this.joinStructure = joinStructure;
         requireNonNull(relationProcessFunctions);

@@ -1,10 +1,14 @@
 package org.hkust.objects;
 
+import com.google.common.collect.ImmutableSet;
 import org.hkust.checkerutils.CheckerUtils;
-import org.hkust.schema.Relation;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
@@ -32,6 +36,30 @@ public class AggregateProcessFunction extends ProcessFunction {
         this.aggregation = aggregation;
         requireNonNull(valueType);
         this.valueType = valueType;
+    }
+
+    @Override
+    public Set<Attribute> getAttributeSet(RelationSchema schema) {
+        Set<Attribute> result = new HashSet<>();
+
+        aggregateValues.forEach(aggregateValue -> {
+            Value value = aggregateValue.getValue();
+            if (value instanceof Expression) {
+                Expression expression = (Expression) value;
+                addExpressionAttributes(expression, result, schema);
+            }
+        });
+
+        return ImmutableSet.copyOf(result);
+    }
+
+    private void addExpressionAttributes(Expression expression, Set<Attribute> attributes, RelationSchema schema) {
+        expression.getValues().forEach(val -> {
+            addIfAttributeValue(attributes, val, schema);
+            if (val instanceof Expression) {
+                addExpressionAttributes((Expression)val, attributes, schema);
+            }
+        });
     }
 
     @Override

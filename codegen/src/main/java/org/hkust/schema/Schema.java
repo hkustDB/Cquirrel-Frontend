@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
-class Schema {
+public class Schema {
     private Map<String, Attribute> attributes;
     private List<Attribute> primaryKey;
     private Schema parent;

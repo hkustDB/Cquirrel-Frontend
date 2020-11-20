@@ -19,6 +19,10 @@ public class Attribute {
         this.position = position;
     }
 
+    public static String rawColumnName(String columnName) {
+        return columnName.contains("_") ? columnName.substring(2).toLowerCase() : columnName.toLowerCase();
+    }
+
     public Class getType() {
         return type;
     }

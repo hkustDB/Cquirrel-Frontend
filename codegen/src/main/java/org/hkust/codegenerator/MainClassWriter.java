@@ -4,7 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
-import org.hkust.objects.*;
+import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.Node;
+import org.hkust.objects.RelationProcessFunction;
 import org.hkust.schema.Attribute;
 import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
@@ -171,13 +173,19 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("var action = \"\"");
         writer.writeln_r("header match {");
 
+        Set<Attribute> attributes = new HashSet<>();
+        for (RelationProcessFunction relationProcessFunction : relationProcessFunctions) {
+            attributes.addAll(relationProcessFunction.getAttributeSet(schema));
+        }
+        attributes.addAll(aggregateProcessFunctions.get(0).getAttributeSet(schema));
+
         for (RelationProcessFunction rpf : relationProcessFunctions) {
             Relation relation = rpf.getRelation();
-            Set<Attribute> attributes = extractAttributes(rpf);
             String lowerRelationName = relation.getValue();
             StringBuilder columnNamesCode = new StringBuilder();
             StringBuilder tupleCode = new StringBuilder();
-            attributeCode(attributes, columnNamesCode, tupleCode);
+
+            attributeCode(rpf, attributes, columnNamesCode, tupleCode);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
                 writer.writeln("case \"" + value + caseLabel + "\" =>");
@@ -187,7 +195,7 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("cnt = cnt + 1");
                 writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
                 writer.writeln("Array[Any](" + iteratorCode(attributes.size()) + "),");
-                writer.writeln("Array(" + columnNamesCode.toString() + "), cnt)");
+                writer.writeln("Array([String](" + columnNamesCode.toString() + "), cnt)");
             });
         }
         writer.writeln("case _ =>");
@@ -215,10 +223,36 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    void attributeCode(Set<Attribute> attributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+    void attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+        Set<Attribute> attributes = new HashSet<>(agfAttributes);
+
+        List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
+        if (agfNextKeys != null) {
+            for (String key : agfNextKeys) {
+                Attribute attribute = schema.getColumnAttribute(rpf.getRelation(), key);
+                if (attribute != null) {
+                    attributes.add(attribute);
+                }
+            }
+        }
+
+        List<String> agfThisKeys = aggregateProcessFunctions.get(0).getThisKey();
+        if (agfThisKeys != null) {
+            for (String key : agfThisKeys) {
+                Attribute attribute = schema.getColumnAttribute(rpf.getRelation(), key);
+                if (attribute != null) {
+                    attributes.add(attribute);
+                }
+            }
+        }
         Iterator<Attribute> iterator = attributes.iterator();
+
         while (iterator.hasNext()) {
             Attribute attribute = iterator.next();
+            Attribute rpfAttribute = schema.getColumnAttribute(rpf.getRelation(), attribute.getName());
+            if (rpfAttribute == null || !rpfAttribute.equals(attribute)) {
+                continue;
+            }
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();
             String conversionMethod = stringConversionMethods.get(type);
@@ -236,7 +270,7 @@ class MainClassWriter implements ClassWriter {
         }
     }
 
-    private Set<Attribute> extractAttributes(RelationProcessFunction relationProcessFunction) throws Exception {
+    /*private Set<Attribute> extractAttributes(RelationProcessFunction relationProcessFunction) throws Exception {
         Set<Attribute> columnNames = new LinkedHashSet<>();
 
         for (SelectCondition condition : relationProcessFunction.getSelectConditions()) {
@@ -253,15 +287,15 @@ class MainClassWriter implements ClassWriter {
         }
 
         return columnNames;
-    }
+    }*/
 
-    private void attributeFromExpression(Relation relation, Set<Attribute> columnNames, Expression expression) throws Exception {
+    /*private void attributeFromExpression(Relation relation, Set<Attribute> columnNames, Expression expression) throws Exception {
         for (Value value : expression.getValues()) {
             attributeFromValue(relation, columnNames, value);
         }
-    }
+    }*/
 
-    private void attributeFromValue(Relation relation, Set<Attribute> columnNames, Value value) throws Exception {
+    /*private void attributeFromValue(Relation relation, Set<Attribute> columnNames, Value value) throws Exception {
         //Only AttributeValue entertained. Perhaps visitor pattern to avoid multiple if/else blocks?
         if (value instanceof AttributeValue) {
             String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
@@ -273,5 +307,5 @@ class MainClassWriter implements ClassWriter {
             }
             columnNames.add(attribute);
         }
-    }
+    }*/
 }

@@ -15,10 +15,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -118,7 +116,7 @@ public class MainClassWriterTest {
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
 
-        mainClassWriter.attributeCode(new HashSet<>(Arrays.asList(mockAttribute1, mockAttribute2)), columnNamesCode, tupleCode);
+        //mainClassWriter.attributeCode(Relation.LINEITEM, new HashSet<>(Arrays.asList(mockAttribute1, mockAttribute2)), columnNamesCode, tupleCode);
 
         String columnsResult = columnNamesCode.toString();
         //Order of printed code isn't guaranteed so check for contains and do not tightly couple the exact string
@@ -136,7 +134,7 @@ public class MainClassWriterTest {
         when(node.getRelationProcessFunctions()).thenReturn(Collections.singletonList(relationProcessFunction));
         when(aggregateProcessFunction.getName()).thenReturn("aggregateProcessFunction");
         when(relationProcessFunction.getName()).thenReturn("relationProcessFunction");
-        return new MainClassWriter(node, schema,"flinkInput", "flinkOutput");
+        return new MainClassWriter(node, schema, "flinkInput", "flinkOutput");
     }
 
 }

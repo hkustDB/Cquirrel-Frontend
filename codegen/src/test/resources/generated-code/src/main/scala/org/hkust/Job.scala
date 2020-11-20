@@ -4,9 +4,9 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.hkust.RelationType.Payload
 object Job {
-   lineitemTag: OutputTag[Payload] = OutputTag[Payload]("lineitem")
-   ordersTag: OutputTag[Payload] = OutputTag[Payload]("orders")
-   customerTag: OutputTag[Payload] = OutputTag[Payload]("customer")
+   val lineitemTag: OutputTag[Payload] = OutputTag[Payload]("lineitem")
+   val ordersTag: OutputTag[Payload] = OutputTag[Payload]("orders")
+   val customerTag: OutputTag[Payload] = OutputTag[Payload]("customer")
    def main(args: Array[String]) {
       val env = StreamExecutionEnvironment.getExecutionEnvironment
       val params: ParameterTool = ParameterTool.fromArgs(args)
@@ -50,57 +50,51 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple2(format.parse(cells(10)),cells(5).toDouble)
+         val i = Tuple9(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2),
-         Array("L_SHIPDATE","L_EXTENDEDPRICE"), cnt)
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt)
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple2(format.parse(cells(10)),cells(5).toDouble)
+         val i = Tuple9(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2),
-         Array("L_SHIPDATE","L_EXTENDEDPRICE"), cnt)
-         case _ =>
-         out.collect(Payload("", "", 0, Array(), Array(), 0))
-         }
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt)
          case "+OR" =>
          action = "Insert"
          relation = "orders"
-         val i = Tuple1(cells(4).toLong)
+         val i = Tuple9(cells(1).toLong,cells(4).toLong,cells(7).toLong,cells(0).toLong,)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1),
-         Array("O_ORDERDATE"), cnt)
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("CUSTKEY","ORDERDATE","SHIPPRIORITY","ORDERKEY",), cnt)
          case "-OR" =>
          action = "Delete"
          relation = "orders"
-         val i = Tuple1(cells(4).toLong)
+         val i = Tuple9(cells(1).toLong,cells(4).toLong,cells(7).toLong,cells(0).toLong,)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1),
-         Array("O_ORDERDATE"), cnt)
-         case _ =>
-         out.collect(Payload("", "", 0, Array(), Array(), 0))
-         }
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("CUSTKEY","ORDERDATE","SHIPPRIORITY","ORDERKEY",), cnt)
          case "+CU" =>
          action = "Insert"
          relation = "customer"
-         val i = Tuple1(cells(6).toLong)
+         val i = Tuple9(cells(0).toLong,cells(6).toLong,)
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1),
-         Array("C_MKTSEGMENT"), cnt)
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("CUSTKEY","MKTSEGMENT",), cnt)
          case "-CU" =>
          action = "Delete"
          relation = "customer"
-         val i = Tuple1(cells(6).toLong)
+         val i = Tuple9(cells(0).toLong,cells(6).toLong,)
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1),
-         Array("C_MKTSEGMENT"), cnt)
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
+         Array([String]("CUSTKEY","MKTSEGMENT",), cnt)
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }

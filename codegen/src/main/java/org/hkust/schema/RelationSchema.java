@@ -14,7 +14,7 @@ public class RelationSchema {
     Map<Relation, Schema> SCHEMAS;
 
     public RelationSchema() {
-        Attribute lineitemPrimaryKey1 = new Attribute(Type.getClass("int"), 3, "l_linenumber");
+        Attribute lineitemPrimaryKey1 = new Attribute(Type.getClass("int"), 3, "linenumber");
         Attribute lineitemPrimaryKey2 = new Attribute(Type.getClass("long"), 0, "orderkey");
         lineitem = Schema.builder()
                 .withAttributes(new HashMap<String, Attribute>() {{
@@ -22,17 +22,17 @@ public class RelationSchema {
                     put("partkey", new Attribute(Type.getClass("long"), 1, "partkey"));
                     put("suppkey", new Attribute(Type.getClass("long"), 2, "suppkey"));
                     put("l_linenumber", lineitemPrimaryKey1);
-                    put("l_quantity", new Attribute(Type.getClass("double"), 4, "l_quantity"));
-                    put("l_extendedprice", new Attribute(Type.getClass("double"), 5, "l_extendedprice"));
-                    put("l_discount", new Attribute(Type.getClass("double"), 6, "l_discount"));
-                    put("l_tax", new Attribute(Type.getClass("double"), 7, "l_tax"));
-                    put("l_returnflag", new Attribute(Type.getClass("char"), 8, "l_returnflag"));
-                    put("l_linestatus", new Attribute(Type.getClass("char"), 9, "l_linestatus"));
-                    put("l_shipdate", new Attribute(Type.getClass("date"), 10, "l_shipdate"));
-                    put("l_commitdate", new Attribute(Type.getClass("date"), 11, "l_commitdate"));
-                    put("l_receiptdate", new Attribute(Type.getClass("date"), 12, "l_receiptdate"));
-                    put("l_shipinstruct", new Attribute(Type.getClass("String"), 13, "l_shipinstruct"));
-                    put("l_shipmode", new Attribute(Type.getClass("String"), 14, "l_shipmode"));
+                    put("l_quantity", new Attribute(Type.getClass("double"), 4, "quantity"));
+                    put("l_extendedprice", new Attribute(Type.getClass("double"), 5, "extendedprice"));
+                    put("l_discount", new Attribute(Type.getClass("double"), 6, "discount"));
+                    put("l_tax", new Attribute(Type.getClass("double"), 7, "tax"));
+                    put("l_returnflag", new Attribute(Type.getClass("char"), 8, "returnflag"));
+                    put("l_linestatus", new Attribute(Type.getClass("char"), 9, "linestatus"));
+                    put("l_shipdate", new Attribute(Type.getClass("date"), 10, "shipdate"));
+                    put("l_commitdate", new Attribute(Type.getClass("date"), 11, "commitdate"));
+                    put("l_receiptdate", new Attribute(Type.getClass("date"), 12, "receiptdate"));
+                    put("l_shipinstruct", new Attribute(Type.getClass("String"), 13, "shipinstruct"));
+                    put("l_shipmode", new Attribute(Type.getClass("String"), 14, "shipmode"));
                     put("l_comment", new Attribute(Type.getClass("String"), 15, "l_comment"));
                 }})
                 .withPrimaryKey(Arrays.asList(lineitemPrimaryKey1, lineitemPrimaryKey2))
@@ -43,13 +43,13 @@ public class RelationSchema {
         orders = Schema.builder()
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("orderkey", ordersPrimaryKey);
-                    put("custkey", new Attribute(Type.getClass("long"), 1, "o_custkey"));
-                    put("o_orderstatus", new Attribute(Type.getClass("long"), 2, "o_orderstatus"));
-                    put("o_totalprice", new Attribute(Type.getClass("long"), 3, "o_totalprice"));
-                    put("o_orderdate", new Attribute(Type.getClass("long"), 4, "o_orderdate"));
-                    put("o_orderpriority", new Attribute(Type.getClass("long"), 5, "o_orderpriority"));
-                    put("o_clerk", new Attribute(Type.getClass("long"), 6, "o_clerk"));
-                    put("o_shippriority", new Attribute(Type.getClass("long"), 7, "o_shippriority"));
+                    put("custkey", new Attribute(Type.getClass("long"), 1, "custkey"));
+                    put("o_orderstatus", new Attribute(Type.getClass("long"), 2, "orderstatus"));
+                    put("o_totalprice", new Attribute(Type.getClass("long"), 3, "totalprice"));
+                    put("o_orderdate", new Attribute(Type.getClass("long"), 4, "orderdate"));
+                    put("o_orderpriority", new Attribute(Type.getClass("long"), 5, "orderpriority"));
+                    put("o_clerk", new Attribute(Type.getClass("long"), 6, "clerk"));
+                    put("o_shippriority", new Attribute(Type.getClass("long"), 7, "shippriority"));
                     put("o_comment", new Attribute(Type.getClass("long"), 8, "o_comment"));
                 }})
                 .withPrimaryKey(Collections.singletonList(ordersPrimaryKey))
@@ -60,12 +60,12 @@ public class RelationSchema {
         customer = Schema.builder()
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("custkey", customerPrimaryKey);
-                    put("c_name", new Attribute(Type.getClass("long"), 1, "c_name"));
-                    put("c_address", new Attribute(Type.getClass("long"), 2, "c_address"));
-                    put("c_nationkey", new Attribute(Type.getClass("long"), 3, "c_nationkey"));
-                    put("c_phone", new Attribute(Type.getClass("long"), 4, "c_phone"));
-                    put("c_acctbal", new Attribute(Type.getClass("long"), 5, "c_acctbal"));
-                    put("c_mktsegment", new Attribute(Type.getClass("long"), 6, "c_mktsegment"));
+                    put("c_name", new Attribute(Type.getClass("long"), 1, "name"));
+                    put("c_address", new Attribute(Type.getClass("long"), 2, "address"));
+                    put("c_nationkey", new Attribute(Type.getClass("long"), 3, "nationkey"));
+                    put("c_phone", new Attribute(Type.getClass("long"), 4, "phone"));
+                    put("c_acctbal", new Attribute(Type.getClass("long"), 5, "acctbal"));
+                    put("c_mktsegment", new Attribute(Type.getClass("long"), 6, "mktsegment"));
                     put("c_comment", new Attribute(Type.getClass("long"), 7, "c_comment"));
                 }})
                 .withParent(orders)
@@ -75,12 +75,21 @@ public class RelationSchema {
         SCHEMAS = ImmutableMap.of(Relation.LINEITEM, lineitem, Relation.ORDERS, orders, Relation.CUSTOMER, customer);
     }
 
+    @Nullable
     public Attribute getColumnAttribute(Relation relation, String columnName) {
         Schema schema = SCHEMAS.get(relation);
-        if (schema != null) {
-            return schema.getAttributes().get(columnName);
+
+        if (schema == null) {
+            throw new RuntimeException("Unknown relation name");
         }
-        throw new RuntimeException("Unknown relation name");
+
+        for (Map.Entry<String, Attribute> attributeEntry : schema.getAttributes().entrySet()) {
+            if (Attribute.rawColumnName(attributeEntry.getKey()).equals(Attribute.rawColumnName((columnName)))) {
+                return attributeEntry.getValue();
+            }
+        }
+
+        return null;
     }
 
     @Nullable
