@@ -91,21 +91,30 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("val inputpath = \"" + flinkInputPath + "\"");
         writer.writeln("val outputpath = \"" + flinkOutputPath + "\"");
         writer.writeln("val inputStream : DataStream[Payload] = getStream(env,inputpath)");
-        tagNames.forEach((key, value) -> writer.writeln("val " + key.getValue().toLowerCase() + " : DataStream[Payload] = inputStream.getSideOutput(" + value + ")"));
+        tagNames.forEach((key, value) -> writer.writeln("val " + key.toString().toLowerCase() + " : DataStream[Payload] = inputStream.getSideOutput(" + value + ")"));
         if (relationProcessFunctions.size() == 1) {
-            writeRootStream(relationProcessFunctions.get(0), writer);
+            writeSingleRelationStream(relationProcessFunctions.get(0), writer);
         } else {
-            RelationProcessFunction leaf = getLeafOrParent(true);
-            RelationProcessFunction parent = getRelation(joinStructure.get(leaf.getRelation()));
-            while (parent != null) {
-                writeStream(leaf, parent, writer);
-                leaf = parent;
-                parent = getRelation(joinStructure.get(parent.getRelation()));
-            }
+            String streamName = writeStream(writer);
             RelationProcessFunction root = getLeafOrParent(false);
 
-            writeRootStream(root, writer);
+            writeRootStream(root, streamName, writer);
         }
+    }
+
+    private void writeRootStream(RelationProcessFunction root, String previousStreamName, final PicoWriter writer) {
+        writer.writeln("val result  = " + previousStreamName + ".keyBy(i => i._3)");
+        writer.writeln("connect(" + root.getRelation().toString().toLowerCase() + ")");
+        writer.writeln(".keyBy(i => i._3, i => i._3)");
+        String className = getProcessFunctionClassName(root.getName());
+        writer.writeln(".process(new " + className + "())");
+        writer.writeln(".keyBy(i => i._3)");
+        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
+        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
+        writer.writeln(".setParallelism(1)");
+        writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
+        writer.writeln_l("}");
     }
 
     @NotNull
@@ -122,12 +131,12 @@ class MainClassWriter implements ClassWriter {
         return relationProcessFunction;
     }
 
-    private void writeRootStream(RelationProcessFunction root, final PicoWriter writer) {
+    private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
         writer.writeln("val result  = inputStream.keyBy(i => i._3)");
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + className + "())");
+        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
         writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
@@ -135,18 +144,29 @@ class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
-    private void writeStream(RelationProcessFunction relationProcessFunction, RelationProcessFunction parent, final PicoWriter writer) {
+    private String writeStream(final PicoWriter writer) {
         String streamSuffix = "S";
-        String leafName = relationProcessFunction.getName();
-        writer.writeln("val " + leafName + streamSuffix + " = " + leafName + ".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(leafName) + "())");
-        Relation leafParent = joinStructure.get(relationProcessFunction.getRelation());
-        if (leafParent == null) {
-            throw new RuntimeException("No relationProcessFunction parent found for " + relationProcessFunction);
-
+        RelationProcessFunction leaf = getLeafOrParent(true);
+        String name = leaf.getName() + streamSuffix;
+        RelationProcessFunction parent = getRelation(joinStructure.get(leaf.getRelation()));
+        boolean skip = false;
+        while (parent != null) {
+            if (!skip) {
+                String leafName = leaf.getName();
+                writer.writeln("val " + leafName + streamSuffix + " = " + leaf.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
+                writer.writeln(".process(new " + getProcessFunctionClassName(leafName) + "())");
+                writer.writeln(".connect(" + parent.getRelation().toString().toLowerCase() + ")");
+                writer.writeln(".keyBy(i => i._3, i => i._3)");
+                writer.writeln(".process(new " + getProcessFunctionClassName(parent.getName()) + ")");
+                skip = true;
+            } else {
+                skip = false;
+            }
+            leaf = parent;
+            parent = getRelation(joinStructure.get(parent.getRelation()));
         }
-        writer.writeln(".connect(" + leafParent.getValue() + ")");
-        writer.writeln(".process(new " + getProcessFunctionClassName(parent.getName()) + ")");
+
+        return name;
     }
 
     @Nullable
@@ -185,16 +205,16 @@ class MainClassWriter implements ClassWriter {
             StringBuilder columnNamesCode = new StringBuilder();
             StringBuilder tupleCode = new StringBuilder();
 
-            attributeCode(rpf, attributes, columnNamesCode, tupleCode);
+            int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
                 writer.writeln("case \"" + value + caseLabel + "\" =>");
                 writer.writeln("action = \"" + key + "\"");
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
-                writer.writeln("val i = Tuple" + attributes.size() + "(" + tupleCode.toString() + ")");
+                writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
                 writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
-                writer.writeln("Array[Any](" + iteratorCode(attributes.size()) + "),");
+                writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
                 writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
             });
         }
@@ -223,7 +243,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    void attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
+    int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Set<Attribute> attributes = new HashSet<>(agfAttributes);
 
         List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
@@ -246,7 +266,7 @@ class MainClassWriter implements ClassWriter {
             }
         }
         Iterator<Attribute> iterator = attributes.iterator();
-
+        int numberOfMatchingColumns = 0;
         while (iterator.hasNext()) {
             Attribute attribute = iterator.next();
             Attribute rpfAttribute = schema.getColumnAttribute(rpf.getRelation(), attribute.getName());
@@ -257,6 +277,8 @@ class MainClassWriter implements ClassWriter {
                 }
                 continue;
             }
+            numberOfMatchingColumns++;
+
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();
             String conversionMethod = stringConversionMethods.get(type);
@@ -272,44 +294,7 @@ class MainClassWriter implements ClassWriter {
                 tupleCode.append(",");
             }
         }
+
+        return numberOfMatchingColumns;
     }
-
-    /*private Set<Attribute> extractAttributes(RelationProcessFunction relationProcessFunction) throws Exception {
-        Set<Attribute> columnNames = new LinkedHashSet<>();
-
-        for (SelectCondition condition : relationProcessFunction.getSelectConditions()) {
-            attributeFromExpression(relationProcessFunction.getRelation(), columnNames, condition.getExpression());
-        }
-
-        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateProcessFunctions.get(0).getAggregateValues()) {
-            Value value = aggregateValue.getValue();
-            if (value instanceof Expression) {
-                attributeFromExpression(relationProcessFunction.getRelation(), columnNames, (Expression) value);
-                continue;
-            }
-            attributeFromValue(relationProcessFunction.getRelation(), columnNames, value);
-        }
-
-        return columnNames;
-    }*/
-
-    /*private void attributeFromExpression(Relation relation, Set<Attribute> columnNames, Expression expression) throws Exception {
-        for (Value value : expression.getValues()) {
-            attributeFromValue(relation, columnNames, value);
-        }
-    }*/
-
-    /*private void attributeFromValue(Relation relation, Set<Attribute> columnNames, Value value) throws Exception {
-        //Only AttributeValue entertained. Perhaps visitor pattern to avoid multiple if/else blocks?
-        if (value instanceof AttributeValue) {
-            String lowerName = ((AttributeValue) value).getColumnName().toLowerCase();
-            Attribute attribute = schema.getColumnAttribute(relation, lowerName);
-            if (attribute == null) {
-                return;
-                //TODO: do we need to throw? Currently I am adding the attributes from the AggregateValue that are also present in the relation in question's schema
-                //throw new RuntimeException("Unable to find attribute/column name in schema for: " + relation + "." + lowerName);
-            }
-            columnNames.add(attribute);
-        }
-    }*/
 }

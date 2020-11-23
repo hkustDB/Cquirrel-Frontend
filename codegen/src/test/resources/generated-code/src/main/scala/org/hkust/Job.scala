@@ -16,21 +16,20 @@ object Job {
       val inputpath = "file:///home/data/qwangbp/lineitem.tbl"
       val outputpath = "file:///home/data/qwangbp/testQ6.out"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
-      val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
-      val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
-      val Q3CustomerS = Q3Customer.keyBy(i => i._3)
+      val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
+      val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
+      val Q3CustomerS = customer.keyBy(i => i._3)
       .process(new Q3CustomerProcessFunction())
       .connect(orders)
+      .keyBy(i => i._3, i => i._3)
       .process(new Q3OrdersProcessFunction)
-      val Q3OrdersS = Q3Orders.keyBy(i => i._3)
-      .process(new Q3OrdersProcessFunction())
-      .connect(lineitem)
-      .process(new Q3lineitemProcessFunction)
-      val result  = inputStream.keyBy(i => i._3)
+      val result  = Q3CustomerS.keyBy(i => i._3)
+      connect(lineitem)
+      .keyBy(i => i._3, i => i._3)
       .process(new Q3lineitemProcessFunction())
       .keyBy(i => i._3)
-      .process(new Q3lineitemProcessFunction())
+      .process(new Q3AggregateProcessFunction())
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
       .writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)
       .setParallelism(1)
@@ -50,51 +49,51 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple9(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
+         val i = Tuple5(cells(5).toDouble,cells(6).toDouble,format.parse(cells(10)),cells(3).toInt,cells(0).toLong)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4,i._5),
+         Array[String]("EXTENDEDPRICE","DISCOUNT","SHIPDATE","LINENUMBER","ORDERKEY"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple9(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
+         val i = Tuple5(cells(5).toDouble,cells(6).toDouble,format.parse(cells(10)),cells(3).toInt,cells(0).toLong)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4,i._5),
+         Array[String]("EXTENDEDPRICE","DISCOUNT","SHIPDATE","LINENUMBER","ORDERKEY"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"
-         val i = Tuple9(cells(1).toLong,cells(4).toLong,cells(7).toLong,cells(0).toLong)
+         val i = Tuple4(cells(4).toLong,cells(0).toLong,cells(1).toLong,cells(7).toLong)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("CUSTKEY","ORDERDATE","SHIPPRIORITY","ORDERKEY"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4),
+         Array[String]("ORDERDATE","ORDERKEY","CUSTKEY","SHIPPRIORITY"), cnt))
          case "-OR" =>
          action = "Delete"
          relation = "orders"
-         val i = Tuple9(cells(1).toLong,cells(4).toLong,cells(7).toLong,cells(0).toLong)
+         val i = Tuple4(cells(4).toLong,cells(0).toLong,cells(1).toLong,cells(7).toLong)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("CUSTKEY","ORDERDATE","SHIPPRIORITY","ORDERKEY"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4),
+         Array[String]("ORDERDATE","ORDERKEY","CUSTKEY","SHIPPRIORITY"), cnt))
          case "+CU" =>
          action = "Insert"
          relation = "customer"
-         val i = Tuple9(cells(0).toLong,cells(6).toLong)
+         val i = Tuple2(cells(6).toLong,cells(0).toLong)
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("CUSTKEY","MKTSEGMENT"), cnt))
+         Array[Any](i._1,i._2),
+         Array[String]("MKTSEGMENT","CUSTKEY"), cnt))
          case "-CU" =>
          action = "Delete"
          relation = "customer"
-         val i = Tuple9(cells(0).toLong,cells(6).toLong)
+         val i = Tuple2(cells(6).toLong,cells(0).toLong)
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7,i._8,i._9),
-         Array[String]("CUSTKEY","MKTSEGMENT"), cnt))
+         Array[Any](i._1,i._2),
+         Array[String]("MKTSEGMENT","CUSTKEY"), cnt))
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }

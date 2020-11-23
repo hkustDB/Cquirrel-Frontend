@@ -4,11 +4,10 @@ import org.hkust.checkerutils.CheckerUtils;
 
 import java.util.Objects;
 
-//TODO: revise the generalization
-public class ConstantValue<T> implements Value {
-    private final T value;
+public class ConstantValue implements Value {
+    private final String value;
     private final Class type;
-    public T getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -16,8 +15,8 @@ public class ConstantValue<T> implements Value {
         return type;
     }
 
-    public ConstantValue(T val, String type) {
-        //CheckerUtils.checkNullOrEmpty(val, "val");
+    public ConstantValue(String val, String type) {
+        CheckerUtils.checkNullOrEmpty(val, "val");
         CheckerUtils.checkNullOrEmpty(type, "type");
 
         String typeLower = type.toLowerCase();
@@ -41,7 +40,7 @@ public class ConstantValue<T> implements Value {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ConstantValue)) return false;
-        ConstantValue<?> that = (ConstantValue<?>) o;
+        ConstantValue that = (ConstantValue) o;
         return Objects.equals(value, that.value) &&
                 Objects.equals(type, that.type);
     }

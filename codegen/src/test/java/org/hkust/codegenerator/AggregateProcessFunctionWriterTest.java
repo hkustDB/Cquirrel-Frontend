@@ -40,7 +40,7 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addConstructorAndOpenClass(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("class ClassNameProcessFunction extends AggregateProcessFunction[Any, Integer](\"ClassNameProcessFunction\", Array(), Array(), aggregateName = \"aggregateName\") {").replaceAll("\\s+", ""));
+        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("classClassNameProcessFunctionextendsAggregateProcessFunction[Any,Integer](\"ClassNameProcessFunction\",Array(),Array(),aggregateName=\"aggregateName\",deltaOutput=true) {").replaceAll("\\s+", ""));
     }
 
     @Test

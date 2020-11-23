@@ -163,8 +163,7 @@ public class JsonParser {
             Relation relation = Relation.getRelation((String) field.get("relation"));
             value = new AttributeValue(relation, name);
         } else if (type.equals("constant")) {
-            //TODO: are we relying on the json data type? Should we have a proper type conversion?
-            value = new ConstantValue(field.get("value"), (String) field.get("var_type"));
+            value = new ConstantValue(field.get("value").toString(), (String) field.get("var_type"));
         } else if (type.equals("expression")) {
             return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else {
