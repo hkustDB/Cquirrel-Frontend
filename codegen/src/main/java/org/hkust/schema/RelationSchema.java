@@ -44,13 +44,13 @@ public class RelationSchema {
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("orderkey", ordersPrimaryKey);
                     put("custkey", new Attribute(Type.getClass("long"), 1, "custkey"));
-                    put("o_orderstatus", new Attribute(Type.getClass("long"), 2, "orderstatus"));
-                    put("o_totalprice", new Attribute(Type.getClass("long"), 3, "totalprice"));
-                    put("o_orderdate", new Attribute(Type.getClass("long"), 4, "orderdate"));
-                    put("o_orderpriority", new Attribute(Type.getClass("long"), 5, "orderpriority"));
-                    put("o_clerk", new Attribute(Type.getClass("long"), 6, "clerk"));
-                    put("o_shippriority", new Attribute(Type.getClass("long"), 7, "shippriority"));
-                    put("o_comment", new Attribute(Type.getClass("long"), 8, "o_comment"));
+                    put("o_orderstatus", new Attribute(Type.getClass("char"), 2, "orderstatus"));
+                    put("o_totalprice", new Attribute(Type.getClass("double"), 3, "totalprice"));
+                    put("o_orderdate", new Attribute(Type.getClass("date"), 4, "orderdate"));
+                    put("o_orderpriority", new Attribute(Type.getClass("string"), 5, "orderpriority"));
+                    put("o_clerk", new Attribute(Type.getClass("string"), 6, "clerk"));
+                    put("o_shippriority", new Attribute(Type.getClass("int"), 7, "shippriority"));
+                    put("o_comment", new Attribute(Type.getClass("string"), 8, "o_comment"));
                 }})
                 .withPrimaryKey(Collections.singletonList(ordersPrimaryKey))
                 .withParent(lineitem)
@@ -60,13 +60,13 @@ public class RelationSchema {
         customer = Schema.builder()
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("custkey", customerPrimaryKey);
-                    put("c_name", new Attribute(Type.getClass("long"), 1, "name"));
-                    put("c_address", new Attribute(Type.getClass("long"), 2, "address"));
+                    put("c_name", new Attribute(Type.getClass("string"), 1, "name"));
+                    put("c_address", new Attribute(Type.getClass("string"), 2, "address"));
                     put("c_nationkey", new Attribute(Type.getClass("long"), 3, "nationkey"));
-                    put("c_phone", new Attribute(Type.getClass("long"), 4, "phone"));
-                    put("c_acctbal", new Attribute(Type.getClass("long"), 5, "acctbal"));
-                    put("c_mktsegment", new Attribute(Type.getClass("long"), 6, "mktsegment"));
-                    put("c_comment", new Attribute(Type.getClass("long"), 7, "c_comment"));
+                    put("c_phone", new Attribute(Type.getClass("string"), 4, "phone"));
+                    put("c_acctbal", new Attribute(Type.getClass("double"), 5, "acctbal"));
+                    put("c_mktsegment", new Attribute(Type.getClass("string"), 6, "mktsegment"));
+                    put("c_comment", new Attribute(Type.getClass("string"), 7, "c_comment"));
                 }})
                 .withParent(orders)
                 .withPrimaryKey(Collections.singletonList(customerPrimaryKey))

@@ -3,7 +3,7 @@ package org.hkust.objects;
 public enum Operator {
     GREATER_THAN(">"),
     LESS_THAN("<"),
-    EQUALS("="),
+    EQUALS("=="),
     GREATER_THAN_EQUAL(">="),
     LESS_THAN_EQUAL("=<"),
     SUM("+"),

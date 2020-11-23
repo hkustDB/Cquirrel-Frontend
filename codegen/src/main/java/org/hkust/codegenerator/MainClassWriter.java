@@ -284,7 +284,7 @@ class MainClassWriter implements ClassWriter {
             String conversionMethod = stringConversionMethods.get(type);
             int position = attribute.getPosition();
             if (!type.equals(Date.class)) {
-                tupleCode.append("cells(").append(position).append(").").append(conversionMethod);
+                tupleCode.append("cells(").append(position).append(")").append(conversionMethod == null ? "" : "." + conversionMethod);
             } else {
                 tupleCode.append(conversionMethod).append("(cells(").append(position).append("))");
             }

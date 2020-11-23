@@ -101,7 +101,7 @@
               "var_type": "varchar",
               "value": "BUILDING"
             },
-            "operator": "="
+            "operator": "=="
           }
         ]
       }
