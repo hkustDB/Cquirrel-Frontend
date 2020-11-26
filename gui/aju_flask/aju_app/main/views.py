@@ -48,15 +48,17 @@ def upload_json_file():
     # call the codegen to generate a jar file
     codegen_log_result = aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
 
-    # cal the flink to run the generated_jar
+    # call the flink to run the generated_jar
     aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
 
-    return render_template('index.html', codegen_log_result=codegen_log_result,
+    logging.info("codegen_log_result: " + codegen_log_result)
+
+    return render_template('index.html', codegen_log_content=codegen_log_result,
                            uploaded_result="The json file uploaded successfully.")
 
 
-@main.route("/download_log")
-def download_log():
+@main.route("/download_codegen_log")
+def download_codegen_log():
     if os.path.exists(config.CODEGEN_LOG_FILE):
         return send_from_directory(config.CODEGEN_LOG_PATH, 'codegen.log', as_attachment=True)
 

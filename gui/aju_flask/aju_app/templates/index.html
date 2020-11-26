@@ -1,7 +1,7 @@
 {%- extends "base.html" %}
 
 
-<div class="container">
+
 
     {% block div_uploaded_file %}
 
@@ -16,7 +16,6 @@
                     upload.</p>
             </div>
             <div class="row h-25 align-items-center justify-content-center text-center">
-
                 <form method="post" enctype="multipart/form-data">
                     <div class="input-group">
                         <div class="custom-file">
@@ -28,9 +27,7 @@
                             <button class="btn btn-primary" type="submit">Upload</button>
                         </div>
                     </div>
-
                 </form>
-
                 <script>
                     // Add the following code if you want the name of the file appear on select
                     $(".custom-file-input").on("change", function () {
@@ -38,7 +35,6 @@
                         $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
                     });
                 </script>
-
             </div>
 
             <div class="row h-30 text-uppercase align-items-center justify-content-center text-center">
@@ -47,10 +43,7 @@
 
         </div>
         <hr>
-
     {% endblock %}
-
-
 
     {% block div_show_results %}
 
@@ -62,13 +55,13 @@
                     </h4>
                 </div>
                 <div class="panel-body h-50">
-                <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="8" readonly>
-                    {{ codegen_log_result }}
-            </textarea>
+                    <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="8" readonly>
+                        {{ codegen_log_content }}
+                    </textarea>
                 </div>
                 <div class="h-20"></div>
                 <div class="h-20">
-                    <a href="download_log" class="btn btn-primary float-md-right">Download Codegen Log</a>
+                    <a href="download_codegen_log" class="btn btn-primary float-md-right">Download Codegen Log</a>
                     <a href="download_generated_jar" class="btn btn-primary float-md-right" style="margin-right: 1rem">Download
                         Generated Jar</a>
                 </div>
@@ -76,7 +69,7 @@
         </div>
         <hr>
 
-        <div class="container h-70">
+        <div class="container h-80">
             <div class="panel panel-default h-100">
                 <div class="panel-heading h-10">
                     <h4 class="panel-title">
@@ -84,10 +77,10 @@
                     </h4>
                 </div>
                 <div class="panel-body h-90">
-                    <div id="result_chart"></div>
+                    <div id="result_chart" class="h-100 w-100"></div>
                 </div>
             </div>
         </div>
 
     {% endblock %}
-</div>
+
