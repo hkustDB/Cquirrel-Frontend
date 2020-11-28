@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static java.util.Objects.requireNonNull;
+
 class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
     private final List<AggregateProcessFunction> aggregateProcessFunctions;
@@ -70,6 +72,8 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
         writer.writeln("import org.apache.flink.streaming.api.scala._");
         writer.writeln("import org.hkust.RelationType.Payload");
+        writer.writeln("import org.apache.flink.streaming.api.functions.ProcessFunction");
+        writer.writeln("import org.apache.flink.util.Collector");
     }
 
     @Override
@@ -95,26 +99,38 @@ class MainClassWriter implements ClassWriter {
         if (relationProcessFunctions.size() == 1) {
             writeSingleRelationStream(relationProcessFunctions.get(0), writer);
         } else {
-            String streamName = writeStream(writer);
-            RelationProcessFunction root = getLeafOrParent(false);
-
-            writeRootStream(root, streamName, writer);
+            RelationProcessFunction root = getLeafOrParent(true);
+            writeMultipleRelationStream(root, writer, "", "S");
         }
-    }
-
-    private void writeRootStream(RelationProcessFunction root, String previousStreamName, final PicoWriter writer) {
-        writer.writeln("val result  = " + previousStreamName + ".keyBy(i => i._3)");
-        writer.writeln("connect(" + root.getRelation().toString().toLowerCase() + ")");
-        writer.writeln(".keyBy(i => i._3, i => i._3)");
-        String className = getProcessFunctionClassName(root.getName());
-        writer.writeln(".process(new " + className + "())");
-        writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
-        writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
-        writer.writeln(".setParallelism(1)");
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
         writer.writeln_l("}");
+    }
+
+    private void writeMultipleRelationStream(RelationProcessFunction rpf, final PicoWriter writer, String prevStreamName, String streamSuffix) {
+        Relation relation = rpf.getRelation();
+        String relationName = relation.toString().toLowerCase();
+        String streamName = relationName + streamSuffix;
+        if (rpf.isLeaf()) {
+            writer.writeln("val " + streamName + " = " + relationName + ".keyBy(i => i._3)");
+        } else {
+            writer.writeln("val " + streamName + " = " + prevStreamName + ".connect(" + relationName + ")");
+            writer.writeln(".keyBy(i => i._3, i => i._3)");
+        }
+        writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
+        RelationProcessFunction parent = getRelation(joinStructure.get(relation));
+        if (parent == null) {
+            writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + ")");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+            writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
+            writer.writeln(".setParallelism(1)");
+            return;
+        }
+        writeMultipleRelationStream(requireNonNull(parent),
+                writer,
+                streamName,
+                streamSuffix
+        );
     }
 
     @NotNull
@@ -140,33 +156,6 @@ class MainClassWriter implements ClassWriter {
         writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
-        writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
-        writer.writeln_l("}");
-    }
-
-    private String writeStream(final PicoWriter writer) {
-        String streamSuffix = "S";
-        RelationProcessFunction leaf = getLeafOrParent(true);
-        String name = leaf.getName() + streamSuffix;
-        RelationProcessFunction parent = getRelation(joinStructure.get(leaf.getRelation()));
-        boolean skip = false;
-        while (parent != null) {
-            if (!skip) {
-                String leafName = leaf.getName();
-                writer.writeln("val " + leafName + streamSuffix + " = " + leaf.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
-                writer.writeln(".process(new " + getProcessFunctionClassName(leafName) + "())");
-                writer.writeln(".connect(" + parent.getRelation().toString().toLowerCase() + ")");
-                writer.writeln(".keyBy(i => i._3, i => i._3)");
-                writer.writeln(".process(new " + getProcessFunctionClassName(parent.getName()) + ")");
-                skip = true;
-            } else {
-                skip = false;
-            }
-            leaf = parent;
-            parent = getRelation(joinStructure.get(parent.getRelation()));
-        }
-
-        return name;
     }
 
     @Nullable
@@ -187,8 +176,8 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("var cnt : Long = 0");
         writer.writeln("val restDS : DataStream[Payload] = data");
         writer.writeln(".process((value: String, ctx: ProcessFunction[String, Payload]#Context, out: Collector[Payload]) => {");
-        writer.writeln("val header = line.substring(0,3)");
-        writer.writeln("val cells : Array[String] = line.substring(3).split(\"\\\\|\")");
+        writer.writeln("val header = value.substring(0,3)");
+        writer.writeln("val cells : Array[String] = value.substring(3).split(\"\\\\|\")");
         writer.writeln("var relation = \"\"");
         writer.writeln("var action = \"\"");
         writer.writeln_r("header match {");

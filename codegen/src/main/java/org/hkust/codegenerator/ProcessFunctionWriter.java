@@ -1,7 +1,6 @@
 package org.hkust.codegenerator;
 
 import org.hkust.objects.*;
-import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,11 +76,11 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    void attributeValueToCode(AttributeValue value, StringBuilder code) throws Exception {
+    void attributeValueToCode(AttributeValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
         final String columnName = value.getColumnName();
-        final Class<?> type = schema.getColumnAttribute(value.getRelation(), columnName.toLowerCase()).getType();
+        final Class<?> type = requireNonNull(schema.getColumnAttribute(value.getRelation(), columnName.toLowerCase())).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
                 .append("\")")

@@ -3,6 +3,8 @@ import org.apache.flink.core.fs.FileSystem
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.hkust.RelationType.Payload
+import org.apache.flink.streaming.api.functions.ProcessFunction
+import org.apache.flink.util.Collector
 object Job {
    val lineitemTag: OutputTag[Payload] = OutputTag[Payload]("lineitem")
    val ordersTag: OutputTag[Payload] = OutputTag[Payload]("orders")
@@ -19,17 +21,16 @@ object Job {
       val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
-      val Q3CustomerS = customer.keyBy(i => i._3)
+      val customerS = customer.keyBy(i => i._3)
       .process(new Q3CustomerProcessFunction())
-      .connect(orders)
+      val ordersS = customerS.connect(orders)
       .keyBy(i => i._3, i => i._3)
-      .process(new Q3OrdersProcessFunction)
-      val result  = Q3CustomerS.keyBy(i => i._3)
-      connect(lineitem)
+      .process(new Q3OrdersProcessFunction())
+      val lineitemS = ordersS.connect(lineitem)
       .keyBy(i => i._3, i => i._3)
       .process(new Q3lineitemProcessFunction())
-      .keyBy(i => i._3)
-      .process(new Q3AggregateProcessFunction())
+      val result = lineitemS.keyBy(i => i._3)
+      .process(new Q3AggregateProcessFunction)
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
       .writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)
       .setParallelism(1)
@@ -41,8 +42,8 @@ object Job {
       var cnt : Long = 0
       val restDS : DataStream[Payload] = data
       .process((value: String, ctx: ProcessFunction[String, Payload]#Context, out: Collector[Payload]) => {
-      val header = line.substring(0,3)
-      val cells : Array[String] = line.substring(3).split("\\|")
+      val header = value.substring(0,3)
+      val cells : Array[String] = value.substring(3).split("\\|")
       var relation = ""
       var action = ""
       header match {
