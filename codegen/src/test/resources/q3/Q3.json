@@ -127,7 +127,7 @@
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "EXTENDEDPRICE"
+              "name": "extendedprice"
             },
             {
               "type": "expression",
@@ -141,7 +141,7 @@
                 {
                   "type": "attribute",
                   "relation": "lineitem",
-                  "name": "DISCOUNT"
+                  "name": "discount"
                 }
               ]
             }

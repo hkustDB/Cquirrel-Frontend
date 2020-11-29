@@ -169,7 +169,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    void addGetStreamFunction(final PicoWriter writer) throws Exception {
+    void addGetStreamFunction(final PicoWriter writer) {
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
@@ -193,8 +193,9 @@ class MainClassWriter implements ClassWriter {
             String lowerRelationName = relation.getValue();
             StringBuilder columnNamesCode = new StringBuilder();
             StringBuilder tupleCode = new StringBuilder();
-
-            int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode);
+            Map<Attribute, Integer> thisKeyAttributes = new HashMap<>();
+            int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode, thisKeyAttributes);
+            String thisKeyCode = thisKeyCode(thisKeyAttributes);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
                 writer.writeln("case \"" + value + caseLabel + "\" =>");
@@ -202,7 +203,7 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
                 writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
-                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
+                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode);
                 writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
                 writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
             });
@@ -232,8 +233,8 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
-        Set<Attribute> attributes = new HashSet<>(agfAttributes);
+    int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode, Map<Attribute, Integer> thisKeyAttributes) {
+        Set<Attribute> attributes = new LinkedHashSet<>(agfAttributes);
 
         List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
         if (agfNextKeys != null) {
@@ -254,6 +255,8 @@ class MainClassWriter implements ClassWriter {
                 }
             }
         }
+
+        List<String> thisKey = rpf.getThisKey();
         Iterator<Attribute> iterator = attributes.iterator();
         int numberOfMatchingColumns = 0;
         while (iterator.hasNext()) {
@@ -266,7 +269,11 @@ class MainClassWriter implements ClassWriter {
                 }
                 continue;
             }
+            if (thisKey.contains(rpfAttribute.getName().toLowerCase())) {
+                thisKeyAttributes.put(rpfAttribute, numberOfMatchingColumns);
+            }
             numberOfMatchingColumns++;
+
 
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();
@@ -285,5 +292,21 @@ class MainClassWriter implements ClassWriter {
         }
 
         return numberOfMatchingColumns;
+    }
+
+    private String thisKeyCode(Map<Attribute, Integer> thisKeyAttributes) {
+        int rpfThisKeySize = thisKeyAttributes.size();
+        Iterator<Map.Entry<Attribute, Integer>> it = thisKeyAttributes.entrySet().iterator();
+        if (rpfThisKeySize == 1) {
+            Map.Entry<Attribute, Integer> thisKey = it.next();
+            return "cells(" + thisKey.getValue() + ")." + stringConversionMethods.get(thisKey.getKey().getType()) + ".asInstanceOf[Any],";
+        } else if (rpfThisKeySize == 2) {
+            Map.Entry<Attribute, Integer> thisKey1 = it.next();
+            Map.Entry<Attribute, Integer> thisKey2 = it.next();
+            return "Tuple2( cells(" + thisKey1.getValue() + ")." + stringConversionMethods.get(thisKey1.getKey().getType()) +
+                    ", cells(" + thisKey2.getValue() + ")." + stringConversionMethods.get(thisKey2.getKey().getType()) + ").asInstanceOf[Any],";
+        } else {
+            throw new RuntimeException("Expecting 1 or 2 thisKey values got: " + rpfThisKeySize);
+        }
     }
 }

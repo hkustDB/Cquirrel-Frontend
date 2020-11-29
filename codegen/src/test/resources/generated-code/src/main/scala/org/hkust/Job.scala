@@ -52,7 +52,7 @@ object Job {
          relation = "lineitem"
          val i = Tuple5(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
          Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
          case "-LI" =>
@@ -60,7 +60,7 @@ object Job {
          relation = "lineitem"
          val i = Tuple5(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
          Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
          case "+OR" =>
@@ -68,7 +68,7 @@ object Job {
          relation = "orders"
          val i = Tuple4(format.parse(cells(4)),cells(1).toLong,cells(0).toLong,cells(7).toInt)
          cnt = cnt + 1
-         ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4),
          Array[String]("ORDERDATE","CUSTKEY","ORDERKEY","SHIPPRIORITY"), cnt))
          case "-OR" =>
@@ -76,7 +76,7 @@ object Job {
          relation = "orders"
          val i = Tuple4(format.parse(cells(4)),cells(1).toLong,cells(0).toLong,cells(7).toInt)
          cnt = cnt + 1
-         ctx.output(ordersTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4),
          Array[String]("ORDERDATE","CUSTKEY","ORDERKEY","SHIPPRIORITY"), cnt))
          case "+CU" =>
@@ -84,7 +84,7 @@ object Job {
          relation = "customer"
          val i = Tuple2(cells(0).toLong,cells(6))
          cnt = cnt + 1
-         ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2),
          Array[String]("CUSTKEY","MKTSEGMENT"), cnt))
          case "-CU" =>
@@ -92,7 +92,7 @@ object Job {
          relation = "customer"
          val i = Tuple2(cells(0).toLong,cells(6))
          cnt = cnt + 1
-         ctx.output(customerTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2),
          Array[String]("CUSTKEY","MKTSEGMENT"), cnt))
          case _ =>
