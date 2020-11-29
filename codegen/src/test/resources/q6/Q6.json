@@ -5,7 +5,7 @@
       "relation": "lineitem",
       "this_key": [
         "orderkey",
-        "l_linenumber"
+        "linenumber"
       ],
       "next_key": null,
       "child_nodes": 0,
@@ -19,7 +19,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "l_shipdate"
+              "name": "shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -32,7 +32,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "l_shipdate"
+              "name": "shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -45,7 +45,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "l_discount"
+              "name": "discount"
             },
             "right_field": {
               "type": "constant",
@@ -58,7 +58,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "l_discount"
+              "name": "discount"
             },
             "right_field": {
               "type": "constant",
@@ -71,7 +71,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "l_quantity"
+              "name": "quantity"
             },
             "right_field": {
               "type": "constant",
@@ -98,12 +98,12 @@
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "L_EXTENDEDPRICE"
+              "name": "EXTENDEDPRICE"
             },
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "L_DISCOUNT"
+              "name": "DISCOUNT"
             }
           ]
         }

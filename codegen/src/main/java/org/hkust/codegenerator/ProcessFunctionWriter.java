@@ -21,7 +21,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         if (keyList != null) {
             for (int i = 0; i < keyList.size(); i++) {
                 code.append("\"");
-                code.append(keyList.get(i));
+                code.append(keyList.get(i).toUpperCase());
                 code.append("\"");
                 if (i != keyList.size() - 1) {
                     code.append(",");
@@ -39,7 +39,9 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
+                code.append("(");
                 expressionToCode((Expression) value, code);
+                code.append(")");
             } else {
                 valueToCode(value, code);
             }
