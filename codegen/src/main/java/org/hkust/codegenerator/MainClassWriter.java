@@ -148,7 +148,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
-        writer.writeln("val result  = inputStream.keyBy(i => i._3)");
+        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
@@ -193,9 +193,7 @@ class MainClassWriter implements ClassWriter {
             String lowerRelationName = relation.getValue();
             StringBuilder columnNamesCode = new StringBuilder();
             StringBuilder tupleCode = new StringBuilder();
-            Map<Attribute, Integer> thisKeyAttributes = new HashMap<>();
-            int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode, thisKeyAttributes);
-            String thisKeyCode = thisKeyCode(thisKeyAttributes);
+            int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
                 writer.writeln("case \"" + value + caseLabel + "\" =>");
@@ -203,7 +201,7 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
                 writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
-                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode);
+                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode(rpf));
                 writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
                 writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
             });
@@ -220,6 +218,28 @@ class MainClassWriter implements ClassWriter {
         return relation.getValue().substring(0, 2).toUpperCase();
     }
 
+    private String thisKeyCode(RelationProcessFunction rpf) {
+        List<String> thisKeyAttributes = rpf.getThisKey();
+        int rpfThisKeySize = thisKeyAttributes.size();
+        if (rpfThisKeySize == 1) {
+            String thisKey = thisKeyAttributes.get(0);
+            Attribute keyAttribute = schema.getColumnAttribute(rpf.getRelation(), thisKey);
+            requireNonNull(keyAttribute);
+            return "cells(" + keyAttribute.getPosition() + ")." + stringConversionMethods.get(keyAttribute.getType()) + ".asInstanceOf[Any],";
+        } else if (rpfThisKeySize == 2) {
+            String thisKey1 = thisKeyAttributes.get(0);
+            String thisKey2 = thisKeyAttributes.get(1);
+            Attribute keyAttribute1 = schema.getColumnAttribute(rpf.getRelation(), thisKey1);
+            requireNonNull(keyAttribute1);
+            Attribute keyAttribute2 = schema.getColumnAttribute(rpf.getRelation(), thisKey2);
+            requireNonNull(keyAttribute2);
+            return "Tuple2( cells(" + keyAttribute1.getPosition() + ")." + stringConversionMethods.get(keyAttribute1.getType()) +
+                    ", cells(" + keyAttribute2.getPosition() + ")." + stringConversionMethods.get(keyAttribute2.getType()) + ").asInstanceOf[Any],";
+        } else {
+            throw new RuntimeException("Expecting 1 or 2 thisKey values got: " + rpfThisKeySize);
+        }
+    }
+
     private String iteratorCode(int num) {
         StringBuilder code = new StringBuilder();
         num++;
@@ -233,7 +253,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode, Map<Attribute, Integer> thisKeyAttributes) {
+    int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Set<Attribute> attributes = new LinkedHashSet<>(agfAttributes);
 
         List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
@@ -269,9 +289,6 @@ class MainClassWriter implements ClassWriter {
                 }
                 continue;
             }
-            if (thisKey.contains(rpfAttribute.getName().toLowerCase())) {
-                thisKeyAttributes.put(rpfAttribute, numberOfMatchingColumns);
-            }
             numberOfMatchingColumns++;
 
 
@@ -292,21 +309,5 @@ class MainClassWriter implements ClassWriter {
         }
 
         return numberOfMatchingColumns;
-    }
-
-    private String thisKeyCode(Map<Attribute, Integer> thisKeyAttributes) {
-        int rpfThisKeySize = thisKeyAttributes.size();
-        Iterator<Map.Entry<Attribute, Integer>> it = thisKeyAttributes.entrySet().iterator();
-        if (rpfThisKeySize == 1) {
-            Map.Entry<Attribute, Integer> thisKey = it.next();
-            return "cells(" + thisKey.getValue() + ")." + stringConversionMethods.get(thisKey.getKey().getType()) + ".asInstanceOf[Any],";
-        } else if (rpfThisKeySize == 2) {
-            Map.Entry<Attribute, Integer> thisKey1 = it.next();
-            Map.Entry<Attribute, Integer> thisKey2 = it.next();
-            return "Tuple2( cells(" + thisKey1.getValue() + ")." + stringConversionMethods.get(thisKey1.getKey().getType()) +
-                    ", cells(" + thisKey2.getValue() + ")." + stringConversionMethods.get(thisKey2.getKey().getType()) + ").asInstanceOf[Any],";
-        } else {
-            throw new RuntimeException("Expecting 1 or 2 thisKey values got: " + rpfThisKeySize);
-        }
     }
 }

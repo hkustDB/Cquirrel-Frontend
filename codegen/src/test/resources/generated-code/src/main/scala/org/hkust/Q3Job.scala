@@ -5,7 +5,7 @@ import org.apache.flink.streaming.api.scala._
 import org.hkust.RelationType.Payload
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.util.Collector
-object Job {
+object Q3Job {
    val lineitemTag: OutputTag[Payload] = OutputTag[Payload]("lineitem")
    val ordersTag: OutputTag[Payload] = OutputTag[Payload]("orders")
    val customerTag: OutputTag[Payload] = OutputTag[Payload]("customer")
@@ -52,7 +52,7 @@ object Job {
          relation = "lineitem"
          val i = Tuple5(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
          Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
          case "-LI" =>
@@ -60,7 +60,7 @@ object Job {
          relation = "lineitem"
          val i = Tuple5(format.parse(cells(10)),cells(5).toDouble,cells(6).toDouble,cells(0).toLong,cells(3).toInt)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
          Array[String]("SHIPDATE","EXTENDEDPRICE","DISCOUNT","ORDERKEY","LINENUMBER"), cnt))
          case "+OR" =>
