@@ -4,6 +4,7 @@ var option = {
     title: {
         text: 'AJU Result Chart'
     },
+    tooltip:{},
     xAxis: {
         type: 'value',
         min: 'dataMin',
