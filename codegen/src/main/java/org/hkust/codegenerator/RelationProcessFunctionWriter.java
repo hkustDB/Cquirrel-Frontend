@@ -5,26 +5,25 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.objects.RelationProcessFunction;
 import org.hkust.objects.SelectCondition;
+import org.hkust.schema.RelationSchema;
 
-import java.io.IOException;
 import java.util.List;
 
 class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
+    private final String RELATION_PROCESS_FUNCTION_IMPORT;
 
-    RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction) {
+    RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction, RelationSchema schema) {
+        super(schema);
         this.relationProcessFunction = relationProcessFunction;
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
+        this.RELATION_PROCESS_FUNCTION_IMPORT = (relationProcessFunction.isLeaf() ? "RelationFKProcessFunction" : "RelationFKCoProcessFunction");
     }
 
-    /**
-     * Meant to be used for testing only
-     */
-
     @Override
-    public String write(final String filePath) throws IOException {
+    public String write(final String filePath) throws Exception {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports(writer);
         addConstructorAndOpenClass(writer);
@@ -36,7 +35,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @VisibleForTesting
-    void  addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) {
+    void addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) throws Exception {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         StringBuilder ifCondition = new StringBuilder();
         ifCondition.append("if(");
@@ -62,21 +61,25 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     @Override
     public void addImports(final PicoWriter writer) {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
-        writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
+        writer.writeln("import org.hkust.BasedProcessFunctions." + RELATION_PROCESS_FUNCTION_IMPORT);
         writer.writeln("import org.hkust.RelationType.Payload");
+        writer.writeln("import java.util.Date");
     }
 
 
     @Override
     public void addConstructorAndOpenClass(final PicoWriter writer) {
+        boolean isLeaf = relationProcessFunction.isLeaf();
         String code = "class " +
                 className +
-                " extends RelationFKProcessFunction[Any](\"" +
-                relationProcessFunction.getRelationName() + "\"," +
+                " extends " + RELATION_PROCESS_FUNCTION_IMPORT + "[Any](\"" +
+                relationProcessFunction.getRelation().getValue() + "\"," +
+                (isLeaf ? "" : relationProcessFunction.getChildNodes() + ",") +
                 keyListToCode(relationProcessFunction.getThisKey()) +
                 "," +
                 keyListToCode(relationProcessFunction.getNextKey()) +
-                "," + "true)" + "{";
+                "," + relationProcessFunction.isRoot()
+                + (isLeaf ? ") {" : ", " + relationProcessFunction.isLast() + ") {");
         writer.writeln(code);
     }
 }

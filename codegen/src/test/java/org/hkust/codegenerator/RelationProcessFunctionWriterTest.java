@@ -2,6 +2,9 @@ package org.hkust.codegenerator;
 
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.*;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +26,12 @@ public class RelationProcessFunctionWriterTest {
     @Mock
     private RelationProcessFunction relationProcessFunction;
 
+    @Mock
+    private Relation relation;
+
+    @Mock
+    private RelationSchema schema;
+
     @Before
     public void initialization() {
         MockitoAnnotations.openMocks(this);
@@ -30,7 +39,8 @@ public class RelationProcessFunctionWriterTest {
 
     @Test
     public void addConstructorAndOpenClassTest() {
-        when(relationProcessFunction.getRelationName()).thenReturn("RelationName");
+        when(relationProcessFunction.getRelation()).thenReturn(relation);
+        when(relation.getValue()).thenReturn("RelationName");
         when(relationProcessFunction.getThisKey()).thenReturn(Arrays.asList("thisKey1", "thisKey2"));
         when(relationProcessFunction.getNextKey()).thenReturn(Arrays.asList("nextKey1", "nextKey2"));
         PicoWriter picoWriter = new PicoWriter();
@@ -40,13 +50,13 @@ public class RelationProcessFunctionWriterTest {
     }
 
     @Test
-    public void isValidFunctionWithSingleCondition() {
+    public void isValidFunctionWithSingleCondition() throws Exception {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
         values.add(new ConstantValue("1", "int"));
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         SelectCondition condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
-        RelationSchema.Attribute mockAttribute = new RelationSchema.Attribute(Integer.class, 0, attributeName);
+        Attribute mockAttribute = new Attribute(Integer.class, 0, attributeName);
         isValidFunctionTest(Collections.singletonList(condition), ("override def isValid(value: Payload): Boolean = {\n" +
                         "   if(1<value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]){\n" +
                         "   true}else{\n" +
@@ -55,7 +65,7 @@ public class RelationProcessFunctionWriterTest {
                 mockAttribute);
 
         values.clear();
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         values.add(new ConstantValue("1", "int"));
         condition = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         isValidFunctionTest(Collections.singletonList(condition), ("override def isValid(value: Payload): Boolean = {\n" +
@@ -67,30 +77,28 @@ public class RelationProcessFunctionWriterTest {
     }
 
     @Test
-    public void isValidFunctionWithMultipleConditions() {
+    public void isValidFunctionWithMultipleConditions() throws Exception {
         List<Value> values = new ArrayList<>();
         String attributeName = "attributeValue";
         values.add(new ConstantValue("1", "int"));
-        values.add(new AttributeValue(attributeName));
+        values.add(new AttributeValue(Relation.LINEITEM, attributeName));
         SelectCondition condition1 = new SelectCondition(new Expression(values, Operator.LESS_THAN), Operator.AND);
         SelectCondition condition2 = new SelectCondition(new Expression(values, Operator.EQUALS), Operator.AND);
-        RelationSchema.Attribute mockAttribute = new RelationSchema.Attribute(Integer.class, 0, attributeName);
+        Attribute mockAttribute = new Attribute(Integer.class, 0, attributeName);
         isValidFunctionTest(Arrays.asList(condition1, condition2),
                 "overridedefisValid(value:Payload):Boolean={if(1<value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]&&1=value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]){true}else{false}}",
                 mockAttribute);
     }
 
-    private void isValidFunctionTest(List<SelectCondition> selectConditions, final String expectedCode, RelationSchema.Attribute mockAttribute) {
+    private void isValidFunctionTest(List<SelectCondition> selectConditions, final String expectedCode, Attribute mockAttribute) throws Exception {
         PicoWriter picoWriter = new PicoWriter();
-        try (MockedStatic<RelationSchema> mockSchema = Mockito.mockStatic(RelationSchema.class)) {
-            mockSchema.when(() -> RelationSchema.getColumnAttribute(any(String.class))).thenReturn(mockAttribute);
-            getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
-        }
+        when(schema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
+        getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
         assertEquals(picoWriter.toString().replaceAll("\\s+", ""), expectedCode);
     }
 
     private RelationProcessFunctionWriter getRelationProcessFunctionWriter() {
         when(relationProcessFunction.getName()).thenReturn("ClassName");
-        return new RelationProcessFunctionWriter(relationProcessFunction);
+        return new RelationProcessFunctionWriter(relationProcessFunction, schema);
     }
 }

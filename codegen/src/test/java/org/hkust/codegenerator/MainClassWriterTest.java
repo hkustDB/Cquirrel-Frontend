@@ -4,6 +4,9 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +15,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +32,13 @@ public class MainClassWriterTest {
     private RelationProcessFunction relationProcessFunction;
 
     @Mock
+    private Relation relation;
+
+    @Mock
     private Node node;
+
+    @Mock
+    private RelationSchema schema;
 
     @Before
     public void initialization() {
@@ -65,10 +72,11 @@ public class MainClassWriterTest {
     }
 
     @Test
-    public void addGetStreamFunctionTest() {
+    public void addGetStreamFunctionTest() throws Exception {
         PicoWriter picoWriter = new PicoWriter();
         MainClassWriter mainClassWriter = getMainClassWriter();
-        when(relationProcessFunction.getRelationName()).thenReturn("relation");
+        when(relationProcessFunction.getRelation()).thenReturn(relation);
+        when(relation.getValue()).thenReturn("relation");
         mainClassWriter.addGetStreamFunction(picoWriter);
 
         assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {\n" +
@@ -103,12 +111,12 @@ public class MainClassWriterTest {
     @Test
     public void attributeCodeTest() {
         MainClassWriter mainClassWriter = getMainClassWriter();
-        RelationSchema.Attribute mockAttribute1 = new RelationSchema.Attribute(Integer.class, 0, "attribute1");
-        RelationSchema.Attribute mockAttribute2 = new RelationSchema.Attribute(Date.class, 1, "attribute2");
+        Attribute mockAttribute1 = new Attribute(Integer.class, 0, "attribute1");
+        Attribute mockAttribute2 = new Attribute(Date.class, 1, "attribute2");
         StringBuilder columnNamesCode = new StringBuilder();
         StringBuilder tupleCode = new StringBuilder();
 
-        mainClassWriter.attributeCode(new HashSet<>(Arrays.asList(mockAttribute1, mockAttribute2)), columnNamesCode, tupleCode);
+        //mainClassWriter.attributeCode(Relation.LINEITEM, new HashSet<>(Arrays.asList(mockAttribute1, mockAttribute2)), columnNamesCode, tupleCode);
 
         String columnsResult = columnNamesCode.toString();
         //Order of printed code isn't guaranteed so check for contains and do not tightly couple the exact string
@@ -126,7 +134,7 @@ public class MainClassWriterTest {
         when(node.getRelationProcessFunctions()).thenReturn(Collections.singletonList(relationProcessFunction));
         when(aggregateProcessFunction.getName()).thenReturn("aggregateProcessFunction");
         when(relationProcessFunction.getName()).thenReturn("relationProcessFunction");
-        return new MainClassWriter(node, "flinkInput", "flinkOutput");
+        return new MainClassWriter(node, schema, "flinkInput", "flinkOutput");
     }
 
 }

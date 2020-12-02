@@ -3,6 +3,8 @@ package org.hkust.codegenerator;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AttributeValue;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,12 @@ public class AggregateProcessFunctionWriterTest {
     @Mock
     private AggregateProcessFunction aggregateProcessFunction;
 
+    @Mock
+    private Relation relation;
+
+    @Mock
+    private RelationSchema schema;
+
     @Before
     public void initialization() {
         MockitoAnnotations.openMocks(this);
@@ -32,7 +40,7 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addConstructorAndOpenClass(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("class ClassNameProcessFunction extends AggregateProcessFunction[Any, Integer](\"ClassNameProcessFunction\", Array(), Array(), aggregateName = \"aggregateName\") {").replaceAll("\\s+", ""));
+        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("classClassNameProcessFunctionextendsAggregateProcessFunction[Any,Integer](\"ClassNameProcessFunction\",Array(),Array(),aggregateName=\"aggregateName\",deltaOutput=true) {").replaceAll("\\s+", ""));
     }
 
     @Test
@@ -80,8 +88,8 @@ public class AggregateProcessFunctionWriterTest {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
         when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
         AggregateProcessFunction.AggregateValue aggregateValue = new AggregateProcessFunction
-                .AggregateValue("aggregateName", "expression", new AttributeValue("attributeValue"));
+                .AggregateValue("aggregateName", "expression", new AttributeValue(Relation.LINEITEM, "attributeValue"));
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
-        return new AggregateProcessFunctionWriter(aggregateProcessFunction);
+        return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }
 }

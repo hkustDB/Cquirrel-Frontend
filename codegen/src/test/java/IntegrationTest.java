@@ -1,6 +1,6 @@
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.FileUtils;
 import org.hkust.codegenerator.CodeGenerator;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -32,18 +30,18 @@ public class IntegrationTest {
         execute(runtime, "mvn package -DskipTests -f .");
     }
 
-    @After
+    //@After
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(new File(GENERATED_CODE_PATH));
     }
 
     @Test
     public void q6IntegrationTest() throws Exception {
-        integrationTest("q6/Q6.json",
+        integrationTest("q3/Q3.json",
                 "file:///home/data/qwangbp/lineitem.tbl",
                 "file:///home/data/qwangbp/testQ6.out",
                 "file",
-                true);
+                false);
 
         verifyResult("q6", Arrays.asList("Job.scala", "Q6AggregateProcessFunction.scala", "Q6lineitemProcessFunction"));
     }

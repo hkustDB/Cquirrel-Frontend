@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.hkust.objects.*;
+import org.hkust.schema.Relation;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,13 +20,15 @@ public class JsonParser {
         Map<String, Object> map = gson.fromJson(jsonString, new TypeToken<Map<String, Object>>() {
         }.getType());
 
+        Map<Relation, Relation> joinStructure = makeJoinStructure((List<Map<String, String>>) map.get("join_structure"));
+
         List<Map<String, Object>> rpfMap = (List<Map<String, Object>>) map.get("RelationProcessFunction");
         List<RelationProcessFunction> rpfs = makeRelationProcessFunctions(rpfMap);
 
         List<Map<String, Object>> apfMap = (List<Map<String, Object>>) map.get("AggregateProcessFunction");
         List<AggregateProcessFunction> apfs = makeAggregateProcessFunctions(apfMap);
 
-        return new Node(rpfs, apfs);
+        return new Node(rpfs, apfs, joinStructure);
     }
 
     private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
@@ -56,10 +60,22 @@ public class JsonParser {
         );
     }
 
+    @Nullable
+    private static Map<Relation, Relation> makeJoinStructure(List<Map<String, String>> joinStructure) {
+        if (joinStructure == null) {
+            return null;
+        }
+
+        Map<Relation, Relation> structure = new HashMap<>();
+        joinStructure.forEach(js -> structure.put(Relation.getRelation(js.get("primary")), Relation.getRelation(js.get("foreign"))));
+
+        return structure;
+    }
+
     private static List<AggregateProcessFunction> makeAggregateProcessFunctions(List<Map<String, Object>> apfList) {
         List<AggregateProcessFunction> result = new ArrayList<>();
         apfList.forEach(apf -> {
-            List<Map<String, Object>> agMap = (List<Map<String, Object>> ) apf.get("AggregateValue");
+            List<Map<String, Object>> agMap = (List<Map<String, Object>>) apf.get("AggregateValue");
             List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValues(agMap);
             result.add(makeAggregateProcessFunction(apf, aggregateValues));
         });
@@ -95,12 +111,12 @@ public class JsonParser {
     @VisibleForTesting
     static AggregateProcessFunction.AggregateValue makeAggregateValue(Map<String, Object> avMap, Expression expression) {
         String type = (String) avMap.get("type");
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = new ArrayList<>();
-        String aggregateName = (String) avMap.get("name");
-        if ("expression".equals(type)) {
-            return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
+        if (!"expression".equals(type)) {
+            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
+
         }
-        throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
+        String aggregateName = (String) avMap.get("name");
+        return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
     }
 
     @VisibleForTesting
@@ -144,9 +160,12 @@ public class JsonParser {
         Value value;
         if (type.equals("attribute")) {
             String name = (String) field.get("name");
-            value = new AttributeValue(name);
+            Relation relation = Relation.getRelation((String) field.get("relation"));
+            value = new AttributeValue(relation, name);
         } else if (type.equals("constant")) {
-            value = new ConstantValue((String) field.get("value"), (String) field.get("var_type"));
+            value = new ConstantValue(field.get("value").toString(), (String) field.get("var_type"));
+        } else if (type.equals("expression")) {
+            return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }

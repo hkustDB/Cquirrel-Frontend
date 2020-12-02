@@ -1,12 +1,12 @@
 {
   "join_structure": [
     {
-      "PrimaryRelation": "Orders",
-      "ForeignRelation": "Lineitem"
+      "primary": "Orders",
+      "foreign": "Lineitem"
     },
     {
-      "PrimaryRelation": "Customer",
-      "ForeignRelation": "Orders"
+      "primary": "Customer",
+      "foreign": "Orders"
     }
   ],
   "RelationProcessFunction": [
@@ -29,7 +29,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_shipdate"
+              "relation": "lineitem",
+              "name": "shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -60,7 +61,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "o_orderdate"
+              "relation": "orders",
+              "name": "orderdate"
             },
             "right_field": {
               "type": "constant",
@@ -74,7 +76,7 @@
     },
     {
       "name": "Q3Customer",
-      "relation": "orders",
+      "relation": "customer",
       "this_key": [
         "custkey"
       ],
@@ -82,7 +84,7 @@
         "custkey"
       ],
       "child_nodes": 0,
-      "is_Root": true,
+      "is_Root": false,
       "is_Last": true,
       "rename_attribute": null,
       "select_conditions": {
@@ -91,14 +93,15 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "c_mktsegment"
+              "relation": "customer",
+              "name": "mktsegment"
             },
             "right_field": {
               "type": "constant",
               "var_type": "varchar",
               "value": "BUILDING"
             },
-            "operator": "="
+            "operator": "=="
           }
         ]
       }
@@ -123,7 +126,8 @@
           "values": [
             {
               "type": "attribute",
-              "name": "L_EXTENDEDPRICE"
+              "relation": "lineitem",
+              "name": "extendedprice"
             },
             {
               "type": "expression",
@@ -136,13 +140,15 @@
                 },
                 {
                   "type": "attribute",
-                  "name": "L_DISCOUNT"
+                  "relation": "lineitem",
+                  "name": "discount"
                 }
               ]
             }
           ],
           "operator": "*"
-        }],
+        }
+      ],
       "aggregation": "+",
       "value_type": "Double"
     }

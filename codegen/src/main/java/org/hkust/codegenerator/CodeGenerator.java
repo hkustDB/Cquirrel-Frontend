@@ -5,6 +5,7 @@ import org.hkust.jsonutils.JsonParser;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
+import org.hkust.schema.RelationSchema;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +15,8 @@ import java.util.List;
 
 public class CodeGenerator {
     public static final String GENERATED_CODE = "generated-code";
+    private static final RelationSchema schema = new RelationSchema();
+
 
     public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
@@ -27,15 +30,15 @@ public class CodeGenerator {
         List<RelationProcessFunction> relationProcessFunctions = node.getRelationProcessFunctions();
 
         for (RelationProcessFunction relationProcessFunction : relationProcessFunctions) {
-            new RelationProcessFunctionWriter(relationProcessFunction).write(codeFilesPath);
+            new RelationProcessFunctionWriter(relationProcessFunction, schema).write(codeFilesPath);
         }
 
         List<AggregateProcessFunction> aggregateProcessFunctions = node.getAggregateProcessFunctions();
         for (AggregateProcessFunction aggregateProcessFunction : aggregateProcessFunctions) {
-            new AggregateProcessFunctionWriter(aggregateProcessFunction).write(codeFilesPath);
+            new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
         }
 
-        new MainClassWriter(node, flinkInputPath, flinkOutputPath).write(codeFilesPath);
+        new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath).write(codeFilesPath);
 
         compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 
@@ -54,7 +57,7 @@ public class CodeGenerator {
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         System.out.println("Running " + command + ":\n");
-        String output = null;
+        String output;
         while ((output = stdInput.readLine()) != null) {
             System.out.println(output);
         }

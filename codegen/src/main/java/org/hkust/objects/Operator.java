@@ -3,10 +3,11 @@ package org.hkust.objects;
 public enum Operator {
     GREATER_THAN(">"),
     LESS_THAN("<"),
-    EQUALS("="),
+    EQUALS("=="),
     GREATER_THAN_EQUAL(">="),
     LESS_THAN_EQUAL("=<"),
     SUM("+"),
+    SUBTRACT("-"),
     SUMMATION("++"),
     MULTIPLY("*"),
     PRODUCT("**"),
@@ -31,7 +32,7 @@ public enum Operator {
                 return operator;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Got " + op);
     }
 
     @Override

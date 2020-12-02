@@ -1,6 +1,7 @@
 package org.hkust.codegenerator;
 
 import org.hkust.objects.*;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -8,13 +9,19 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 abstract class ProcessFunctionWriter implements ClassWriter {
-    static String keyListToCode(@Nullable List<String> keyList) {
+    private final RelationSchema schema;
+
+    ProcessFunctionWriter(RelationSchema schema) {
+        this.schema = schema;
+    }
+
+    String keyListToCode(@Nullable List<String> keyList) {
         StringBuilder code = new StringBuilder();
         code.append("Array(");
         if (keyList != null) {
             for (int i = 0; i < keyList.size(); i++) {
                 code.append("\"");
-                code.append(keyList.get(i));
+                code.append(keyList.get(i).toUpperCase());
                 code.append("\"");
                 if (i != keyList.size() - 1) {
                     code.append(",");
@@ -26,13 +33,15 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    static void expressionToCode(final Expression expression, StringBuilder code) {
+    void expressionToCode(final Expression expression, StringBuilder code) throws Exception {
         List<Value> values = expression.getValues();
         int size = values.size();
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
+                code.append("(");
                 expressionToCode((Expression) value, code);
+                code.append(")");
             } else {
                 valueToCode(value, code);
             }
@@ -42,7 +51,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void valueToCode(Value value, StringBuilder code) {
+    void valueToCode(Value value, StringBuilder code) throws Exception {
         requireNonNull(code);
         requireNonNull(value);
         //Note: expression can have an expression as one of its values, currently it is not being handled
@@ -55,10 +64,10 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void constantValueToCode(ConstantValue value, StringBuilder code) {
+    void constantValueToCode(ConstantValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
-        Class type = value.getType();
+        Class<?> type = value.getType();
         if (type.equals(Type.getClass("date"))) {
             //Needed so generated code parses the date
             code.append("format.parse(\"").append(value.getValue()).append("\")");
@@ -69,11 +78,11 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    static void attributeValueToCode(AttributeValue value, StringBuilder code) {
+    void attributeValueToCode(AttributeValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
         final String columnName = value.getColumnName();
-        final Class type = RelationSchema.getColumnAttribute(columnName.toLowerCase()).getType();
+        final Class<?> type = requireNonNull(schema.getColumnAttribute(value.getRelation(), columnName.toLowerCase())).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
                 .append("\")")

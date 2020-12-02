@@ -5,7 +5,7 @@
       "relation": "lineitem",
       "this_key": [
         "orderkey",
-        "l_linenumber"
+        "linenumber"
       ],
       "next_key": null,
       "child_nodes": 0,
@@ -18,7 +18,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_shipdate"
+              "relation": "lineitem",
+              "name": "shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -30,7 +31,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_shipdate"
+              "relation": "lineitem",
+              "name": "shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -42,7 +44,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_discount"
+              "relation": "lineitem",
+              "name": "discount"
             },
             "right_field": {
               "type": "constant",
@@ -54,7 +57,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_discount"
+              "relation": "lineitem",
+              "name": "discount"
             },
             "right_field": {
               "type": "constant",
@@ -66,7 +70,8 @@
           {
             "left_field": {
               "type": "attribute",
-              "name": "l_quantity"
+              "relation": "lineitem",
+              "name": "quantity"
             },
             "right_field": {
               "type": "constant",
@@ -92,11 +97,13 @@
           "values": [
             {
               "type": "attribute",
-              "name": "L_EXTENDEDPRICE"
+              "relation": "lineitem",
+              "name": "EXTENDEDPRICE"
             },
             {
               "type": "attribute",
-              "name": "L_DISCOUNT"
+              "relation": "lineitem",
+              "name": "DISCOUNT"
             }
           ]
         }

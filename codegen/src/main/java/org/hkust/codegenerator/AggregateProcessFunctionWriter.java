@@ -5,8 +5,8 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.Expression;
 import org.hkust.objects.Type;
+import org.hkust.schema.RelationSchema;
 
-import java.io.IOException;
 import java.util.List;
 
 class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
@@ -15,15 +15,16 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private final String aggregateType;
     private final String className;
 
-    AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction) {
+    AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction, RelationSchema schema) {
+        super(schema);
         this.aggregateProcessFunction = aggregateProcessFunction;
-        Class type = aggregateProcessFunction.getValueType();
+        Class<?> type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
         className = getProcessFunctionClassName(aggregateProcessFunction.getName());
     }
 
     @Override
-    public String write(String filePath) throws IOException {
+    public String write(String filePath) throws Exception {
         addImports(writer);
         addConstructorAndOpenClass(writer);
         addAggregateFunction(writer);
@@ -59,16 +60,17 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
                 keyListToCode(aggregateProcessFunction.getNextKey()) +
                 "," +
                 " aggregateName = \"" +
-                (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") +
-                "\") {";
+                (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") + "\"" +
+                ", deltaOutput = true" +
+                ") {";
         writer.writeln_r(code);
     }
 
     @VisibleForTesting
-    void addAggregateFunction(final PicoWriter writer) {
+    void addAggregateFunction(final PicoWriter writer) throws Exception {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
-        aggregateValues.forEach(aggregateValue -> {
+        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
             if (aggregateValue.getType().equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
@@ -77,17 +79,20 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }
-        });
+        }
         writer.writeln_l("}");
     }
+
     @VisibleForTesting
     void addAdditionFunction(final PicoWriter writer) {
         writer.writeln("override def addition(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 + value2");
     }
+
     @VisibleForTesting
     void addSubtractionFunction(final PicoWriter writer) {
         writer.writeln("override def subtraction(value1: " + aggregateType + ", value2: " + aggregateType + "): " + aggregateType + " = value1 - value2");
     }
+
     @VisibleForTesting
     void addInitStateFunction(final PicoWriter writer) {
         writer.writeln_r("override def initstate(): Unit = {");

@@ -1,16 +1,18 @@
 package org.hkust.objects;
 
+import com.google.common.collect.ImmutableSet;
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.Relation;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RelationProcessFunction extends ProcessFunction {
     private final String name;
-    private final String relationName;
-    @Nullable
+    private final Relation relation;
+
     private final List<String> thisKey;
     @Nullable
     private final List<String> nextKey;
@@ -32,7 +34,7 @@ public class RelationProcessFunction extends ProcessFunction {
         if (childNodes < 0)
             throw new RuntimeException("Number of child nodes must be >=0, got: " + childNodes);
         CheckerUtils.checkNullOrEmpty(relationName, "relationName");
-        this.relationName = relationName;
+        this.relation = Relation.getRelation(relationName);
         this.childNodes = childNodes;
         this.isRoot = isRoot;
         this.isLast = isLast;
@@ -42,13 +44,35 @@ public class RelationProcessFunction extends ProcessFunction {
         this.selectConditions = selectConditions;
     }
 
+    @Override
+    public Set<Attribute> getAttributeSet(RelationSchema schema) {
+        Set<Attribute> result = new HashSet<>(schema.getSchema(relation).getPrimaryKey());
+        selectConditions.forEach(selectCondition -> {
+            selectCondition.getExpression().getValues().forEach(value -> {
+                addIfAttributeValue(result, value, schema);
+            });
+        });
+
+        if (thisKey != null) {
+            thisKey.forEach(key -> {
+                result.add(schema.getColumnAttribute(relation, key));
+            });
+        }
+
+        if (nextKey != null) {
+            nextKey.forEach(key -> {
+                result.add(schema.getColumnAttribute(relation, key));
+            });
+        }
+
+        return ImmutableSet.copyOf(result);
+    }
 
     @Override
     public String getName() {
         return name;
     }
 
-    @Nullable
     public List<String> getThisKey() {
         return thisKey;
     }
@@ -70,8 +94,12 @@ public class RelationProcessFunction extends ProcessFunction {
         return isLast;
     }
 
-    public String getRelationName() {
-        return relationName;
+    public boolean isLeaf() {
+        return childNodes == 0;
+    }
+
+    public Relation getRelation() {
+        return relation;
     }
 
     @Nullable

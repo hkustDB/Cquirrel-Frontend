@@ -1,9 +1,12 @@
 package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.schema.Attribute;
+import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Set;
 
 
 public abstract class ProcessFunction {
@@ -13,6 +16,8 @@ public abstract class ProcessFunction {
     @Nullable
     private final List<String> nextKey;
 
+    public abstract Set<Attribute> getAttributeSet(RelationSchema schema);
+
     public ProcessFunction(final String name, final List<String> thisKey, final List<String> nextKey) {
         CheckerUtils.checkNullOrEmpty(name, "name");
         CheckerUtils.validateNonNullNonEmpty(thisKey, "thisKey");
@@ -21,6 +26,16 @@ public abstract class ProcessFunction {
         this.name = name;
         this.thisKey = thisKey;
         this.nextKey = nextKey;
+    }
+
+    protected void addIfAttributeValue(Set<Attribute> result, Value value, RelationSchema schema) {
+        if (value instanceof AttributeValue) {
+            AttributeValue attributeValue = (AttributeValue) value;
+            Attribute attribute = schema.getColumnAttribute(attributeValue.getRelation(), attributeValue.getColumnName());
+            if (attribute != null) {
+                result.add(attribute);
+            }
+        }
     }
 
     public abstract String getName();
