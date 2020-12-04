@@ -67,3 +67,17 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path):
 
     logging.info('codegen_log_result: ' + codegen_log_result)
     return codegen_log_result
+
+
+def is_flink_cluster_running():
+    from config import REMOTE_FLINK
+    if REMOTE_FLINK:
+        # TODO
+        pass
+    else:
+        cmd_str = 'jps|grep Cluster'
+        ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+        if ret.returncode == 0:
+            return True
+        else:
+            return False
