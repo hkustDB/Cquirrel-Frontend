@@ -6,8 +6,8 @@ from werkzeug.utils import secure_filename
 
 import os
 import shutil
-import subprocess
 import logging
+import threading
 
 
 @main.route('/')
@@ -49,7 +49,9 @@ def upload_json_file():
     codegen_log_result = aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
 
     # call the flink to run the generated_jar
-    aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
+    # aju_utils.run_flink_task(config.GENERATED_JAR_FILE)
+    t = threading.Thread(target=aju_utils.run_flink_task, args=(config.GENERATED_JAR_FILE,))
+    t.start()
 
     logging.info("codegen_log_result: " + codegen_log_result)
 
