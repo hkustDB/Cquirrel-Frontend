@@ -52,7 +52,7 @@ def upload_json_file():
     if not aju_utils.is_flink_cluster_running():
         return render_template('index.html', codegen_log_content=codegen_log_result,
                                uploaded_result="The json file uploaded successfully.",
-                               flink_status_result = 'Flink cluster is not running, please start flink cluster!')
+                               flink_status_result='Flink cluster is not running, please start flink cluster!')
 
     # call the flink to run the generated_jar
     t = threading.Thread(target=aju_utils.run_flink_task, args=(config.GENERATED_JAR_FILE,))
@@ -74,4 +74,3 @@ def download_codegen_log():
 def download_generated_jar():
     if os.path.exists(config.GENERATED_JAR_FILE):
         return send_from_directory(config.GENERATED_JAR_PATH, 'generated.jar', as_attachment=True)
-
