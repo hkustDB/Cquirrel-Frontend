@@ -74,3 +74,18 @@ def download_codegen_log():
 def download_generated_jar():
     if os.path.exists(config.GENERATED_JAR_FILE):
         return send_from_directory(config.GENERATED_JAR_PATH, 'generated.jar', as_attachment=True)
+
+
+@main.route('/settings')
+def settings():
+    return render_template('settings.html')
+
+
+@main.route('/about')
+def about():
+    return render_template('about.html')
+
+
+@main.route('/contact')
+def contact():
+    return render_template('contact.html')
