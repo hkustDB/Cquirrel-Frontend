@@ -140,7 +140,7 @@
             "c_comment",
             "n_name"
         ],
-        "next_key": [
+        "output_key": [
             "custkey", 
             "c_name",
             "c_acctbal",
