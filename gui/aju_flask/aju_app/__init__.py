@@ -26,6 +26,7 @@ def create_app(config_name):
         f.close()
 
     app = Flask(__name__)
+    app.secret_key = os.urandom(24)
     app.config.from_object(config_options[config_name])
     config_options[config_name].init_app(app)
 
@@ -58,7 +59,8 @@ def background_send_kafka_data_thread():
                 logging.info("send: " + str(line_list))
                 socketio.emit('result_figure_data', {'data': line_list})
             else:
-                f.seek(0)
+                # f.seek(0)
+                break
 
 
 def background_send_kafka_data_thread_real():
