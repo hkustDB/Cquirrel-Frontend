@@ -29,7 +29,7 @@
           "c_comment",
           "n_name"
         ],
-        "child_nodes": 3,
+        "child_nodes": 1,
         "is_Root": true,
         "is_Last": true,
         "rename_attribute": null,
@@ -61,7 +61,7 @@
         "next_key": [
           "orderkey"
         ],
-        "child_nodes": 2,
+        "child_nodes": 1,
         "is_Root": false,
         "is_Last": true,
         "rename_attribute": null,
@@ -132,7 +132,13 @@
       {
         "name": "Q10Aggregate",
         "this_key": [
-          "orderkey"
+            "custkey", 
+            "c_name",
+            "c_acctbal",
+            "c_phone",
+            "c_address",
+            "c_comment",
+            "n_name"
         ],
         "next_key": [
             "custkey", 
