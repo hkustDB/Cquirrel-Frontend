@@ -12,13 +12,17 @@ GUI_FLASK_PATH = os.path.abspath(os.path.dirname(__file__))
 JSON_FILE_UPLOAD_PATH = os.path.join(GUI_FLASK_PATH, 'uploads')
 GENERATED_JAR_PATH = os.path.join(GUI_FLASK_PATH, 'jar')
 GENERATED_CODE_DIR = os.path.join(GENERATED_JAR_PATH, 'generated-code')
-GENERATED_JAR_FILE = os.path.join(GUI_FLASK_PATH, 'jar/generated-code/target/generated-code-1.0-SNAPSHOT-jar-with-dependencies.jar')
+GENERATED_JAR_FILE = os.path.join(GUI_FLASK_PATH,
+                                  'jar/generated-code/target/generated-code-1.0-SNAPSHOT-jar-with-dependencies.jar')
 CODEGEN_FILE = os.path.join(GUI_FLASK_PATH, 'jar/codegen.jar')
 CODEGEN_LOG_PATH = os.path.join(GUI_FLASK_PATH, 'log')
 CODEGEN_LOG_FILE = os.path.join(GUI_FLASK_PATH, 'log/codegen.log')
 TEST_RESOURCES_PATH = os.path.join(GUI_FLASK_PATH, 'tests/resources')
-INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_q6_all_insert.csv')
-OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q6_all_insert.csv')
+Q6_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_q6_all_insert.csv')
+Q6_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q6_all_insert.csv')
+Q3_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_q3_all_insert.csv')
+Q3_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q3_all_insert.csv')
+
 
 class BaseConfig:
     pass

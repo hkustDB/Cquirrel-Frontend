@@ -40,18 +40,28 @@ def run_flink_task(filename):
     logging.info("flink command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
-    logging.info('flink jobs return: ', str(result))
+    logging.info('flink jobs return: ' + (result))
     aju_app.background_send_kafka_data_thread()
     return ret
 
 
 def run_codegen_to_generate_jar(uploaded_json_file_save_path):
-    cmd_str = 'java -jar' + ' ' \
-              + config.CODEGEN_FILE + ' ' \
-              + uploaded_json_file_save_path + ' ' \
-              + config.GENERATED_JAR_PATH + ' ' \
-              + 'file://' + config.INPUT_DATA_FILE + ' ' \
-              + 'file://' + config.OUTPUT_DATA_FILE + ' ' + 'file'
+    if uploaded_json_file_save_path.split('/')[-1].split('.')[0] == "Q3":
+        cmd_str = 'java -jar' + ' ' \
+                  + config.CODEGEN_FILE + ' ' \
+                  + uploaded_json_file_save_path + ' ' \
+                  + config.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + config.Q3_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + config.Q3_OUTPUT_DATA_FILE + ' ' + 'file'
+        logging.info("Q3: ")
+    if uploaded_json_file_save_path.split('/')[-1].split('.')[0] == "Q6":
+        cmd_str = 'java -jar' + ' ' \
+                  + config.CODEGEN_FILE + ' ' \
+                  + uploaded_json_file_save_path + ' ' \
+                  + config.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + config.Q6_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + config.Q6_OUTPUT_DATA_FILE + ' ' + 'file'
+        logging.info("Q6: ")
 
     logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)

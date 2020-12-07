@@ -8,7 +8,8 @@ import time
 import logging
 
 from config import config_options
-from config import OUTPUT_DATA_FILE
+from config import Q6_OUTPUT_DATA_FILE
+from config import Q3_OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
@@ -18,11 +19,18 @@ socketio = SocketIO()
 
 def create_app(config_name):
 
-    if os.path.exists(OUTPUT_DATA_FILE):
-        os.truncate(OUTPUT_DATA_FILE, 0)
-        logging.info('truncate the output data file : ' + OUTPUT_DATA_FILE)
+    if os.path.exists(Q6_OUTPUT_DATA_FILE):
+        os.truncate(Q6_OUTPUT_DATA_FILE, 0)
+        logging.info('truncate the output data file : ' + Q6_OUTPUT_DATA_FILE)
     else:
-        f = open(OUTPUT_DATA_FILE, 'w')
+        f = open(Q6_OUTPUT_DATA_FILE, 'w')
+        f.close()
+
+    if os.path.exists(Q3_OUTPUT_DATA_FILE):
+        os.truncate(Q3_OUTPUT_DATA_FILE, 0)
+        logging.info('truncate the output data file : ' + Q3_OUTPUT_DATA_FILE)
+    else:
+        f = open(Q3_OUTPUT_DATA_FILE, 'w')
         f.close()
 
     app = Flask(__name__)
@@ -50,7 +58,7 @@ def send_kafka_data():
 
 def background_send_kafka_data_thread():
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
-    with open(OUTPUT_DATA_FILE, 'r') as f:
+    with open(Q6_OUTPUT_DATA_FILE, 'r') as f:
         while True:
             socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
             line = f.readline()
