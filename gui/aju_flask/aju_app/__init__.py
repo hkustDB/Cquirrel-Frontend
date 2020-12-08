@@ -56,19 +56,34 @@ def send_kafka_data():
     #         thread = socketio.start_background_task(target=background_send_kafka_data_thread)
 
 
-def background_send_kafka_data_thread():
+def background_send_kafka_data_thread(query_idx):
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
-    with open(Q6_OUTPUT_DATA_FILE, 'r') as f:
-        while True:
-            socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
-            line = f.readline()
-            if line:
-                line_list = line.strip().lstrip('(').rstrip(')').split(',')
-                logging.info("send: " + str(line_list))
-                socketio.emit('result_figure_data', {'data': line_list})
-            else:
-                # f.seek(0)
-                break
+    if query_idx == 6:
+        with open(Q6_OUTPUT_DATA_FILE, 'r') as f:
+            while True:
+                socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+                line = f.readline()
+                if line:
+                    line_list = line.strip().lstrip('(').rstrip(')').split(',')
+                    logging.info("send: " + str(line_list))
+                    socketio.emit('result_figure_data', {'data': line_list})
+                else:
+                    # f.seek(0)
+                    break
+    if query_idx == 3:
+        with open(Q3_OUTPUT_DATA_FILE, 'r') as f:
+            while True:
+                socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+                line = f.readline()
+                if line:
+                    line_list = line.strip().lstrip('(').rstrip(')').split(',')
+                    logging.info("send: " + str(line_list))
+                    socketio.emit('result_figure_data', {'data': line_list})
+                else:
+                    # f.seek(0)
+                    break
+    else:
+        logging.error("query index " + query_idx + " is not supported.")
 
 
 def background_send_kafka_data_thread_real():

@@ -17,7 +17,7 @@ def is_json_file(the_file):
     return True
 
 
-def run_flink_task(filename):
+def run_flink_task(filename, query_idx):
     from config import REMOTE_FLINK
     from config import REMOTE_FLINK_URL
 
@@ -40,13 +40,13 @@ def run_flink_task(filename):
     logging.info("flink command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
-    logging.info('flink jobs return: ' + (result))
-    aju_app.background_send_kafka_data_thread()
+    logging.info('flink jobs return: ' + result)
+    aju_app.background_send_kafka_data_thread(query_idx)
     return ret
 
 
-def run_codegen_to_generate_jar(uploaded_json_file_save_path):
-    if uploaded_json_file_save_path.split('/')[-1].split('.')[0] == "Q3":
+def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
+    if query_idx == 3:
         cmd_str = 'java -jar' + ' ' \
                   + config.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
@@ -54,7 +54,7 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path):
                   + 'file://' + config.Q3_INPUT_DATA_FILE + ' ' \
                   + 'file://' + config.Q3_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q3: ")
-    if uploaded_json_file_save_path.split('/')[-1].split('.')[0] == "Q6":
+    if query_idx == 6:
         cmd_str = 'java -jar' + ' ' \
                   + config.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
@@ -62,6 +62,9 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path):
                   + 'file://' + config.Q6_INPUT_DATA_FILE + ' ' \
                   + 'file://' + config.Q6_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q6: ")
+    else:
+        logging.error("query index is not supported.")
+        return
 
     logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
@@ -91,3 +94,11 @@ def is_flink_cluster_running():
             return True
         else:
             return False
+
+
+def get_query_idx(filename):
+    if filename.split('.')[1] == "json":
+        query = filename.split('.')[0]
+        if query[0] == 'Q':
+            return int(query[1:])
+    return 0

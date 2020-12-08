@@ -19,6 +19,7 @@ def index():
 def upload_json_file():
     f = request.files['json_file']
     uploaded_json_filename = secure_filename(f.filename)
+    query_idx = aju_utils.get_query_idx(uploaded_json_filename)
     uploaded_json_file_save_path = os.path.join(config.JSON_FILE_UPLOAD_PATH, uploaded_json_filename)
 
     # check if the upload dir exists or not
@@ -46,7 +47,7 @@ def upload_json_file():
         logging.info('remove the generated-code directory.')
 
     # call the codegen to generate a jar file
-    codegen_log_result = aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path)
+    codegen_log_result = aju_utils.run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx)
 
     # test if flink cluster is running
     if not aju_utils.is_flink_cluster_running():
@@ -55,7 +56,7 @@ def upload_json_file():
                                flink_status_result='Flink cluster is not running, please start flink cluster!')
 
     # call the flink to run the generated_jar
-    t = threading.Thread(target=aju_utils.run_flink_task, args=(config.GENERATED_JAR_FILE,))
+    t = threading.Thread(target=aju_utils.run_flink_task, args=(config.GENERATED_JAR_FILE, query_idx))
     t.start()
 
     logging.info("codegen_log_result: " + codegen_log_result)
