@@ -63,19 +63,33 @@ public class GenerateCodeTest {
     public void generateCodeForEachQuery() throws Exception {
         for (int queryIdx : queryArrayList) {
             removeGeneratedCodeFolder(queryIdx);
-            generateCode(queryIdx);
+            generateCodeUsingJar(queryIdx);
             copyGeneratedCodeToQueryFolder(queryIdx);
             removeGeneratedCodeFolder(queryIdx);
         }
     }
 
-    private void generateCode(int queryIdx) throws IOException, InterruptedException {
-        File queryFolderFile = new File(RESOURCE_FOLDER + File.separator + "q" + String.valueOf(queryIdx));
+    private void generateCodeUsingMainFunction(int queryIdx) throws Exception {
+        File queryFolderFile = getQueryFolderFile(queryIdx);
+        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + File.separator + "Q" + String.valueOf(queryIdx) + ".json");
+
+        String flinkInputFile = "file:///aju/q3flinkInput.csv";
+        String flinkOutputFile = "file:///aju/q3flinkOutput.csv";
+
+        String[] args = {queryJsonFile.getAbsolutePath(), queryFolderFile.getAbsolutePath(), flinkInputFile, flinkOutputFile, "file"};
+        CodeGen.main(args);
+    }
+
+    private void generateCodeUsingJar(int queryIdx) throws Exception {
+        File queryFolderFile = getQueryFolderFile(queryIdx);
         File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + File.separator + "Q" + String.valueOf(queryIdx) + ".json");
 
         // TODO
         String flinkInputFile = "file:///aju/q3flinkInput.csv";
         String flinkOutputFile = "file:///aju/q3flinkOutput.csv";
+
+        // repackage the codegen jar
+        packageCodegenJar();
 
         String command_str = "java -jar "
                 + CODEGEN_JAR_PATH + " "
@@ -135,6 +149,10 @@ public class GenerateCodeTest {
         if (generatedCodeFolder.isDirectory() && generatedCodeFolder.exists()) {
             FileUtils.deleteDirectory(generatedCodeFolder);
         }
+    }
+
+    private void packageCodegenJar() throws IOException, InterruptedException {
+        runCommand("mvn package -DskipTests -f .");
     }
 
 }
