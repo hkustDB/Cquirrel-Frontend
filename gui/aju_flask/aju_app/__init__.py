@@ -6,6 +6,7 @@ from confluent_kafka import Consumer
 import os
 import time
 import logging
+import threading
 
 from config import config_options
 from config import Q6_OUTPUT_DATA_FILE
@@ -13,12 +14,13 @@ from config import Q3_OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
+
+
 # thread = None
 # thread_lock = Lock()
 
 
 def create_app(config_name):
-
     if os.path.exists(Q6_OUTPUT_DATA_FILE):
         os.truncate(Q6_OUTPUT_DATA_FILE, 0)
         logging.info('truncate the output data file : ' + Q6_OUTPUT_DATA_FILE)
@@ -48,12 +50,51 @@ def create_app(config_name):
 
 
 @socketio.on('connect')
-def send_kafka_data():
-    socketio.start_background_task(target=background_send_kafka_data_thread)
+def socketio_connect():
+    print("socketio connected")
+    # socketio.start_background_task(target=background_send_kafka_data_thread, args=query_idx)
     # global thread
     # with thread_lock:
     #     if thread is None:
     #         thread = socketio.start_background_task(target=background_send_kafka_data_thread)
+
+
+@socketio.on('disconnect')
+def socketio_disconnect():
+    print('socketio disconnected')
+
+
+@socketio.on('aaa')
+def aaaa_send_data():
+    socketio.emit('aaa', {'data': 'aaaaa'})
+
+
+def send_query_result_data_to_client(query_idx):
+    if query_idx == 3:
+        logging.info("sending query " + str(query_idx) + " result data to client...")
+        t = threading.Thread(target=send_query_result_data_file, args=(Q3_OUTPUT_DATA_FILE,))
+        t.start()
+    elif query_idx == 6:
+        logging.info("sending query " + str(query_idx) + " result data to client...")
+        t = threading.Thread(target=send_query_result_data_file, args=(Q6_OUTPUT_DATA_FILE,))
+        t.start()
+    else:
+        logging.error("query " + str(query_idx) + " does not support for now.")
+
+
+def send_query_result_data_file(filepath):
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.5
+    socketio.emit('start_figure_data_transmit', {'data': 1})
+    with open(filepath, 'r') as f:
+        while True:
+            socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+            line = f.readline()
+            if line:
+                line_list = line.strip().lstrip('(').rstrip(')').split(',')
+                logging.info("send: " + str(line_list))
+                socketio.emit('result_figure_data', {'data': line_list})
+            else:
+                break
 
 
 def background_send_kafka_data_thread(query_idx):
@@ -70,7 +111,7 @@ def background_send_kafka_data_thread(query_idx):
                 else:
                     # f.seek(0)
                     break
-    if query_idx == 3:
+    elif query_idx == 3:
         with open(Q3_OUTPUT_DATA_FILE, 'r') as f:
             while True:
                 socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)

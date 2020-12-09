@@ -1,9 +1,9 @@
 import os
-from dotenv import load_dotenv
-
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
+# from dotenv import load_dotenv
+#
+# dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+# if os.path.exists(dotenv_path):
+#     load_dotenv(dotenv_path)
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -24,7 +24,7 @@ import click
 from aju_app import create_app
 
 app = create_app(os.getenv('FLASK_CONFIG_NAME') or 'default')
-
+app.run(debug=True)
 
 @app.cli.command()
 @click.option('--coverage/--no-coverage', default=True,

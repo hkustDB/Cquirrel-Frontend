@@ -18,6 +18,7 @@ def is_json_file(the_file):
 
 
 def run_flink_task(filename, query_idx):
+
     from config import REMOTE_FLINK
     from config import REMOTE_FLINK_URL
 
@@ -38,10 +39,12 @@ def run_flink_task(filename, query_idx):
         cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
 
     logging.info("flink command: " + cmd_str)
+
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
     logging.info('flink jobs return: ' + result)
-    aju_app.background_send_kafka_data_thread(query_idx)
+    # aju_app.background_send_kafka_data_thread(query_idx)
+    aju_app.send_query_result_data_to_client(query_idx)
     return ret
 
 
@@ -54,7 +57,7 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
                   + 'file://' + config.Q3_INPUT_DATA_FILE + ' ' \
                   + 'file://' + config.Q3_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q3: ")
-    if query_idx == 6:
+    elif query_idx == 6:
         cmd_str = 'java -jar' + ' ' \
                   + config.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
@@ -64,7 +67,7 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
         logging.info("Q6: ")
     else:
         logging.error("query index is not supported.")
-        return
+        raise Exception("query index is not supported.")
 
     logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
@@ -102,3 +105,8 @@ def get_query_idx(filename):
         if query[0] == 'Q':
             return int(query[1:])
     return 0
+
+
+def send_notify_of_start_to_run_flink_job():
+    print('start_to_run_flink_job')
+    aju_app.socketio.send('start_to_run_flink_job', {'data': 1})

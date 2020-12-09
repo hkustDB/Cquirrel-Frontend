@@ -62,19 +62,21 @@
                 <a href="download_generated_jar" class="btn btn-primary float-md-right" style="margin-right: 1rem">Download
                     Generated Jar</a>
             </div>
+
         </div>
     </div>
     <hr>
 
-    <div class="container h-80">
+
+    <div class="container h-100">
         <div class="panel panel-default h-100">
             <div class="panel-heading h-10">
                 <h4 class="panel-title">
-                    Result: {{ flink_status_result }}
+                    Flink results:  <div id="start_to_run_flink">{{ flink_status_result }}</div>
                 </h4>
             </div>
             <div class="panel-body h-90">
-                <div id="result_chart" class="h-100 w-100"></div>
+                <div id="result_chart" class="h-90 w-100"></div>
             </div>
         </div>
     </div>

@@ -1,3 +1,4 @@
+import aju_app
 from . import main
 from .. import aju_utils
 import config
@@ -62,7 +63,8 @@ def upload_json_file():
     logging.info("codegen_log_result: " + codegen_log_result)
 
     return render_template('index.html', codegen_log_content=codegen_log_result,
-                           uploaded_result="The json file uploaded successfully.")
+                           uploaded_result="The json file uploaded successfully.",
+                           flink_status_result='Start to run Flink job, please wait a moment.')
 
 
 @main.route("/download_codegen_log")
