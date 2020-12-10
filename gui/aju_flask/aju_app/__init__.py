@@ -14,8 +14,7 @@ from config import Q3_OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
-
-
+stop_thread_flag = False
 # thread = None
 # thread_lock = Lock()
 
@@ -51,7 +50,7 @@ def create_app(config_name):
 
 @socketio.on('connect')
 def socketio_connect():
-    print("socketio connected")
+    logging.info("socketio connected")
     # socketio.start_background_task(target=background_send_kafka_data_thread, args=query_idx)
     # global thread
     # with thread_lock:
@@ -70,6 +69,8 @@ def aaaa_send_data():
 
 
 def send_query_result_data_to_client(query_idx):
+    global stop_thread_flag
+    stop_thread_flag = False
     if query_idx == 3:
         logging.info("sending query " + str(query_idx) + " result data to client...")
         t = threading.Thread(target=send_query_result_data_file, args=(Q3_OUTPUT_DATA_FILE,))
@@ -87,6 +88,10 @@ def send_query_result_data_file(filepath):
     socketio.emit('start_figure_data_transmit', {'data': 1})
     with open(filepath, 'r') as f:
         while True:
+            global stop_thread_flag
+            if stop_thread_flag:
+                break
+
             socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
             line = f.readline()
             if line:
@@ -96,6 +101,9 @@ def send_query_result_data_file(filepath):
             else:
                 break
 
+def stop_send_data_thread():
+    global stop_thread_flag
+    stop_thread_flag = True
 
 def background_send_kafka_data_thread(query_idx):
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1

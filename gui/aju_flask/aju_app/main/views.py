@@ -18,6 +18,9 @@ def index():
 
 @main.route('/', methods=['POST'])
 def upload_json_file():
+
+    aju_app.stop_send_data_thread()
+
     f = request.files['json_file']
     uploaded_json_filename = secure_filename(f.filename)
     query_idx = aju_utils.get_query_idx(uploaded_json_filename)
