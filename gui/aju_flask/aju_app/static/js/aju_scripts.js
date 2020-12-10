@@ -59,8 +59,8 @@ var option = {
         selected: {}
     },
     grid: {
-        show:true,
-        width:"63%"
+        show: true,
+        width: "63%"
     },
     dataZoom: {
         type: "slider",
@@ -95,7 +95,7 @@ $(document).ready(function () {
     var legend_data = [];
     var selected_data = {};
     var selected_queue = new Queue();
-    var q6_serie ={name:"revenue", type:"line", data: []}
+    var q6_serie = {name: "revenue", type: "line", data: []}
 
     socket.on('connect', () => {
         console.log('socketio connected.')
@@ -126,7 +126,7 @@ $(document).ready(function () {
             if (local_data[key_tag] === undefined) {
                 if (local_data.length !== 0) {
                     for (var i in local_data) {
-                        local_data[i].push(null);
+                        local_data[i].push(local_data[i][local_data[i].length - 1]);
                     }
                 }
 
@@ -148,7 +148,7 @@ $(document).ready(function () {
 
             } else {
                 for (var i in local_data) {
-                    local_data[i].push(null);
+                    local_data[i].push(local_data[i][local_data[i].length - 1]);
                 }
                 local_data[key_tag].pop();
                 local_data[key_tag].push(line_list[3]);
