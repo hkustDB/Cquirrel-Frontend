@@ -2,34 +2,31 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.apache.commons.io.FileUtils;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-
+import static java.io.File.separator;
 
 public class GenerateCodeTest {
-    private static ArrayList<Integer> queryArrayList = new ArrayList<>();
-
-    private static final String RESOURCE_FOLDER = new File("src" + File.separator + "test" + File.separator + "resources").getAbsolutePath();
-    private final String CODEGEN_JAR_PATH = new File(CodeGen.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath() + File.separator + "codegen-1.0-SNAPSHOT.jar";
+    private static final ArrayList<Integer> queryArrayList = new ArrayList<>();
+    private final String GENERATED_CODE = "generated-code";
+    private static final String RESOURCE_FOLDER = new File("src" + separator + "test" + separator + "resources").getAbsolutePath();
+    private final String CODEGEN_JAR_PATH = new File(CodeGen.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath() + separator + "codegen-1.0-SNAPSHOT.jar";
 
     @BeforeClass
     public static void getQueryArrayList() throws Exception {
-        // check if resource folder exists and is a directory
         File resourceFolderFile = new File(RESOURCE_FOLDER);
-        if(!(resourceFolderFile.exists() && resourceFolderFile.isDirectory())) {
+        if (!resourceFolderFile.exists() || !resourceFolderFile.isDirectory()) {
             throw new Exception("resource folder does not exists.");
         }
 
-        // check the child folder of the resource folder
         File[] resourceFolderFiles = resourceFolderFile.listFiles();
         for (File file : resourceFolderFiles) {
-            // jump the non-query folder
-            if ((!file.isDirectory()) || (file.getName().charAt(0) != 'q')) {
+            if (!file.isDirectory() || file.getName().charAt(0) != 'q') {
                 continue;
             }
             int queryNum;
@@ -45,16 +42,13 @@ public class GenerateCodeTest {
         }
     }
 
-    /*
-     * check if the json file exists under the query folders
-     */
     private static boolean validateQueryJsonFileExist(int queryInd) {
-        File queryFolderFile = new File(RESOURCE_FOLDER + File.separator + "q" + String.valueOf(queryInd));
-        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + File.separator + "Q" + String.valueOf(queryInd) + ".json");
-        if (queryJsonFile.exists()) {
+        File queryFolder = new File(RESOURCE_FOLDER + separator + "q" + queryInd);
+        File queryJson = new File(queryFolder.getAbsolutePath() + separator + "Q" + queryInd + ".json");
+        if (queryJson.exists()) {
             return true;
         }
-        System.out.println(queryJsonFile.getAbsolutePath() + " does not exists.");
+        System.out.println(queryJson.getAbsolutePath() + " does not exists.");
         return false;
     }
 
@@ -63,7 +57,7 @@ public class GenerateCodeTest {
     public void generateCodeForEachQuery() throws Exception {
         for (int queryIdx : queryArrayList) {
             removeGeneratedCodeFolder(queryIdx);
-            generateCodeUsingJar(queryIdx);
+            generateCodeUsingMainFunction(queryIdx);
             copyGeneratedCodeToQueryFolder(queryIdx);
             removeGeneratedCodeFolder(queryIdx);
         }
@@ -71,7 +65,7 @@ public class GenerateCodeTest {
 
     private void generateCodeUsingMainFunction(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + File.separator + "Q" + String.valueOf(queryIdx) + ".json");
+        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + separator + "Q" + queryIdx + ".json");
 
         String flinkInputFile = "file:///aju/q3flinkInput.csv";
         String flinkOutputFile = "file:///aju/q3flinkOutput.csv";
@@ -82,7 +76,7 @@ public class GenerateCodeTest {
 
     private void generateCodeUsingJar(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + File.separator + "Q" + String.valueOf(queryIdx) + ".json");
+        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + separator + "Q" + queryIdx + ".json");
 
         // TODO
         String flinkInputFile = "file:///aju/q3flinkInput.csv";
@@ -120,32 +114,29 @@ public class GenerateCodeTest {
     }
 
     private File getQueryFolderFile(int queryIdx) throws Exception {
-        File queryFolderFile = new File(RESOURCE_FOLDER + File.separator + "q" + queryIdx);
+        File queryFolderFile = new File(RESOURCE_FOLDER + separator + "q" + queryIdx);
         if (queryFolderFile.exists() && queryFolderFile.isDirectory()) {
             return queryFolderFile;
         } else {
-            throw new Exception("q"+ queryIdx + " query folder does not exists.");
+            throw new Exception("q" + queryIdx + " query folder does not exists.");
         }
     }
 
     private void copyGeneratedCodeToQueryFolder(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File generatedCodeSourceFolder = new File(queryFolderFile.getAbsolutePath() + File.separator
-                + "generated-code" + File.separator + "src" + File.separator + "main" + File.separator
-                + "scala" + File.separator + "org" + File.separator + "hkust" + File.separator);
+        File generatedCodeSourceFolder = new File(queryFolderFile.getAbsolutePath() + separator
+                + GENERATED_CODE + separator + "src" + separator + "main" + separator
+                + "scala" + separator + "org" + separator + "hkust" + separator);
         File[] files = generatedCodeSourceFolder.listFiles();
         for (File file : files) {
-            File dstFile = new File(queryFolderFile.getAbsolutePath() + File.separator + file.getName());
-            if (dstFile.exists()) {
-                dstFile.delete();
-            }
-            Files.copy(file.toPath(), dstFile.toPath());
+            File dstFile = new File(queryFolderFile.getAbsolutePath() + separator + file.getName());
+            Files.copy(file.toPath(), dstFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
     private void removeGeneratedCodeFolder(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File generatedCodeFolder = new File(queryFolderFile.getAbsolutePath() + File.separator + "generated-code");
+        File generatedCodeFolder = new File(queryFolderFile.getAbsolutePath() + separator + GENERATED_CODE);
         if (generatedCodeFolder.isDirectory() && generatedCodeFolder.exists()) {
             FileUtils.deleteDirectory(generatedCodeFolder);
         }
