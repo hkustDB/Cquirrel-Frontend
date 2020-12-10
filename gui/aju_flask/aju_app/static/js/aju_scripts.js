@@ -26,7 +26,7 @@ function Queue() {
     }
 
     this.isEmpty = function () {
-        return items.length == 0;
+        return items.length === 0;
     }
 
     this.size = function () {
@@ -60,7 +60,7 @@ var option = {
     },
     grid: {
         show:true,
-        width:"65%"
+        width:"63%"
     },
     dataZoom: {
         type: "slider",
@@ -90,11 +90,12 @@ $(document).ready(function () {
     // let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
     const socket = io(location.protocol + '//' + document.domain + ':' + location.port);
 
-    var local_data = new Array();
+    var local_data = [];
     var x_timestamp = [];
     var legend_data = [];
     var selected_data = {};
     var selected_queue = new Queue();
+    var q6_serie ={name:"revenue", type:"line", data: []}
 
     socket.on('connect', () => {
         console.log('socketio connected.')
@@ -107,14 +108,18 @@ $(document).ready(function () {
 
         x_timestamp.push(line_list[8]);
         if (line_list.length % 2 === 0) {
-            alert('received data format is not correct.')
+            alert('received data format is not correct.');
         }
         // q6
         if (line_list.length === 3) {
-            option.series.data.push([line_list[2], line_list[0]]);
+            option.title.text = "AJU Result Chart - TPC-H Query 6";
+            q6_serie.data.push(line_list[0]);
+            option.xAxis.data.push(line_list[2]);
+            option.series[0] = q6_serie;
         }
         // q3
         if (line_list.length === 9) {
+            option.title.text = "AJU Result Chart - TPC-H Query 3";
             let key_tag = line_list[4] + ":" + line_list[0] + ", "
                 + line_list[5] + ":" + line_list[1] + ", "
                 + line_list[6] + ":" + line_list[2];
@@ -165,7 +170,7 @@ $(document).ready(function () {
             $('#start_to_run_flink').text('Start to run flink job... please wait ~')
 
             option.xAxis.data = [];
-            option.series.data = [];
+            option.series = [];
             option.legend.data.selected = {};
             local_data = [];
             x_timestamp = [];
