@@ -106,7 +106,7 @@ $(document).ready(function () {
         var line_list = res.data;
         // console.log('received: ' + (line_list).toString());
 
-        x_timestamp.push(line_list[8]);
+        // x_timestamp.push(line_list[line_list.length - 1]);
         if (line_list.length % 2 === 0) {
             alert('received data format is not correct.');
         }
@@ -118,11 +118,17 @@ $(document).ready(function () {
             option.series[0] = q6_serie;
         }
         // q3
-        if (line_list.length === 9) {
-            option.title.text = "AJU Result Chart - TPC-H Query 3";
-            let key_tag = line_list[4] + ":" + line_list[0] + ", "
-                + line_list[5] + ":" + line_list[1] + ", "
-                + line_list[6] + ":" + line_list[2];
+        if (line_list.length > 3) {
+            // option.title.text = "AJU Result Chart - TPC-H Query 3";
+            let x_timestamp_idx = line_list.length - 1;
+            let y_value_idx = x_timestamp_idx / 2 - 1;
+
+            var key_tag = "";
+            for (var i = 0; i < y_value_idx; i++) {
+                key_tag = key_tag + (line_list[y_value_idx + i] + ":" + line_list[i] + ", ")
+            }
+            key_tag = key_tag.substring(0, key_tag.length - 2);
+
             if (local_data[key_tag] === undefined) {
                 if (local_data.length !== 0) {
                     for (var i in local_data) {
@@ -134,7 +140,7 @@ $(document).ready(function () {
                 for (var i = 0; i < x_timestamp.length; i++) {
                     local_data[key_tag].push(null);
                 }
-                local_data[key_tag].push(line_list[3]);
+                local_data[key_tag].push(line_list[y_value_idx]);
                 legend_data.push(key_tag);
 
                 if (selected_queue.size() > 6) {
@@ -151,9 +157,9 @@ $(document).ready(function () {
                     local_data[i].push(local_data[i][local_data[i].length - 1]);
                 }
                 local_data[key_tag].pop();
-                local_data[key_tag].push(line_list[3]);
+                local_data[key_tag].push(line_list[y_value_idx]);
             }
-            x_timestamp.push(line_list[8]);
+            x_timestamp.push(line_list[x_timestamp_idx]);
             option.xAxis.data = x_timestamp;
             let aserie = {name: key_tag, type: "line", data: local_data[key_tag]};
             option.series.push(aserie);
@@ -184,5 +190,13 @@ $(document).ready(function () {
 
 });
 
-
+function getAggregateNameIdx(aggName, line_list) {
+    var target = aggName.toLowerCase();
+    for(var i = 0; i < line_list.length; i++) {
+        if (target == line_list[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
 
