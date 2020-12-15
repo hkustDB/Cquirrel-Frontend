@@ -1,3 +1,5 @@
+import org.junit.Before;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.apache.commons.io.FileUtils;
@@ -17,8 +19,8 @@ public class GenerateCodeTest {
     private static final String RESOURCE_FOLDER = new File("src" + separator + "test" + separator + "resources").getAbsolutePath();
     private final String CODEGEN_JAR_PATH = new File(CodeGen.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath() + separator + "codegen-1.0-SNAPSHOT.jar";
 
-    @BeforeClass
-    public static void getQueryArrayList() throws Exception {
+    @Before
+    public void getQueryArrayList() throws Exception {
         File resourceFolderFile = new File(RESOURCE_FOLDER);
         if (!resourceFolderFile.exists() || !resourceFolderFile.isDirectory()) {
             throw new Exception("resource folder does not exists.");
@@ -61,6 +63,7 @@ public class GenerateCodeTest {
             copyGeneratedCodeToQueryFolder(queryIdx);
             removeGeneratedCodeFolder(queryIdx);
         }
+        runCommand("which mvn");
     }
 
     private void generateCodeUsingMainFunction(int queryIdx) throws Exception {
