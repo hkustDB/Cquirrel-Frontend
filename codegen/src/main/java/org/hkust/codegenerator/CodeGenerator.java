@@ -46,7 +46,8 @@ public class CodeGenerator {
 
     private static void compile(String pomPath) throws IOException {
         Runtime runtime = Runtime.getRuntime();
-        execute(runtime, "mvn package -DskipTests -f " + pomPath);
+        String mvnCommand = System.getProperty("os.name").toLowerCase().startsWith("windows") ? "mvn.cmd" : "mvn";
+        execute(runtime, mvnCommand + " package -DskipTests -f " + pomPath);
     }
 
     private static void execute(Runtime runtime, String command) throws IOException {
