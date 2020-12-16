@@ -38,6 +38,17 @@ function Queue() {
     }
 }
 
+function getAggregateNameIdx(aggName, line_list) {
+    var target = aggName.toLowerCase();
+    for (var i = 0; i < line_list.length; i++) {
+        console.log("target: "+target +", line_list[" + i + "]: " +line_list[i].trim())
+        if (target == line_list[i].trim().toLowerCase()) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 
 var myChart = echarts.init(document.getElementById('result_chart'));
 
@@ -102,8 +113,13 @@ $(document).ready(function () {
     });
 
     socket.on('result_figure_data', function (res) {
-        $('#start_to_run_flink').text('Receiving flink results data...')
+        $('#start_to_run_flink').text('Receiving flink results data...');
+        let aggregate_name = $("#aggregate_name_input").val();
+        option.yAxis.name = aggregate_name;
         var line_list = res.data;
+        for (var i = 0; i < line_list.length; i++) {
+            line_list[i] = line_list[i].trim();
+        }
         // console.log('received: ' + (line_list).toString());
 
         // x_timestamp.push(line_list[line_list.length - 1]);
@@ -119,16 +135,26 @@ $(document).ready(function () {
         }
         // q3
         if (line_list.length > 3) {
-            // option.title.text = "AJU Result Chart - TPC-H Query 3";
-            let x_timestamp_idx = line_list.length - 1;
-            let y_value_idx = x_timestamp_idx / 2 - 1;
 
+            option.title.text = "AJU Result Chart - TPC-H Query ";
+            let x_timestamp_idx = line_list.length - 1;
+            let aggregate_name_idx = getAggregateNameIdx(aggregate_name, line_list);
+            if (aggregate_name_idx === -1) {
+                $("#aggregate_name_result").text("aggregate name is not correct.");
+            } else {
+                $("#aggregate_name_result").text("");
+            }
+            let y_value_idx = (aggregate_name_idx - 1) / 2;
+            let attribute_length = (line_list.length - 1) / 2;
             var key_tag = "";
-            for (var i = 0; i < y_value_idx; i++) {
-                key_tag = key_tag + (line_list[y_value_idx + i] + ":" + line_list[i] + ", ")
+            for (var i = 0; i < attribute_length; i++) {
+                if (i === y_value_idx) {
+                    continue;
+                }
+                key_tag = key_tag + (line_list[attribute_length + i] + ":" + line_list[i] + ", ")
             }
             key_tag = key_tag.substring(0, key_tag.length - 2);
-
+            console.log("aggregate_name: " + aggregate_name + ", aggregate_name_idx: " + aggregate_name_idx + ", y_value_idx: " + y_value_idx + ", attribute_length: " + attribute_length +", key_tag: " + key_tag);
             if (local_data[key_tag] === undefined) {
                 if (local_data.length !== 0) {
                     for (var i in local_data) {
@@ -190,13 +216,5 @@ $(document).ready(function () {
 
 });
 
-function getAggregateNameIdx(aggName, line_list) {
-    var target = aggName.toLowerCase();
-    for(var i = 0; i < line_list.length; i++) {
-        if (target == line_list[i]) {
-            return i;
-        }
-    }
-    return -1;
-}
+
 
