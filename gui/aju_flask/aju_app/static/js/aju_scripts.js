@@ -41,7 +41,7 @@ function Queue() {
 function getAggregateNameIdx(aggName, line_list) {
     var target = aggName.toLowerCase();
     for (var i = 0; i < line_list.length; i++) {
-        console.log("target: "+target +", line_list[" + i + "]: " +line_list[i].trim())
+        // console.log("target: "+target +", line_list[" + i + "]: " +line_list[i].trim())
         if (target == line_list[i].trim().toLowerCase()) {
             return i;
         }
@@ -154,7 +154,7 @@ $(document).ready(function () {
                 key_tag = key_tag + (line_list[attribute_length + i] + ":" + line_list[i] + ", ")
             }
             key_tag = key_tag.substring(0, key_tag.length - 2);
-            console.log("aggregate_name: " + aggregate_name + ", aggregate_name_idx: " + aggregate_name_idx + ", y_value_idx: " + y_value_idx + ", attribute_length: " + attribute_length +", key_tag: " + key_tag);
+            // console.log("aggregate_name: " + aggregate_name + ", aggregate_name_idx: " + aggregate_name_idx + ", y_value_idx: " + y_value_idx + ", attribute_length: " + attribute_length +", key_tag: " + key_tag);
             if (local_data[key_tag] === undefined) {
                 if (local_data.length !== 0) {
                     for (var i in local_data) {
