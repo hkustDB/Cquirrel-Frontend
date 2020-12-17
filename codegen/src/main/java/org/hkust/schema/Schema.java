@@ -10,7 +10,10 @@ import static java.util.Objects.requireNonNull;
 public class Schema {
     private Map<String, Attribute> attributes;
     private List<Attribute> primaryKey;
-    private Schema parent;
+    private Relation parent;
+    private List<Relation> children;
+    private Relation name;
+    private String columnPrefix;
 
     private Schema() {
     }
@@ -27,11 +30,11 @@ public class Schema {
         return primaryKey;
     }
 
-    public Schema getParent() {
+    public Relation getParent() {
         return parent;
     }
 
-    private void setParent(Schema parent) {
+    private void setParent(Relation parent) {
         this.parent = parent;
     }
 
@@ -41,6 +44,30 @@ public class Schema {
 
     private void setPrimaryKey(List<Attribute> primaryKey) {
         this.primaryKey = primaryKey;
+    }
+
+    public List<Relation> getChildren() {
+        return children;
+    }
+
+    private void setChildren(List<Relation> children) {
+        this.children = children;
+    }
+
+    public Relation getRelation() {
+        return name;
+    }
+
+    private void setName(Relation name) {
+        this.name = name;
+    }
+
+    public String getColumnPrefix() {
+        return columnPrefix;
+    }
+
+    private void setColumnPrefix(String columnPrefix) {
+        this.columnPrefix = columnPrefix;
     }
 
     static class SchemaBuilder {
@@ -57,7 +84,7 @@ public class Schema {
             return this;
         }
 
-        SchemaBuilder withParent(Schema parent) {
+        SchemaBuilder withParent(Relation parent) {
             schema.setParent(parent);
 
             return this;
@@ -70,6 +97,21 @@ public class Schema {
             }
             schema.setPrimaryKey(primaryKey);
 
+            return this;
+        }
+
+        SchemaBuilder withChildren(List<Relation> children) {
+            schema.setChildren(children);
+            return this;
+        }
+
+        SchemaBuilder withRelationName(Relation name){
+            schema.setName(name);
+            return this;
+        }
+
+        SchemaBuilder withColumnPrefix(String prefix){
+            schema.setColumnPrefix(prefix);
             return this;
         }
 

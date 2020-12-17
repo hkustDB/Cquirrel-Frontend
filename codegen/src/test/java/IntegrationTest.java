@@ -1,7 +1,6 @@
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.hkust.codegenerator.CodeGenerator;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -25,7 +24,7 @@ public class IntegrationTest {
             GENERATED_CODE_PATH + File.separator + "target" + File.separator + "generated-code-1.0-SNAPSHOT-jar-with-dependencies.jar"
     );
 
-    @Before
+    //@Before
     public void packageJar() throws IOException {
         execute(runtime, "mvn package -DskipTests -f .");
     }
@@ -37,7 +36,7 @@ public class IntegrationTest {
 
     @Test
     public void q6IntegrationTest() throws Exception {
-        integrationTest("q3/Q3.json",
+        integrationTest("q10/Q10.json",
                 "file:///home/data/qwangbp/lineitem.tbl",
                 "file:///home/data/qwangbp/testQ6.out",
                 "file",

@@ -17,18 +17,18 @@ public class AggregateProcessFunction extends ProcessFunction {
     @Nullable
     private final List<String> thisKey;
     @Nullable
-    private final List<String> nextKey;
+    private final List<String> outputKey;
 
     private final List<AggregateValue> aggregateValues;
     private final Operator aggregation;
     private final Class valueType;
 
-    public AggregateProcessFunction(String name, List<String> thisKey, List<String> nextKey, List<AggregateValue> aggregateValues,
+    public AggregateProcessFunction(String name, List<String> thisKey, List<String> outputKey, List<AggregateValue> aggregateValues,
                                     Operator aggregation, Class valueType) {
-        super(name, thisKey, nextKey);
+        super(name, thisKey, outputKey);
         this.name = name;
         this.thisKey = thisKey;
-        this.nextKey = nextKey;
+        this.outputKey = outputKey;
 
         requireNonNull(aggregateValues);
         this.aggregateValues = aggregateValues;
@@ -73,8 +73,8 @@ public class AggregateProcessFunction extends ProcessFunction {
     }
 
     @Nullable
-    public List<String> getNextKey() {
-        return nextKey;
+    public List<String> getOutputKey() {
+        return outputKey;
     }
 
     public List<AggregateValue> getAggregateValues() {
@@ -94,7 +94,7 @@ public class AggregateProcessFunction extends ProcessFunction {
         return "AggregateProcessFunction{" +
                 "name='" + name + '\'' +
                 ", thisKey=" + thisKey +
-                ", nextKey=" + nextKey +
+                ", nextKey=" + outputKey +
                 ", computation=" + aggregateValues +
                 ", aggregation=" + aggregation +
                 ", valueType=" + valueType +

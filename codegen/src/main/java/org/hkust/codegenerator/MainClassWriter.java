@@ -223,15 +223,15 @@ class MainClassWriter implements ClassWriter {
         int rpfThisKeySize = thisKeyAttributes.size();
         if (rpfThisKeySize == 1) {
             String thisKey = thisKeyAttributes.get(0);
-            Attribute keyAttribute = schema.getColumnAttribute(rpf.getRelation(), thisKey);
+            Attribute keyAttribute = schema.getColumnAttributeByRawName(rpf.getRelation(), thisKey);
             requireNonNull(keyAttribute);
             return "cells(" + keyAttribute.getPosition() + ")." + stringConversionMethods.get(keyAttribute.getType()) + ".asInstanceOf[Any],";
         } else if (rpfThisKeySize == 2) {
             String thisKey1 = thisKeyAttributes.get(0);
             String thisKey2 = thisKeyAttributes.get(1);
-            Attribute keyAttribute1 = schema.getColumnAttribute(rpf.getRelation(), thisKey1);
+            Attribute keyAttribute1 = schema.getColumnAttributeByRawName(rpf.getRelation(), thisKey1);
             requireNonNull(keyAttribute1);
-            Attribute keyAttribute2 = schema.getColumnAttribute(rpf.getRelation(), thisKey2);
+            Attribute keyAttribute2 = schema.getColumnAttributeByRawName(rpf.getRelation(), thisKey2);
             requireNonNull(keyAttribute2);
             return "Tuple2( cells(" + keyAttribute1.getPosition() + ")." + stringConversionMethods.get(keyAttribute1.getType()) +
                     ", cells(" + keyAttribute2.getPosition() + ")." + stringConversionMethods.get(keyAttribute2.getType()) + ").asInstanceOf[Any],";
@@ -256,10 +256,10 @@ class MainClassWriter implements ClassWriter {
     int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
         Set<Attribute> attributes = new LinkedHashSet<>(agfAttributes);
 
-        List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
+        List<String> agfNextKeys = aggregateProcessFunctions.get(0).getOutputKey();
         if (agfNextKeys != null) {
             for (String key : agfNextKeys) {
-                Attribute attribute = schema.getColumnAttribute(rpf.getRelation(), key);
+                Attribute attribute = schema.getColumnAttributeByRawName(rpf.getRelation(), key);
                 if (attribute != null) {
                     attributes.add(attribute);
                 }
@@ -269,7 +269,7 @@ class MainClassWriter implements ClassWriter {
         List<String> agfThisKeys = aggregateProcessFunctions.get(0).getThisKey();
         if (agfThisKeys != null) {
             for (String key : agfThisKeys) {
-                Attribute attribute = schema.getColumnAttribute(rpf.getRelation(), key);
+                Attribute attribute = schema.getColumnAttributeByRawName(rpf.getRelation(), key);
                 if (attribute != null) {
                     attributes.add(attribute);
                 }
@@ -281,7 +281,7 @@ class MainClassWriter implements ClassWriter {
         int numberOfMatchingColumns = 0;
         while (iterator.hasNext()) {
             Attribute attribute = iterator.next();
-            Attribute rpfAttribute = schema.getColumnAttribute(rpf.getRelation(), attribute.getName());
+            Attribute rpfAttribute = schema.getColumnAttributeByRawName(rpf.getRelation(), attribute.getName());
             if (rpfAttribute == null || !rpfAttribute.equals(attribute)) {
                 if (!iterator.hasNext()) {
                     columnNamesCode.delete(columnNamesCode.length() - ",".length(), columnNamesCode.length());
