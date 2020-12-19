@@ -1,129 +1,194 @@
-import org.junit.Before;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+
 import static java.io.File.separator;
 
 public class GenerateCodeTest {
+    private static final String QUERY_FOLDER_PREFIX = "q";
+    private static final String QUERY_JSON_FILE_PREFIX = "Q";
+    private static final Integer QUERY_FOLDER_PREFIX_LEN = 1;
+    private static final String JSON_FILE_SUFFIX = ".json";
+    private static final String GENERATED_CODE = "generated-code";
+    private static final String FLINK_INPUT_FILE_PATH = "file:///aju/q3flinkInput.csv";
+    private static final String FLINK_OUTPUT_FILE_PATH = "file:///aju/q3flinkOutput.csv";
     private static final ArrayList<Integer> queryArrayList = new ArrayList<>();
-    private final String GENERATED_CODE = "generated-code";
     private static final String RESOURCE_FOLDER = new File("src" + separator + "test" + separator + "resources").getAbsolutePath();
-    private final String CODEGEN_JAR_PATH = new File(CodeGen.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath() + separator + "codegen-1.0-SNAPSHOT.jar";
+    private final String CODEGEN_JAR_PATH = new File(CodeGen.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile().getAbsolutePath()
+            + separator + "codegen-1.0-SNAPSHOT.jar";
 
-    @Before
-    public void getQueryArrayList() throws Exception {
+    @BeforeAll
+    static void getQueryArrayList() throws Exception {
         File resourceFolderFile = new File(RESOURCE_FOLDER);
         if (!resourceFolderFile.exists() || !resourceFolderFile.isDirectory()) {
-            throw new Exception("resource folder does not exists.");
+            throw new FileNotFoundException("resource folder does not exists.");
         }
 
         File[] resourceFolderFiles = resourceFolderFile.listFiles();
         for (File file : resourceFolderFiles) {
-            if (!file.isDirectory() || file.getName().charAt(0) != 'q') {
+            if (!validateQueryFolderExist(file)) {
                 continue;
             }
-            int queryNum;
+            int queryIdx;
             try {
-                queryNum = Integer.parseInt(file.getName().substring(1));
+                queryIdx = Integer.parseInt(file.getName().substring(QUERY_FOLDER_PREFIX_LEN));
             } catch (NumberFormatException e) {
                 System.out.println(file.getName() + " is not a query name.");
                 continue;
             }
-            if (validateQueryJsonFileExist(queryNum)) {
-                queryArrayList.add(queryNum);
+            if (validateQueryJsonFileExist(queryIdx)) {
+                queryArrayList.add(queryIdx);
             }
         }
     }
 
-    private static boolean validateQueryJsonFileExist(int queryInd) {
-        File queryFolder = new File(RESOURCE_FOLDER + separator + "q" + queryInd);
-        File queryJson = new File(queryFolder.getAbsolutePath() + separator + "Q" + queryInd + ".json");
-        if (queryJson.exists()) {
-            return true;
+    private static File getQueryFolderFile(int queryIdx) throws FileNotFoundException {
+        File queryFolderFile = new File(RESOURCE_FOLDER + separator + QUERY_FOLDER_PREFIX + queryIdx);
+        if (queryFolderFile.exists() && queryFolderFile.isDirectory()) {
+            return queryFolderFile;
+        } else {
+            throw new FileNotFoundException("q" + queryIdx + " query folder does not exists.");
         }
-        System.out.println(queryJson.getAbsolutePath() + " does not exists.");
-        return false;
     }
 
+    private static File getQueryJsonFile(int queryIdx) throws FileNotFoundException {
+        File queryFolderFile = getQueryFolderFile(queryIdx);
+        File queryJsonFile = new File(queryFolderFile.getAbsolutePath()
+                + separator
+                + QUERY_JSON_FILE_PREFIX
+                + queryIdx
+                + JSON_FILE_SUFFIX);
+
+        if (queryJsonFile.exists()) {
+            return queryJsonFile;
+        } else {
+            throw new FileNotFoundException("q" + queryIdx + " query json file does not exists.");
+        }
+    }
+
+    private static boolean validateQueryFolderExist(File file) {
+        return file.isDirectory() && file.getName().substring(0, QUERY_FOLDER_PREFIX_LEN).equals(QUERY_FOLDER_PREFIX);
+    }
+
+    private static boolean validateQueryJsonFileExist(int queryIdx) throws Exception {
+        return getQueryJsonFile(queryIdx).exists();
+    }
+
+    @BeforeEach
+    public void initEnvironment() throws Exception {
+        removeEveryGeneratedCodeFolder();
+    }
+
+    @AfterEach
+    public void cleanEnvironment() throws Exception {
+        removeEveryGeneratedCodeFolder();
+    }
 
     @Test
     public void generateCodeForEachQuery() throws Exception {
         for (int queryIdx : queryArrayList) {
-            removeGeneratedCodeFolder(queryIdx);
             generateCodeUsingMainFunction(queryIdx);
             copyGeneratedCodeToQueryFolder(queryIdx);
-            removeGeneratedCodeFolder(queryIdx);
         }
-        runCommand("which mvn");
     }
 
     private void generateCodeUsingMainFunction(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + separator + "Q" + queryIdx + ".json");
+        File queryJsonFile = getQueryJsonFile(queryIdx);
 
-        String flinkInputFile = "file:///aju/q3flinkInput.csv";
-        String flinkOutputFile = "file:///aju/q3flinkOutput.csv";
-
-        String[] args = {queryJsonFile.getAbsolutePath(), queryFolderFile.getAbsolutePath(), flinkInputFile, flinkOutputFile, "file"};
+        String[] args = {
+                queryJsonFile.getAbsolutePath(),
+                queryFolderFile.getAbsolutePath(),
+                FLINK_INPUT_FILE_PATH,
+                FLINK_OUTPUT_FILE_PATH,
+                "file"
+        };
         CodeGen.main(args);
     }
 
     private void generateCodeUsingJar(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
-        File queryJsonFile = new File(queryFolderFile.getAbsolutePath() + separator + "Q" + queryIdx + ".json");
-
-        // TODO
-        String flinkInputFile = "file:///aju/q3flinkInput.csv";
-        String flinkOutputFile = "file:///aju/q3flinkOutput.csv";
+        File queryJsonFile = getQueryJsonFile(queryIdx);
 
         // repackage the codegen jar
-        packageCodegenJar();
+        runCommand("mvn package -DskipTests -f .");
 
-        String command_str = "java -jar "
-                + CODEGEN_JAR_PATH + " "
-                + queryJsonFile.getAbsolutePath() + " "
-                + queryFolderFile.getAbsolutePath() + " "
-                + flinkInputFile + " "
-                + flinkOutputFile + " "
-                + "file";
-        runCommand(command_str);
+        // run the codegen.jar
+        String commandStr = getCodegenCommandStr(CODEGEN_JAR_PATH,
+                queryJsonFile.getAbsolutePath(),
+                queryFolderFile.getAbsolutePath(),
+                FLINK_INPUT_FILE_PATH,
+                FLINK_OUTPUT_FILE_PATH,
+                "file");
+        runCommand(commandStr);
     }
+
+    private String getCodegenCommandStr(String codegenJarPath,
+                                        String queryJsonFilePath,
+                                        String queryFolderPath,
+                                        String flinkInputFilePath,
+                                        String flinkOutputFilePath,
+                                        String mode) {
+        StringBuffer sb = new StringBuffer("java -jar ");
+        sb.append(codegenJarPath);
+        sb.append(" ");
+        sb.append(queryJsonFilePath);
+        sb.append(" ");
+        sb.append(queryFolderPath);
+        sb.append(" ");
+        sb.append(flinkInputFilePath);
+        sb.append(" ");
+        sb.append(flinkOutputFilePath);
+        sb.append(" ");
+        sb.append(mode);
+        return sb.toString();
+    }
+
 
     private void runCommand(String command_str) throws IOException, InterruptedException {
         Process process = Runtime.getRuntime().exec(command_str);
-        process.waitFor();
 
         System.out.println("run command: " + command_str);
 
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        try {
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-        String output;
-        while ((output = stdInput.readLine()) != null) {
-            System.out.println(output);
+            String processOutput;
+            while ((processOutput = stdInput.readLine()) != null) {
+                System.out.println(processOutput);
+            }
+            while ((processOutput = stdError.readLine()) != null) {
+                System.out.println("ERROR:" + processOutput);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                process.getInputStream().close();
+                process.getErrorStream().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        while ((output = stdError.readLine()) != null) {
-            System.out.println("ERROR:" + output);
-        }
-    }
 
-    private File getQueryFolderFile(int queryIdx) throws Exception {
-        File queryFolderFile = new File(RESOURCE_FOLDER + separator + "q" + queryIdx);
-        if (queryFolderFile.exists() && queryFolderFile.isDirectory()) {
-            return queryFolderFile;
+        int exitCode = process.waitFor();
+
+        if (exitCode == 0) {
+            System.out.println("The command was executed successfully.");
         } else {
-            throw new Exception("q" + queryIdx + " query folder does not exists.");
+            System.err.println("The command failed, exit code = " + exitCode + ".");
         }
+
     }
+
 
     private void copyGeneratedCodeToQueryFolder(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
@@ -145,8 +210,9 @@ public class GenerateCodeTest {
         }
     }
 
-    private void packageCodegenJar() throws IOException, InterruptedException {
-        runCommand("mvn package -DskipTests -f .");
+    private void removeEveryGeneratedCodeFolder() throws Exception {
+        for (int queryIdx : queryArrayList) {
+            removeGeneratedCodeFolder(queryIdx);
+        }
     }
-
 }
