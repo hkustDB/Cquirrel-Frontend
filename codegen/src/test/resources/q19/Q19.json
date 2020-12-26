@@ -1,0 +1,161 @@
+{
+  "join_structure": [
+    {
+      "primary": "Part",
+      "foreign": "Lineitem"
+    }
+  ],
+  "RelationProcessFunction": [
+    {
+      "name": "Q19lineitem",
+      "relation": "lineitem",
+      "this_key": ["partkey"],
+      "next_key": ["partkey"],
+      "child_nodes": 1,
+      "is_Root": true,
+      "is_Last": true,
+      "rename_attribute": null,
+      "select_conditions": [
+        {
+          "operator": "&&",
+          "values": [
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "lineitem",
+                "name": "quantity"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "int",
+                "value": "1"
+              },
+              "operator": ">="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "lineitem",
+                "name": "quantity"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "int",
+                "value": "11"
+              },
+              "operator": "<="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "lineitem",
+                "name": "shipinstruct"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "varchar",
+                "value": "DELIVER IN PERSON"
+              },
+              "operator": "=="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "lineitem",
+                "name": "shipmode"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "varchar",
+                "value": "AIR"
+              },
+              "operator": "in"
+            }
+          ]
+        },
+        {}
+      ]
+    },
+    {
+      "name": "Q19Part",
+      "relation": "part",
+      "this_key": ["partkey"],
+      "next_key": ["partkey"],
+      "child_nodes": 0,
+      "is_Root": false,
+      "is_Last": true,
+      "rename_attribute": null,
+      "select_conditions": {
+        "operator": "&&",
+        "values": [
+          {
+            "left_field": {
+              "type": "attribute",
+              "relation": "orders",
+              "name": "orderdate"
+            },
+            "right_field": {
+              "type": "constant",
+              "var_type": "Date",
+              "value": "1993-10-01"
+            },
+            "operator": ">="
+          },
+          {
+            "left_field": {
+              "type": "attribute",
+              "relation": "orders",
+              "name": "orderdate"
+            },
+            "right_field": {
+              "type": "constant",
+              "var_type": "Date",
+              "value": "1994-01-01"
+            },
+            "operator": "<"
+          }
+        ]
+      }
+    }
+  ],
+  "AggregateProcessFunction": [
+    {
+      "name": "Q19Aggregate",
+      "this_key": [],
+      "output_key": [],
+      "delta_output": true,
+      "AggregateValue": [
+        {
+          "name": "revenue",
+          "type": "expression",
+          "values": [
+            {
+              "type": "attribute",
+              "relation": "lineitem",
+              "name": "extendedprice"
+            },
+            {
+              "type": "expression",
+              "operator": "-",
+              "values": [
+                {
+                  "type": "constant",
+                  "var_type": "int",
+                  "value": 1
+                },
+                {
+                  "type": "attribute",
+                  "relation": "lineitem",
+                  "name": "discount"
+                }
+              ]
+            }
+          ],
+          "operator": "*"
+        }
+      ],
+      "aggregation": "+",
+      "value_type": "Double"
+    }
+  ]
+}
