@@ -2,9 +2,9 @@ import org.hkust.RelationType.Payload
 import org.apache.flink.api.common.state.ValueStateDescriptor
 import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}
 import org.hkust.BasedProcessFunctions.AggregateProcessFunction
-class Q3AggregateProcessFunction extends AggregateProcessFunction[Any, Double]("Q3AggregateProcessFunction", Array("orderkey"), Array("orderkey","orderdate","shippriority"), aggregateName = "revenue", deltaOutput = true) {
+class Q3AggregateProcessFunction extends AggregateProcessFunction[Any, Double]("Q3AggregateProcessFunction", Array("ORDERKEY"), Array(), aggregateName = "revenue", deltaOutput = true) {
    override def aggregate(value: Payload): Double = {
-      value("L_EXTENDEDPRICE").asInstanceOf[Double]*1.0-value("L_DISCOUNT").asInstanceOf[Double]
+      value("EXTENDEDPRICE").asInstanceOf[Double]*(1.0-value("DISCOUNT").asInstanceOf[Double])
    }
    override def addition(value1: Double, value2: Double): Double = value1 + value2
    override def subtraction(value1: Double, value2: Double): Double = value1 - value2

@@ -39,6 +39,8 @@ def run_flink_task(filename):
 
     logging.info("flink command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+    result = str(ret.stdout) + str('\n') + str(ret.stderr)
+    logging.info('flink jobs return: ', str(result))
     aju_app.background_send_kafka_data_thread()
     return ret
 
@@ -63,4 +65,19 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path):
     if os.path.exists(uploaded_json_file_save_path):
         os.remove(uploaded_json_file_save_path)
 
-    return ret
+    logging.info('codegen_log_result: ' + codegen_log_result)
+    return codegen_log_result
+
+
+def is_flink_cluster_running():
+    from config import REMOTE_FLINK
+    if REMOTE_FLINK:
+        # TODO
+        pass
+    else:
+        cmd_str = 'jps|grep Cluster'
+        ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+        if ret.returncode == 0:
+            return True
+        else:
+            return False
