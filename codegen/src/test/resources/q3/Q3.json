@@ -30,7 +30,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "shipdate"
+              "name": "l_shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -62,7 +62,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "orders",
-              "name": "orderdate"
+              "name": "o_orderdate"
             },
             "right_field": {
               "type": "constant",
@@ -94,7 +94,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "customer",
-              "name": "mktsegment"
+              "name": "c_mktsegment"
             },
             "right_field": {
               "type": "constant",
@@ -127,7 +127,7 @@
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "extendedprice"
+              "name": "l_extendedprice"
             },
             {
               "type": "expression",
@@ -141,7 +141,7 @@
                 {
                   "type": "attribute",
                   "relation": "lineitem",
-                  "name": "discount"
+                  "name": "l_discount"
                 }
               ]
             }
