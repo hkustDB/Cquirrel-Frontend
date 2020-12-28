@@ -1,7 +1,5 @@
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -26,6 +24,7 @@ public class GenerateCodeTest {
 
     @BeforeAll
     static void getQueryArrayList() throws Exception {
+        removeEveryGeneratedCodeFolder();
         File resourceFolderFile = new File(RESOURCE_FOLDER);
         if (!resourceFolderFile.exists() || !resourceFolderFile.isDirectory()) {
             throw new FileNotFoundException("resource folder does not exists.");
@@ -48,6 +47,21 @@ public class GenerateCodeTest {
             }
         }
     }
+
+    @Test
+    public void generateCodeForEachQuery() throws Exception {
+        for (int queryIdx : queryArrayList) {
+            try {
+                generateCodeUsingMainFunction(queryIdx);
+                copyGeneratedCodeToQueryFolder(queryIdx);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                removeEveryGeneratedCodeFolder();
+            }
+        }
+    }
+
 
     private static File getQueryFolderFile(int queryIdx) throws FileNotFoundException {
         File queryFolderFile = new File(RESOURCE_FOLDER + separator + QUERY_FOLDER_PREFIX + queryIdx);
@@ -79,24 +93,6 @@ public class GenerateCodeTest {
 
     private static boolean validateQueryJsonFileExist(int queryIdx) throws Exception {
         return getQueryJsonFile(queryIdx).exists();
-    }
-
-    @BeforeEach
-    public void initEnvironment() throws Exception {
-        removeEveryGeneratedCodeFolder();
-    }
-
-    @AfterEach
-    public void cleanEnvironment() throws Exception {
-        removeEveryGeneratedCodeFolder();
-    }
-
-    @Test
-    public void generateCodeForEachQuery() throws Exception {
-        for (int queryIdx : queryArrayList) {
-            generateCodeUsingMainFunction(queryIdx);
-            copyGeneratedCodeToQueryFolder(queryIdx);
-        }
     }
 
     private void generateCodeUsingMainFunction(int queryIdx) throws Exception {
@@ -202,7 +198,7 @@ public class GenerateCodeTest {
         }
     }
 
-    private void removeGeneratedCodeFolder(int queryIdx) throws Exception {
+    private static void removeGeneratedCodeFolder(int queryIdx) throws Exception {
         File queryFolderFile = getQueryFolderFile(queryIdx);
         File generatedCodeFolder = new File(queryFolderFile.getAbsolutePath() + separator + GENERATED_CODE);
         if (generatedCodeFolder.isDirectory() && generatedCodeFolder.exists()) {
@@ -210,7 +206,7 @@ public class GenerateCodeTest {
         }
     }
 
-    private void removeEveryGeneratedCodeFolder() throws Exception {
+    private static void removeEveryGeneratedCodeFolder() throws Exception {
         for (int queryIdx : queryArrayList) {
             removeGeneratedCodeFolder(queryIdx);
         }
