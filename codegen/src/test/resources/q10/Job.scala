@@ -55,19 +55,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(cells(5).toDouble,cells(8),cells(3).toInt,cells(6).toDouble,cells(0).toLong,cells(15))
+         val i = Tuple6(cells(5).toDouble,cells(3).toInt,cells(8),cells(6).toDouble,cells(0).toLong,cells(15))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("L_EXTENDEDPRICE","L_RETURNFLAG","LINENUMBER","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
+         Array[String]("L_EXTENDEDPRICE","LINENUMBER","L_RETURNFLAG","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(cells(5).toDouble,cells(8),cells(3).toInt,cells(6).toDouble,cells(0).toLong,cells(15))
+         val i = Tuple6(cells(5).toDouble,cells(3).toInt,cells(8),cells(6).toDouble,cells(0).toLong,cells(15))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("L_EXTENDEDPRICE","L_RETURNFLAG","LINENUMBER","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
+         Array[String]("L_EXTENDEDPRICE","LINENUMBER","L_RETURNFLAG","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"

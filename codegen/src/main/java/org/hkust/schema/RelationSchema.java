@@ -32,8 +32,8 @@ public final class RelationSchema {
                     put("l_extendedprice", new Attribute(Type.getClass("double"), 5, "l_extendedprice"));
                     put("l_discount", new Attribute(Type.getClass("double"), 6, "l_discount"));
                     put("l_tax", new Attribute(Type.getClass("double"), 7, "l_tax"));
-                    put("l_returnflag", new Attribute(Type.getClass("char"), 8, "l_returnflag"));
-                    put("l_linestatus", new Attribute(Type.getClass("char"), 9, "l_linestatus"));
+                    put("l_returnflag", new Attribute(Type.getClass("varchar"), 8, "l_returnflag"));
+                    put("l_linestatus", new Attribute(Type.getClass("varchar"), 9, "l_linestatus"));
                     put("l_shipdate", new Attribute(Type.getClass("date"), 10, "l_shipdate"));
                     put("l_commitdate", new Attribute(Type.getClass("date"), 11, "l_commitdate"));
                     put("l_receiptdate", new Attribute(Type.getClass("date"), 12, "l_receiptdate"));
@@ -53,7 +53,7 @@ public final class RelationSchema {
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("orderkey", ordersPrimaryKey);
                     put("custkey", new Attribute(Type.getClass("long"), 1, "custkey"));
-                    put("o_orderstatus", new Attribute(Type.getClass("char"), 2, "o_orderstatus"));
+                    put("o_orderstatus", new Attribute(Type.getClass("varchar"), 2, "o_orderstatus"));
                     put("o_totalprice", new Attribute(Type.getClass("double"), 3, "o_totalprice"));
                     put("o_orderdate", new Attribute(Type.getClass("date"), 4, "o_orderdate"));
                     put("o_orderpriority", new Attribute(Type.getClass("string"), 5, "o_orderpriority"));
