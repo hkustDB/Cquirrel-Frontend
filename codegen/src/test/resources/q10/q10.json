@@ -15,7 +15,7 @@
     ],
     "RelationProcessFunction": [
       {
-        "name": "Q10lineitem",
+        "name": "Q10Lineitem",
         "relation": "lineitem",
         "this_key": [
           "orderkey" 

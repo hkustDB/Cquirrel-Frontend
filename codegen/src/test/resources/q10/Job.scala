@@ -33,7 +33,7 @@ object Job {
       .process(new Q10OrdersProcessFunction())
       val lineitemS = ordersS.connect(lineitem)
       .keyBy(i => i._3, i => i._3)
-      .process(new Q10lineitemProcessFunction())
+      .process(new Q10LineitemProcessFunction())
       val result = lineitemS.keyBy(i => i._3)
       .process(new Q10AggregateProcessFunction)
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
@@ -55,19 +55,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(cells(5).toDouble,cells(6).toDouble,cells(8),cells(3).toInt,cells(0).toLong,cells(15))
+         val i = Tuple6(cells(5).toDouble,cells(8),cells(3).toInt,cells(6).toDouble,cells(0).toLong,cells(15))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("EXTENDEDPRICE","DISCOUNT","RETURNFLAG","LINENUMBER","ORDERKEY","L_COMMENT"), cnt))
+         Array[String]("L_EXTENDEDPRICE","L_RETURNFLAG","LINENUMBER","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(cells(5).toDouble,cells(6).toDouble,cells(8),cells(3).toInt,cells(0).toLong,cells(15))
+         val i = Tuple6(cells(5).toDouble,cells(8),cells(3).toInt,cells(6).toDouble,cells(0).toLong,cells(15))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("EXTENDEDPRICE","DISCOUNT","RETURNFLAG","LINENUMBER","ORDERKEY","L_COMMENT"), cnt))
+         Array[String]("L_EXTENDEDPRICE","L_RETURNFLAG","LINENUMBER","L_DISCOUNT","ORDERKEY","L_COMMENT"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"
@@ -75,7 +75,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4),
-         Array[String]("CUSTKEY","ORDERDATE","ORDERKEY","O_COMMENT"), cnt))
+         Array[String]("CUSTKEY","O_ORDERDATE","ORDERKEY","O_COMMENT"), cnt))
          case "-OR" =>
          action = "Delete"
          relation = "orders"
@@ -83,7 +83,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4),
-         Array[String]("CUSTKEY","ORDERDATE","ORDERKEY","O_COMMENT"), cnt))
+         Array[String]("CUSTKEY","O_ORDERDATE","ORDERKEY","O_COMMENT"), cnt))
          case "+CU" =>
          action = "Insert"
          relation = "customer"
@@ -91,7 +91,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("CUSTKEY","NAME","ACCTBAL","PHONE","ADDRESS","C_COMMENT"), cnt))
+         Array[String]("CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "-CU" =>
          action = "Delete"
          relation = "customer"
@@ -99,7 +99,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("CUSTKEY","NAME","ACCTBAL","PHONE","ADDRESS","C_COMMENT"), cnt))
+         Array[String]("CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "+NA" =>
          action = "Insert"
          relation = "nation"
@@ -107,7 +107,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(nationTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3),
-         Array[String]("NATIONKEY","NAME","N_COMMENT"), cnt))
+         Array[String]("NATIONKEY","N_NAME","N_COMMENT"), cnt))
          case "-NA" =>
          action = "Delete"
          relation = "nation"
@@ -115,7 +115,7 @@ object Job {
          cnt = cnt + 1
          ctx.output(nationTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3),
-         Array[String]("NATIONKEY","NAME","N_COMMENT"), cnt))
+         Array[String]("NATIONKEY","N_NAME","N_COMMENT"), cnt))
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }

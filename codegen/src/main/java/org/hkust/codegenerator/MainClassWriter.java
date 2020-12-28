@@ -276,7 +276,6 @@ class MainClassWriter implements ClassWriter {
             }
         }
 
-        List<String> thisKey = rpf.getThisKey();
         Iterator<Attribute> iterator = attributes.iterator();
         int numberOfMatchingColumns = 0;
         while (iterator.hasNext()) {

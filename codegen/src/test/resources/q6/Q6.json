@@ -1,7 +1,7 @@
 {
   "RelationProcessFunction": [
     {
-      "name": "Q6lineitem",
+      "name": "Q6Lineitem",
       "relation": "lineitem",
       "this_key": [
         "orderkey",
