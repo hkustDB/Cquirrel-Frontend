@@ -12,7 +12,7 @@ import java.util.*;
 public class RelationProcessFunction extends ProcessFunction {
     private final String name;
     private final Relation relation;
-    @Nullable
+
     private final List<String> thisKey;
     @Nullable
     private final List<String> nextKey;
@@ -73,7 +73,6 @@ public class RelationProcessFunction extends ProcessFunction {
         return name;
     }
 
-    @Nullable
     public List<String> getThisKey() {
         return thisKey;
     }

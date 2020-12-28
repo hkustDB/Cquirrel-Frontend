@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static java.util.Objects.requireNonNull;
+
 class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
     private final List<AggregateProcessFunction> aggregateProcessFunctions;
@@ -70,6 +72,8 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("import org.apache.flink.streaming.api.TimeCharacteristic");
         writer.writeln("import org.apache.flink.streaming.api.scala._");
         writer.writeln("import org.hkust.RelationType.Payload");
+        writer.writeln("import org.apache.flink.streaming.api.functions.ProcessFunction");
+        writer.writeln("import org.apache.flink.util.Collector");
     }
 
     @Override
@@ -95,26 +99,38 @@ class MainClassWriter implements ClassWriter {
         if (relationProcessFunctions.size() == 1) {
             writeSingleRelationStream(relationProcessFunctions.get(0), writer);
         } else {
-            String streamName = writeStream(writer);
-            RelationProcessFunction root = getLeafOrParent(false);
-
-            writeRootStream(root, streamName, writer);
+            RelationProcessFunction root = getLeafOrParent(true);
+            writeMultipleRelationStream(root, writer, "", "S");
         }
-    }
-
-    private void writeRootStream(RelationProcessFunction root, String previousStreamName, final PicoWriter writer) {
-        writer.writeln("val result  = " + previousStreamName + ".keyBy(i => i._3)");
-        writer.writeln("connect(" + root.getRelation().toString().toLowerCase() + ")");
-        writer.writeln(".keyBy(i => i._3, i => i._3)");
-        String className = getProcessFunctionClassName(root.getName());
-        writer.writeln(".process(new " + className + "())");
-        writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
-        writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
-        writer.writeln(".setParallelism(1)");
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
         writer.writeln_l("}");
+    }
+
+    private void writeMultipleRelationStream(RelationProcessFunction rpf, final PicoWriter writer, String prevStreamName, String streamSuffix) {
+        Relation relation = rpf.getRelation();
+        String relationName = relation.toString().toLowerCase();
+        String streamName = relationName + streamSuffix;
+        if (rpf.isLeaf()) {
+            writer.writeln("val " + streamName + " = " + relationName + ".keyBy(i => i._3)");
+        } else {
+            writer.writeln("val " + streamName + " = " + prevStreamName + ".connect(" + relationName + ")");
+            writer.writeln(".keyBy(i => i._3, i => i._3)");
+        }
+        writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
+        RelationProcessFunction parent = getRelation(joinStructure.get(relation));
+        if (parent == null) {
+            writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + ")");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+            writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
+            writer.writeln(".setParallelism(1)");
+            return;
+        }
+        writeMultipleRelationStream(requireNonNull(parent),
+                writer,
+                streamName,
+                streamSuffix
+        );
     }
 
     @NotNull
@@ -132,7 +148,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
-        writer.writeln("val result  = inputStream.keyBy(i => i._3)");
+        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
@@ -140,33 +156,6 @@ class MainClassWriter implements ClassWriter {
         writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
-        writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
-        writer.writeln_l("}");
-    }
-
-    private String writeStream(final PicoWriter writer) {
-        String streamSuffix = "S";
-        RelationProcessFunction leaf = getLeafOrParent(true);
-        String name = leaf.getName() + streamSuffix;
-        RelationProcessFunction parent = getRelation(joinStructure.get(leaf.getRelation()));
-        boolean skip = false;
-        while (parent != null) {
-            if (!skip) {
-                String leafName = leaf.getName();
-                writer.writeln("val " + leafName + streamSuffix + " = " + leaf.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
-                writer.writeln(".process(new " + getProcessFunctionClassName(leafName) + "())");
-                writer.writeln(".connect(" + parent.getRelation().toString().toLowerCase() + ")");
-                writer.writeln(".keyBy(i => i._3, i => i._3)");
-                writer.writeln(".process(new " + getProcessFunctionClassName(parent.getName()) + ")");
-                skip = true;
-            } else {
-                skip = false;
-            }
-            leaf = parent;
-            parent = getRelation(joinStructure.get(parent.getRelation()));
-        }
-
-        return name;
     }
 
     @Nullable
@@ -180,15 +169,15 @@ class MainClassWriter implements ClassWriter {
     }
 
     @VisibleForTesting
-    void addGetStreamFunction(final PicoWriter writer) throws Exception {
+    void addGetStreamFunction(final PicoWriter writer) {
         writer.writeln_r("private def getStream(env: StreamExecutionEnvironment, dataPath: String): DataStream[Payload] = {");
         writer.writeln("val data = env.readTextFile(dataPath).setParallelism(1)");
         writer.writeln("val format = new java.text.SimpleDateFormat(\"yyyy-MM-dd\")");
         writer.writeln("var cnt : Long = 0");
         writer.writeln("val restDS : DataStream[Payload] = data");
         writer.writeln(".process((value: String, ctx: ProcessFunction[String, Payload]#Context, out: Collector[Payload]) => {");
-        writer.writeln("val header = line.substring(0,3)");
-        writer.writeln("val cells : Array[String] = line.substring(3).split(\"\\\\|\")");
+        writer.writeln("val header = value.substring(0,3)");
+        writer.writeln("val cells : Array[String] = value.substring(3).split(\"\\\\|\")");
         writer.writeln("var relation = \"\"");
         writer.writeln("var action = \"\"");
         writer.writeln_r("header match {");
@@ -204,7 +193,6 @@ class MainClassWriter implements ClassWriter {
             String lowerRelationName = relation.getValue();
             StringBuilder columnNamesCode = new StringBuilder();
             StringBuilder tupleCode = new StringBuilder();
-
             int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
@@ -213,7 +201,7 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
                 writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
-                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, cells(0).toInt.asInstanceOf[Any],");
+                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode(rpf));
                 writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
                 writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
             });
@@ -230,6 +218,28 @@ class MainClassWriter implements ClassWriter {
         return relation.getValue().substring(0, 2).toUpperCase();
     }
 
+    private String thisKeyCode(RelationProcessFunction rpf) {
+        List<String> thisKeyAttributes = rpf.getThisKey();
+        int rpfThisKeySize = thisKeyAttributes.size();
+        if (rpfThisKeySize == 1) {
+            String thisKey = thisKeyAttributes.get(0);
+            Attribute keyAttribute = schema.getColumnAttribute(rpf.getRelation(), thisKey);
+            requireNonNull(keyAttribute);
+            return "cells(" + keyAttribute.getPosition() + ")." + stringConversionMethods.get(keyAttribute.getType()) + ".asInstanceOf[Any],";
+        } else if (rpfThisKeySize == 2) {
+            String thisKey1 = thisKeyAttributes.get(0);
+            String thisKey2 = thisKeyAttributes.get(1);
+            Attribute keyAttribute1 = schema.getColumnAttribute(rpf.getRelation(), thisKey1);
+            requireNonNull(keyAttribute1);
+            Attribute keyAttribute2 = schema.getColumnAttribute(rpf.getRelation(), thisKey2);
+            requireNonNull(keyAttribute2);
+            return "Tuple2( cells(" + keyAttribute1.getPosition() + ")." + stringConversionMethods.get(keyAttribute1.getType()) +
+                    ", cells(" + keyAttribute2.getPosition() + ")." + stringConversionMethods.get(keyAttribute2.getType()) + ").asInstanceOf[Any],";
+        } else {
+            throw new RuntimeException("Expecting 1 or 2 thisKey values got: " + rpfThisKeySize);
+        }
+    }
+
     private String iteratorCode(int num) {
         StringBuilder code = new StringBuilder();
         num++;
@@ -244,7 +254,7 @@ class MainClassWriter implements ClassWriter {
 
     @VisibleForTesting
     int attributeCode(RelationProcessFunction rpf, Set<Attribute> agfAttributes, StringBuilder columnNamesCode, StringBuilder tupleCode) {
-        Set<Attribute> attributes = new HashSet<>(agfAttributes);
+        Set<Attribute> attributes = new LinkedHashSet<>(agfAttributes);
 
         List<String> agfNextKeys = aggregateProcessFunctions.get(0).getNextKey();
         if (agfNextKeys != null) {
@@ -265,6 +275,8 @@ class MainClassWriter implements ClassWriter {
                 }
             }
         }
+
+        List<String> thisKey = rpf.getThisKey();
         Iterator<Attribute> iterator = attributes.iterator();
         int numberOfMatchingColumns = 0;
         while (iterator.hasNext()) {
@@ -278,6 +290,7 @@ class MainClassWriter implements ClassWriter {
                 continue;
             }
             numberOfMatchingColumns++;
+
 
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();

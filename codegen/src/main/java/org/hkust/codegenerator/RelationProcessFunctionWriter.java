@@ -13,16 +13,14 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     private final String className;
     private final PicoWriter writer = new PicoWriter();
     private final RelationProcessFunction relationProcessFunction;
+    private final String RELATION_PROCESS_FUNCTION_IMPORT;
 
     RelationProcessFunctionWriter(final RelationProcessFunction relationProcessFunction, RelationSchema schema) {
         super(schema);
         this.relationProcessFunction = relationProcessFunction;
         this.className = getProcessFunctionClassName(relationProcessFunction.getName());
+        this.RELATION_PROCESS_FUNCTION_IMPORT = (relationProcessFunction.isLeaf() ? "RelationFKProcessFunction" : "RelationFKCoProcessFunction");
     }
-
-    /**
-     * Meant to be used for testing only
-     */
 
     @Override
     public String write(final String filePath) throws Exception {
@@ -63,8 +61,9 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     @Override
     public void addImports(final PicoWriter writer) {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
-        writer.writeln("import org.hkust.BasedProcessFunctions.RelationFKProcessFunction");
+        writer.writeln("import org.hkust.BasedProcessFunctions." + RELATION_PROCESS_FUNCTION_IMPORT);
         writer.writeln("import org.hkust.RelationType.Payload");
+        writer.writeln("import java.util.Date");
     }
 
 
@@ -73,7 +72,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         boolean isLeaf = relationProcessFunction.isLeaf();
         String code = "class " +
                 className +
-                (isLeaf ? " extends RelationFKProcessFunction[Any](\"" : " extends RelationFKCoProcessFunction[Any](\"") +
+                " extends " + RELATION_PROCESS_FUNCTION_IMPORT + "[Any](\"" +
                 relationProcessFunction.getRelation().getValue() + "\"," +
                 (isLeaf ? "" : relationProcessFunction.getChildNodes() + ",") +
                 keyListToCode(relationProcessFunction.getThisKey()) +

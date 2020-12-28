@@ -3,6 +3,8 @@ import org.apache.flink.core.fs.FileSystem
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.hkust.RelationType.Payload
+import org.apache.flink.streaming.api.functions.ProcessFunction
+import org.apache.flink.util.Collector
 object Job {
    val lineitemTag: OutputTag[Payload] = OutputTag[Payload]("lineitem")
    def main(args: Array[String]) {
@@ -15,7 +17,7 @@ object Job {
       val outputpath = "file:///aju/q3flinkOutput.csv"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
-      val result  = inputStream.keyBy(i => i._3)
+      val result  = lineitem.keyBy(i => i._3)
       .process(new Q6lineitemProcessFunction())
       .keyBy(i => i._3)
       .process(new Q6AggregateProcessFunction())
@@ -30,27 +32,27 @@ object Job {
       var cnt : Long = 0
       val restDS : DataStream[Payload] = data
       .process((value: String, ctx: ProcessFunction[String, Payload]#Context, out: Collector[Payload]) => {
-      val header = line.substring(0,3)
-      val cells : Array[String] = line.substring(3).split("\\|")
+      val header = value.substring(0,3)
+      val cells : Array[String] = value.substring(3).split("\\|")
       var relation = ""
       var action = ""
       header match {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(format.parse(cells(10)),cells(6).toDouble,cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(4).toDouble)
+         val i = Tuple6(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(4).toDouble,cells(6).toDouble,cells(5).toDouble)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("SHIPDATE","DISCOUNT","LINENUMBER","ORDERKEY","EXTENDEDPRICE","QUANTITY"), cnt))
+         Array[String]("SHIPDATE","ORDERKEY","LINENUMBER","QUANTITY","DISCOUNT","EXTENDEDPRICE"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(format.parse(cells(10)),cells(6).toDouble,cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(4).toDouble)
+         val i = Tuple6(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(4).toDouble,cells(6).toDouble,cells(5).toDouble)
          cnt = cnt + 1
-         ctx.output(lineitemTag, Payload(relation, action, cells(0).toInt.asInstanceOf[Any],
+         ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("SHIPDATE","DISCOUNT","LINENUMBER","ORDERKEY","EXTENDEDPRICE","QUANTITY"), cnt))
+         Array[String]("SHIPDATE","ORDERKEY","LINENUMBER","QUANTITY","DISCOUNT","EXTENDEDPRICE"), cnt))
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }
