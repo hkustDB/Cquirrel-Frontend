@@ -1,10 +1,8 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
-from threading import Lock
 from confluent_kafka import Consumer
 import os
-import time
 import logging
 import threading
 
@@ -14,9 +12,8 @@ from config import Q3_OUTPUT_DATA_FILE
 
 bootstrap = Bootstrap()
 socketio = SocketIO()
+# socketio = SocketIO(cors_allowed_origins="*", cors_credentials=False, async_mode='eventlet')
 stop_thread_flag = False
-# thread = None
-# thread_lock = Lock()
 
 
 def create_app(config_name):
@@ -33,6 +30,8 @@ def create_app(config_name):
     else:
         f = open(Q3_OUTPUT_DATA_FILE, 'w')
         f.close()
+
+    # logging.getLogger('socketio').setLevel(logging.ERROR)
 
     app = Flask(__name__)
     app.secret_key = os.urandom(24)
@@ -51,11 +50,6 @@ def create_app(config_name):
 @socketio.on('connect')
 def socketio_connect():
     logging.info("socketio connected")
-    # socketio.start_background_task(target=background_send_kafka_data_thread, args=query_idx)
-    # global thread
-    # with thread_lock:
-    #     if thread is None:
-    #         thread = socketio.start_background_task(target=background_send_kafka_data_thread)
 
 
 @socketio.on('disconnect')
@@ -63,9 +57,13 @@ def socketio_disconnect():
     print('socketio disconnected')
 
 
-@socketio.on('aaa')
-def aaaa_send_data():
-    socketio.emit('aaa', {'data': 'aaaaa'})
+def send_codegen_log_data_to_client(codegen_log_result):
+    pass
+    # print("send_codegen_log_data_to_client:" + codegen_log_result)
+    # while True:
+    #     socketio.sleep(2)
+    #     print("emit codegen_log")
+    #     socketio.emit('codegen_log', {'data': str(codegen_log_result)}, namespace='/ws')
 
 
 def send_query_result_data_to_client(query_idx):
@@ -101,9 +99,11 @@ def send_query_result_data_file(filepath):
             else:
                 break
 
+
 def stop_send_data_thread():
     global stop_thread_flag
     stop_thread_flag = True
+
 
 def background_send_kafka_data_thread(query_idx):
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1

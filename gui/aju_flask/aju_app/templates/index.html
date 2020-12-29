@@ -5,15 +5,20 @@
     <div class="container h-15">
         <div class="row h-10 align-items-center justify-content-center text-center">
         </div>
-        <div class="row h-10 align-items-center justify-content-center text-center">
-            <hr>
+        <div class="row h-10 align-items-center justify-content-center text-center text-danger text-uppercase">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                        {% for message in messages %}
+                            <span>{{ message }}</span>
+                        {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
-        <div class="row h-15 align-items-center justify-content-center text-center">
-            <p class="text-black-50 font-weight-light mb-5"> Please select the json file which you want to
-                upload.</p>
+        <div class="row h-10 align-items-center justify-content-center text-center">
+            Please select the json file which you want to upload.
         </div>
         <div class="row h-25 align-items-center justify-content-center text-center">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" onsubmit="return checkSubmit();">
                 <div class="input-group">
                     <div class="custom-file">
                         <input type="file" accept=".json" class="custom-file-input" name="json_file"
@@ -26,6 +31,17 @@
                 </div>
             </form>
             <script>
+                var submitStatus = false;
+
+                function checkSubmit() {
+                    if (!submitStatus) {
+                        submitStatus = true;
+                        return true;
+                    }
+                    alert("Please do not submit repeatedly.");
+                    return false;
+                }
+
                 // Add the following code if you want the name of the file appear on select
                 $(".custom-file-input").on("change", function () {
                     var fileName = $(this).val().split("\\").pop();
@@ -52,15 +68,14 @@
                 </h4>
             </div>
             <div class="panel-body h-50">
-                <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="8" readonly>
-                    {{ codegen_log_content }}
-                </textarea>
-            </div>
-            <div class="h-20"></div>
-            <div class="h-20">
-                <a href="download_codegen_log" class="btn btn-primary float-md-right">Download Codegen Log</a>
-                <a href="download_generated_jar" class="btn btn-primary float-md-right" style="margin-right: 1rem">Download
-                    Generated Jar</a>
+            <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="9" readonly>
+                {{ codegen_log_content }}
+            </textarea>
+                <div class="text-right" style="margin-top: 10px">
+                    <a href="download_codegen_log" class="btn btn-primary"> Download Codegen Log</a>
+                    <a href="download_generated_jar" class="btn btn-primary" style="margin-right: 1rem">
+                        Download Generated Jar</a>
+                </div>
             </div>
 
         </div>
@@ -72,12 +87,14 @@
         <div class="panel panel-default h-100">
             <div class="panel-heading h-10">
                 <h4 class="panel-title">
-                    Flink results:  <div id="start_to_run_flink">{{ flink_status_result }}</div>
+                    Flink results:
+                    <div id="start_to_run_flink"> {{ flink_status_result }} </div>
                 </h4>
             </div>
             <div class="panel-body h-90">
                 <div id="aggregate_name_div" class="h-10">
-                    aggregate name: <input type="text" id="aggregate_name_input" class="input-group-text" value="revenue">
+                    aggregate name: <input type="text" id="aggregate_name_input" class="input-group-text"
+                                           value="revenue">
                     <div id="aggregate_name_result"></div>
                 </div>
                 <div id="result_chart" class="h-90 w-100"></div>

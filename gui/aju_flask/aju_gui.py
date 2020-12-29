@@ -1,9 +1,4 @@
 import os
-# from dotenv import load_dotenv
-#
-# dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-# if os.path.exists(dotenv_path):
-#     load_dotenv(dotenv_path)
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -17,14 +12,15 @@ if os.environ.get('FLASK_COVERAGE'):
 import logging
 LOG_FORMAT = "%(asctime)s %(levelname)s : %(message)s"
 DATE_FORMAT = "%Y/%m/%d %H:%M:%S"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt=DATE_FORMAT)
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT)
 
 import sys
 import click
-from aju_app import create_app
+from aju_app import create_app, socketio
 
 app = create_app(os.getenv('FLASK_CONFIG_NAME') or 'default')
 app.run(debug=True)
+# socketio.run(app, debug=True)
 
 @app.cli.command()
 @click.option('--coverage/--no-coverage', default=True,

@@ -71,6 +71,7 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
 
     logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+
     codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
     codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
     codegen_log_result = codegen_log_stdout + codegen_log_stderr
@@ -82,7 +83,7 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
         os.remove(uploaded_json_file_save_path)
 
     logging.info('codegen_log_result: ' + codegen_log_result)
-    return codegen_log_result
+    return codegen_log_result, ret.returncode
 
 
 def is_flink_cluster_running():
@@ -110,3 +111,10 @@ def get_query_idx(filename):
 def send_notify_of_start_to_run_flink_job():
     print('start_to_run_flink_job')
     aju_app.socketio.send('start_to_run_flink_job', {'data': 1})
+
+
+def clean_codegen_log_and_generated_jar():
+    if os.path.exists(config.CODEGEN_LOG_FILE):
+        os.remove(config.CODEGEN_LOG_FILE)
+    if os.path.exists(config.GENERATED_JAR_FILE):
+        os.remove(config.GENERATED_JAR_FILE)
