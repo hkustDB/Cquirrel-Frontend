@@ -101,7 +101,7 @@
         "name": "Q10Customer",
         "relation": "customer",
         "this_key": [
-          "custkey"
+          "nationkey"
         ],
         "next_key": [
           "custkey"

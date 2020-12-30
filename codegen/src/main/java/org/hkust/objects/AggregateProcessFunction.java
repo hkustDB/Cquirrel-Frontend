@@ -21,7 +21,7 @@ public class AggregateProcessFunction extends ProcessFunction {
 
     private final List<AggregateValue> aggregateValues;
     private final Operator aggregation;
-    private final Class valueType;
+    private final Class<?> valueType;
 
     public AggregateProcessFunction(String name, List<String> thisKey, List<String> outputKey, List<AggregateValue> aggregateValues,
                                     Operator aggregation, Class valueType) {

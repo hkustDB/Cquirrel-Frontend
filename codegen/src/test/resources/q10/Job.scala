@@ -87,19 +87,19 @@ object Job {
          case "+CU" =>
          action = "Insert"
          relation = "customer"
-         val i = Tuple6(cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
+         val i = Tuple7(cells(3).toLong,cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
          cnt = cnt + 1
-         ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
+         ctx.output(customerTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7),
+         Array[String]("NATIONKEY","CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "-CU" =>
          action = "Delete"
          relation = "customer"
-         val i = Tuple6(cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
+         val i = Tuple7(cells(3).toLong,cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
          cnt = cnt + 1
-         ctx.output(customerTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
+         ctx.output(customerTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
+         Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7),
+         Array[String]("NATIONKEY","CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "+NA" =>
          action = "Insert"
          relation = "nation"
