@@ -14,9 +14,11 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     private final AggregateProcessFunction aggregateProcessFunction;
     private final String aggregateType;
     private final String className;
+    private final RelationSchema relationSchema;
 
     AggregateProcessFunctionWriter(final AggregateProcessFunction aggregateProcessFunction, RelationSchema schema) {
         super(schema);
+        this.relationSchema = schema;
         this.aggregateProcessFunction = aggregateProcessFunction;
         Class<?> type = aggregateProcessFunction.getValueType();
         aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
@@ -47,6 +49,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
 
     @Override
     public void addConstructorAndOpenClass(final PicoWriter writer) {
+        //TODO: apply the next_key optimization on thiskey, remember: next_key is now output_key and requires no such optimizations
         List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         String code = "class " +
                 className +
@@ -55,9 +58,9 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
                 "](\"" +
                 className +
                 "\", " +
-                keyListToCode(aggregateProcessFunction.getThisKey()) +
+                keyListToCode(optimizeKey(aggregateProcessFunction.getThisKey())) +
                 ", " +
-                keyListToCode(aggregateProcessFunction.getNextKey()) +
+                keyListToCode(aggregateProcessFunction.getOutputKey()) +
                 "," +
                 " aggregateName = \"" +
                 (aggregateValues.size() == 1 ? aggregateValues.get(0).getName() : "_multiple_") + "\"" +

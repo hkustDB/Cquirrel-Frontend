@@ -2,9 +2,9 @@ import scala.math.Ordered.orderingToOrdered
 import org.hkust.BasedProcessFunctions.RelationFKCoProcessFunction
 import org.hkust.RelationType.Payload
 import java.util.Date
-class Q3OrdersProcessFunction extends RelationFKCoProcessFunction[Any]("orders",1,Array("CUSTKEY"),Array("ORDERKEY"),false, true) {
+class Q10LineitemProcessFunction extends RelationFKCoProcessFunction[Any]("lineitem",1,Array("ORDERKEY"),Array("CUSTKEY"),true, true) {
 override def isValid(value: Payload): Boolean = {
-   if(value("O_ORDERDATE").asInstanceOf[java.util.Date]<format.parse("1995-03-15")){
+   if(value("L_RETURNFLAG").asInstanceOf[String]=="R"){
    true}else{
    false}
 }

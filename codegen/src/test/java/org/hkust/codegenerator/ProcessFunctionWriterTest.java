@@ -10,8 +10,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -90,7 +88,7 @@ public class ProcessFunctionWriterTest {
 
     private void testExpressionToCode(ProcessFunctionWriter processFunctionWriter, Expression expression, StringBuilder code) throws Exception {
         Attribute mockAttribute = new Attribute(Integer.class, 0, "attributeName");
-        when(schema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
+        when(schema.getColumnAttributeByRawName(any(), any())).thenReturn(mockAttribute);
         processFunctionWriter.expressionToCode(expression, code);
     }
 

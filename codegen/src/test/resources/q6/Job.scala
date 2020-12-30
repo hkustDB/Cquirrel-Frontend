@@ -18,7 +18,7 @@ object Job {
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val result  = lineitem.keyBy(i => i._3)
-      .process(new Q6lineitemProcessFunction())
+      .process(new Q6LineitemProcessFunction())
       .keyBy(i => i._3)
       .process(new Q6AggregateProcessFunction())
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
@@ -40,19 +40,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(4).toDouble,cells(6).toDouble,cells(5).toDouble)
+         val i = Tuple6(cells(4).toDouble,cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("SHIPDATE","ORDERKEY","LINENUMBER","QUANTITY","DISCOUNT","EXTENDEDPRICE"), cnt))
+         Array[String]("L_QUANTITY","L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(4).toDouble,cells(6).toDouble,cells(5).toDouble)
+         val i = Tuple6(cells(4).toDouble,cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("SHIPDATE","ORDERKEY","LINENUMBER","QUANTITY","DISCOUNT","EXTENDEDPRICE"), cnt))
+         Array[String]("L_QUANTITY","L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }

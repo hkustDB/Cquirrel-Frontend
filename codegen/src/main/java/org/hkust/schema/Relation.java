@@ -3,7 +3,8 @@ package org.hkust.schema;
 public enum Relation {
     LINEITEM("lineitem"),
     ORDERS("orders"),
-    CUSTOMER("customer");
+    CUSTOMER("customer"),
+    NATION("nation");
 
     private String relation;
 

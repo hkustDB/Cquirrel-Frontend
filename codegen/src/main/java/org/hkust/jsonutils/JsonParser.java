@@ -90,7 +90,7 @@ public class JsonParser {
         return new AggregateProcessFunction(
                 (String) apfMap.get("name"),
                 (List<String>) apfMap.get("this_key"),
-                (List<String>) apfMap.get("next_key"),
+                (List<String>) apfMap.get("output_key"),
                 //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
                 aggregateValues,
                 Operator.getOperator((String) apfMap.get("aggregation")),
@@ -121,7 +121,9 @@ public class JsonParser {
 
     @VisibleForTesting
     static List<SelectCondition> makeSelectConditions(Map<String, Object> scMap, List<Expression> expressions) {
+        if(scMap == null || scMap.isEmpty()) return null;
         List<SelectCondition> selectConditions = new ArrayList<>();
+        //TODO: this will throw nullptr exception if there is only 1 select condition, this operator will not be needed
         Operator nextOperator = Operator.getOperator((String) scMap.get("operator"));
         for (Expression expression : expressions) {
             SelectCondition sc = new SelectCondition(expression, nextOperator);
@@ -132,7 +134,10 @@ public class JsonParser {
     }
 
     @VisibleForTesting
+    @Nullable
     static List<Expression> makeSelectConditionsExpressions(List<Map<String, Object>> values) {
+        if(values == null || values.isEmpty()) return null;
+
         List<Expression> expressions = new ArrayList<>();
         for (Map<String, Object> value : values) {
             Operator operator = Operator.getOperator((String) value.get("operator"));

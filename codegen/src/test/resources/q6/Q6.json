@@ -1,7 +1,7 @@
 {
   "RelationProcessFunction": [
     {
-      "name": "Q6lineitem",
+      "name": "Q6Lineitem",
       "relation": "lineitem",
       "this_key": [
         "orderkey",
@@ -19,7 +19,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "shipdate"
+              "name": "l_shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -32,7 +32,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "shipdate"
+              "name": "l_shipdate"
             },
             "right_field": {
               "type": "constant",
@@ -45,7 +45,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "discount"
+              "name": "l_discount"
             },
             "right_field": {
               "type": "constant",
@@ -58,7 +58,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "discount"
+              "name": "l_discount"
             },
             "right_field": {
               "type": "constant",
@@ -71,7 +71,7 @@
             "left_field": {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "quantity"
+              "name": "l_quantity"
             },
             "right_field": {
               "type": "constant",
@@ -98,12 +98,12 @@
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "EXTENDEDPRICE"
+              "name": "l_extendedprice"
             },
             {
               "type": "attribute",
               "relation": "lineitem",
-              "name": "DISCOUNT"
+              "name": "l_discount"
             }
           ]
         }
