@@ -1,0 +1,576 @@
+{
+    "join_structure": [
+      {
+        "primary": "Part",
+        "foreign": "Lineitem"
+      }
+    ],
+    "RelationProcessFunction": [
+      {
+        "name": "Q19lineitem",
+        "relation": "lineitem",
+        "this_key": [
+          "partkey"
+        ],
+        "next_key": [
+          "partkey"
+        ],
+        "child_nodes": 1,
+        "is_Root": true,
+        "is_Last": true,
+        "rename_attribute": null,
+        "select_conditions": [
+          {
+            "operator": "&&",
+            "values": [
+              {
+                "left_field": {
+                  "type": "attribute",
+                  "relation": "lineitem",
+                  "name": "shipmode"
+                },
+                "right_field": {
+                  "type": "constant",
+                  "var_type": "varchar",
+                  "value": "AIR REG"
+                },
+                "operator": "=="
+              },
+              {
+                "operator": "||",
+                "values": [
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "lineitem",
+                      "name": "shipmode"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "varchar",
+                      "value": "AIR"
+                    },
+                    "operator": "=="
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "lineitem",
+                      "name": "shipmode"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "varchar",
+                      "value": "AIR REG"
+                    },
+                    "operator": "=="
+                  }
+                ]
+              },
+              {
+                "operator": "||",
+                "values": [
+                  {
+                    "operator": "&&",
+                    "values": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_brand"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "Brand#12"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 1
+                        },
+                        "operator": ">="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 11
+                        },
+                        "operator": "<="
+                      }
+                    ]
+                  },
+                  {
+                    "operator": "&&",
+                    "values": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_brand"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "Brand#23"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 10
+                        },
+                        "operator": ">="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 20
+                        },
+                        "operator": "<="
+                      }
+                    ]
+                  },
+                  {
+                    "operator": "&&",
+                    "values": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_brand"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "Brand#34"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 20
+                        },
+                        "operator": ">="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "lineitem",
+                          "name": "quantity"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "int",
+                          "value": 30
+                        },
+                        "operator": "<="
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Q19Part",
+        "relation": "part",
+        "this_key": [
+          "partkey"
+        ],
+        "next_key": [
+          "partkey"
+        ],
+        "child_nodes": 0,
+        "is_Root": false,
+        "is_Last": true,
+        "rename_attribute": null,
+        "select_conditions": [
+          {
+            "operator": "||",
+            "value": [
+              {
+                "operator": "&&",
+                "values": [
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_brand"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "varchar",
+                      "value": "Brand#12"
+                    },
+                    "operator": "=="
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 1
+                    },
+                    "operator": ">"
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 5
+                    },
+                    "operator": "<"
+                  },
+                  {
+                    "operator": "||",
+                    "value": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "SM CASE"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "SM BOX"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "SM PACK"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "SM PKG"
+                        },
+                        "operator": "=="
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operator": "&&",
+                "values": [
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_brand"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "varchar",
+                      "value": "Brand#23"
+                    },
+                    "operator": "=="
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 1
+                    },
+                    "operator": ">"
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 10
+                    },
+                    "operator": "<"
+                  },
+                  {
+                    "operator": "||",
+                    "value": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "MED CASE"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "MED BOX"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "MED PACK"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "MED PKG"
+                        },
+                        "operator": "=="
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "operator": "&&",
+                "values": [
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_brand"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "varchar",
+                      "value": "Brand#34"
+                    },
+                    "operator": "=="
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 1
+                    },
+                    "operator": ">"
+                  },
+                  {
+                    "left_field": {
+                      "type": "attribute",
+                      "relation": "part",
+                      "name": "p_size"
+                    },
+                    "right_field": {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": 15
+                    },
+                    "operator": "<"
+                  },
+                  {
+                    "operator": "||",
+                    "value": [
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "LG CASE"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "LG BOX"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "LG PACK"
+                        },
+                        "operator": "=="
+                      },
+                      {
+                        "left_field": {
+                          "type": "attribute",
+                          "relation": "part",
+                          "name": "p_container"
+                        },
+                        "right_field": {
+                          "type": "constant",
+                          "var_type": "varchar",
+                          "value": "LG PKG"
+                        },
+                        "operator": "=="
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "AggregateProcessFunction": [
+      {
+        "name": "Q19Aggregate",
+        "this_key": [],
+        "output_key": [],
+        "delta_output": true,
+        "AggregateValue": [
+          {
+            "name": "revenue",
+            "type": "expression",
+            "values": [
+              {
+                "type": "attribute",
+                "relation": "lineitem",
+                "name": "extendedprice"
+              },
+              {
+                "type": "expression",
+                "operator": "-",
+                "values": [
+                  {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 1
+                  },
+                  {
+                    "type": "attribute",
+                    "relation": "lineitem",
+                    "name": "discount"
+                  }
+                ]
+              }
+            ],
+            "operator": "*"
+          }
+        ],
+        "aggregation": "+",
+        "value_type": "Double"
+      }
+    ]
+  }
