@@ -23,6 +23,19 @@
               "left_field": {
                 "type": "attribute",
                 "relation": "lineitem",
+                "name": "l_partkey"
+              },
+              "right_field": {
+                "type": "attribute",
+                "relation": "part",
+                "name": "p_partkey"
+              },
+              "operator": "=="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "lineitem",
                 "name": "quantity"
               },
               "right_field": {
@@ -46,6 +59,37 @@
               "operator": "<="
             },
             {
+              "operator": "||",
+              "values": [
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "lineitem",
+                    "name": "shipmode"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "varchar",
+                    "value": "AIR"
+                  },
+                  "operator": "=="
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "lineitem",
+                    "name": "shipmode"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "varchar",
+                    "value": "AIR REG"
+                  },
+                  "operator": "=="
+                }
+              ]
+            },
+            {
               "left_field": {
                 "type": "attribute",
                 "relation": "lineitem",
@@ -57,23 +101,53 @@
                 "value": "DELIVER IN PERSON"
               },
               "operator": "=="
-            },
+            }
+          ]
+        },
+        {
+          "operator": "||",
+          "values": [
             {
               "left_field": {
                 "type": "attribute",
-                "relation": "lineitem",
-                "name": "shipmode"
+                "relation": "part",
+                "name": "p_brand"
               },
               "right_field": {
                 "type": "constant",
                 "var_type": "varchar",
-                "value": "AIR"
+                "value": "Brand#12"
               },
-              "operator": "in"
+              "operator": "=="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "part",
+                "name": "p_brand"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "varchar",
+                "value": "Brand#23"
+              },
+              "operator": "=="
+            },
+            {
+              "left_field": {
+                "type": "attribute",
+                "relation": "part",
+                "name": "p_brand"
+              },
+              "right_field": {
+                "type": "constant",
+                "var_type": "varchar",
+                "value": "Brand#34"
+              },
+              "operator": "=="
             }
           ]
-        },
-        {}
+        }
       ]
     },
     {
@@ -85,37 +159,316 @@
       "is_Root": false,
       "is_Last": true,
       "rename_attribute": null,
-      "select_conditions": {
-        "operator": "&&",
-        "values": [
-          {
-            "left_field": {
-              "type": "attribute",
-              "relation": "orders",
-              "name": "orderdate"
+      "select_conditions": [
+        {
+          "operator": "||",
+          "value": [
+            {
+              "operator": "&&",
+              "values": [
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_brand"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "varchar",
+                    "value": "Brand#12"
+                  },
+                  "operator": "=="
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 1
+                  },
+                  "operator": ">"
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 5
+                  },
+                  "operator": "<"
+                },
+                {
+                  "operator": "||",
+                  "value": [
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "SM CASE"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "SM BOX"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "SM PACK"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "SM PKG"
+                      },
+                      "operator": "=="
+                    }
+                  ]
+                }
+              ]
             },
-            "right_field": {
-              "type": "constant",
-              "var_type": "Date",
-              "value": "1993-10-01"
+            {
+              "operator": "&&",
+              "values": [
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_brand"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "varchar",
+                    "value": "Brand#23"
+                  },
+                  "operator": "=="
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 1
+                  },
+                  "operator": ">"
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 10
+                  },
+                  "operator": "<"
+                },
+                {
+                  "operator": "||",
+                  "value": [
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "MED CASE"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "MED BOX"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "MED PACK"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "MED PKG"
+                      },
+                      "operator": "=="
+                    }
+                  ]
+                }
+              ]
             },
-            "operator": ">="
-          },
-          {
-            "left_field": {
-              "type": "attribute",
-              "relation": "orders",
-              "name": "orderdate"
-            },
-            "right_field": {
-              "type": "constant",
-              "var_type": "Date",
-              "value": "1994-01-01"
-            },
-            "operator": "<"
-          }
-        ]
-      }
+            {
+              "operator": "&&",
+              "values": [
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_brand"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "varchar",
+                    "value": "Brand#34"
+                  },
+                  "operator": "=="
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 1
+                  },
+                  "operator": ">"
+                },
+                {
+                  "left_field": {
+                    "type": "attribute",
+                    "relation": "part",
+                    "name": "p_size"
+                  },
+                  "right_field": {
+                    "type": "constant",
+                    "var_type": "int",
+                    "value": 15
+                  },
+                  "operator": "<"
+                },
+                {
+                  "operator": "||",
+                  "value": [
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "LG CASE"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "LG BOX"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "LG PACK"
+                      },
+                      "operator": "=="
+                    },
+                    {
+                      "left_field": {
+                        "type": "attribute",
+                        "relation": "part",
+                        "name": "p_container"
+                      },
+                      "right_field": {
+                        "type": "constant",
+                        "var_type": "varchar",
+                        "value": "LG PKG"
+                      },
+                      "operator": "=="
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "AggregateProcessFunction": [
