@@ -22,7 +22,8 @@
       "child_nodes": 1,
       "is_Root": true,
       "is_Last": true,
-      "rename_attribute": null
+      "rename_attribute": null,
+      "select_conditions": {}
     },
     {
       "name": "Q18Orders",
@@ -36,7 +37,8 @@
       "child_nodes": 1,
       "is_Root": false,
       "is_Last": true,
-      "rename_attribute": null
+      "rename_attribute": null,
+      "select_conditions": {}
     },
     {
       "name": "Q18Customer",
@@ -50,7 +52,8 @@
       "child_nodes": 0,
       "is_Root": false,
       "is_Last": true,
-      "rename_attribute": null
+      "rename_attribute": null,
+      "select_conditions": {}
     }
   ],
   "AggregateProcessFunction": [
@@ -80,8 +83,9 @@
           "values": [
           {
             "left_field": {
-              "type": "attribute",
-              "name": "aggregate"
+              "type" : "aggregate_attribute",
+              "name" : "aggregate",
+              "var_type" : "Double"
             },
             "right_field": {
               "type": "constant",

@@ -86,7 +86,7 @@
   ],
   "AggregateProcessFunction": [
     {
-      "name": "Q3Aggregate1",
+      "name": "Q4Aggregate1",
       "this_key": [
         "orderkey"
       ],
@@ -106,7 +106,7 @@
       "value_type": "int"
     },
     {
-      "name": "Q3Aggregate2",
+      "name": "Q4Aggregate2",
       "this_key": [
         "o_orderpriority"
       ],
@@ -130,7 +130,7 @@
 		        			"values" : [
 		        				{
 		        					"type" : "attribute",
-		        					"value" : "DIST_COUNT",
+		        					"value" : "DIST_COUNT"
 		        				},
 		        				{
 		        					"type" : "constant",
@@ -151,7 +151,7 @@
 		        			"values" : [
 		        				{
 		        					"type" : "attribute",
-		        					"value" : "DIST_COUNT",
+		        					"value" : "DIST_COUNT"
 		        				},
 		        				{
 		        					"type" : "constant",
@@ -168,10 +168,10 @@
         			"value" : "0"
         		}
 		    ]
-        },
+        }
       ],
       "aggregation": "+",
       "value_type": "Int"
-    },
+    }
   ]
 }

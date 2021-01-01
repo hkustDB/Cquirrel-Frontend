@@ -2,9 +2,7 @@ package org.hkust.codegenerator;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
-import org.hkust.objects.AggregateProcessFunction;
-import org.hkust.objects.Expression;
-import org.hkust.objects.Type;
+import org.hkust.objects.*;
 import org.hkust.schema.RelationSchema;
 
 import java.util.List;
@@ -32,6 +30,10 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         addAggregateFunction(writer);
         addAdditionFunction(writer);
         addSubtractionFunction(writer);
+        List<SelectCondition> aggregateSelectConditions = aggregateProcessFunction.getAggregateSelectCondition();
+        if (aggregateSelectConditions != null && !aggregateSelectConditions.isEmpty()) {
+            addIsOutputValidFunction(writer, aggregateSelectConditions);
+        }
         addInitStateFunction(writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
@@ -50,7 +52,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     @Override
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         //TODO: apply the next_key optimization on thiskey, remember: next_key is now output_key and requires no such optimizations
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
+        List<AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         String code = "class " +
                 className +
                 " extends AggregateProcessFunction[Any, " +
@@ -72,17 +74,38 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
     @VisibleForTesting
     void addAggregateFunction(final PicoWriter writer) throws Exception {
         writer.writeln_r("override def aggregate(value: Payload): " + aggregateType + " = {");
-        List<AggregateProcessFunction.AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
-        for (AggregateProcessFunction.AggregateValue aggregateValue : aggregateValues) {
+        List<AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
+        for (AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
             if (aggregateValue.getType().equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
                 expressionToCode(expression, code);
                 writer.writeln(code.toString());
+            } else if (aggregateValue.getType().equals("attribute")) {
+                AttributeValue attributeValue = (AttributeValue) aggregateValue.getValue();
+                writer.writeln("value(\"" + attributeValue.getColumnName().toUpperCase() + ")\".asInstanceOf[" + aggregateValue.getType() + "]");
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }
         }
+        writer.writeln_l("}");
+    }
+
+    void addIsOutputValidFunction(final PicoWriter writer, List<SelectCondition> aggregateSelectConditions) throws Exception {
+        if (aggregateSelectConditions.size() != 1) {
+            throw new RuntimeException("Currently only 1 aggregate select condition is supported");
+        }
+        SelectCondition condition = aggregateSelectConditions.get(0);
+        StringBuilder code = new StringBuilder();
+        code.append("override def isOutputValid(value: Payload): Boolean = {");
+        code.append("if(");
+        expressionToCode(condition.getExpression(), code);
+        writer.write(code.toString());
+        writer.writeln_r("){");
+        writer.write("true");
+        writer.writeln_lr("}else{");
+        writer.write("false");
+        writer.writeln_l("}");
         writer.writeln_l("}");
     }
 

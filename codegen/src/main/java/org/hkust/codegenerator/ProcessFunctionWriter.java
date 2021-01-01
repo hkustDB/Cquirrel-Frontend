@@ -66,6 +66,8 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
             attributeValueToCode((AttributeValue) value, code);
+        } else if (value instanceof AggregationAttribute) {
+            aggregationAttributeToCode((AggregationAttribute) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -92,6 +94,18 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         final Class<?> type = requireNonNull(relationSchema.getColumnAttributeByRawName(value.getRelation(), columnName.toLowerCase())).getType();
         code.append("value(\"")
                 .append(columnName.toUpperCase())
+                .append("\")")
+                .append(".asInstanceOf[")
+                .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
+                .append("]");
+    }
+
+    protected void aggregationAttributeToCode(AggregationAttribute aggregationAttribute, StringBuilder code) {
+        requireNonNull(code);
+        requireNonNull(aggregationAttribute);
+        Class<?> type = aggregationAttribute.getVarType();
+        code.append("value(\"")
+                .append(aggregationAttribute.getName().toUpperCase())
                 .append("\")")
                 .append(".asInstanceOf[")
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())

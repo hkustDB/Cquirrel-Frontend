@@ -1,7 +1,6 @@
 package org.hkust.objects;
 
 import com.google.common.collect.ImmutableSet;
-import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.schema.Attribute;
 import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.Nullable;
@@ -19,16 +18,18 @@ public class AggregateProcessFunction extends ProcessFunction {
     @Nullable
     private final List<String> outputKey;
 
-    private final List<AggregateValue> aggregateValues;
+    private final List<org.hkust.objects.AggregateValue> aggregateValues;
     private final Operator aggregation;
     private final Class<?> valueType;
+    private final List<SelectCondition> aggregateSelectCondition;
 
     public AggregateProcessFunction(String name, List<String> thisKey, List<String> outputKey, List<AggregateValue> aggregateValues,
-                                    Operator aggregation, Class valueType) {
+                                    Operator aggregation, Class valueType, List<SelectCondition> aggregateSelectCondition) {
         super(name, thisKey, outputKey);
         this.name = name;
         this.thisKey = thisKey;
         this.outputKey = outputKey;
+        this.aggregateSelectCondition = aggregateSelectCondition;
 
         requireNonNull(aggregateValues);
         this.aggregateValues = aggregateValues;
@@ -57,7 +58,7 @@ public class AggregateProcessFunction extends ProcessFunction {
         expression.getValues().forEach(val -> {
             addIfAttributeValue(attributes, val, schema);
             if (val instanceof Expression) {
-                addExpressionAttributes((Expression)val, attributes, schema);
+                addExpressionAttributes((Expression) val, attributes, schema);
             }
         });
     }
@@ -77,7 +78,7 @@ public class AggregateProcessFunction extends ProcessFunction {
         return outputKey;
     }
 
-    public List<AggregateValue> getAggregateValues() {
+    public List<org.hkust.objects.AggregateValue> getAggregateValues() {
         return aggregateValues;
     }
 
@@ -87,6 +88,11 @@ public class AggregateProcessFunction extends ProcessFunction {
 
     public Class getValueType() {
         return valueType;
+    }
+
+    @Nullable
+    public List<SelectCondition> getAggregateSelectCondition() {
+        return aggregateSelectCondition;
     }
 
     @Override
@@ -99,35 +105,5 @@ public class AggregateProcessFunction extends ProcessFunction {
                 ", aggregation=" + aggregation +
                 ", valueType=" + valueType +
                 '}';
-    }
-
-    public static class AggregateValue {
-        private final String name;
-        private final String type;
-        private final Value value;
-
-        public AggregateValue(String name, String type, final Value value) {
-            CheckerUtils.checkNullOrEmpty(name, "name");
-            CheckerUtils.checkNullOrEmpty(type, "type");
-            this.name = name;
-            this.type = type;
-            if (!type.toLowerCase().equals("expression")) {
-                throw new RuntimeException("Only org.hkust.objects.Expression type is supported for AggregateValue");
-            }
-            requireNonNull(value);
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public Value getValue() {
-            return value;
-        }
     }
 }
