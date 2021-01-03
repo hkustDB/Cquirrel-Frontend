@@ -13,9 +13,9 @@ public class AggregateValue implements Value {
         CheckerUtils.checkNullOrEmpty(name, "name");
         CheckerUtils.checkNullOrEmpty(type, "type");
         this.name = name;
-        if (!(type.toLowerCase().equals("expression") || type.toLowerCase().equals("attribute"))) {
-            throw new RuntimeException("Only Expression & attribute types are supported for AggregateValue");
-        }
+        /*if (!(type.toLowerCase().equals("expression") || type.toLowerCase().equals("attribute") || type.toLowerCase().equals("constant"))) {
+            throw new RuntimeException("Only Expression, Attribute and Constant types are supported for AggregateValue");
+        }*/
         this.type = type;
         requireNonNull(value);
         this.value = value;

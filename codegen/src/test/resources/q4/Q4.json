@@ -7,7 +7,7 @@
   ],
   "RelationProcessFunction": [
     {
-      "name": "Q3Lineitem",
+      "name": "Q4Lineitem",
       "relation": "lineitem",
       "this_key": [
         "orderkey"
@@ -30,8 +30,8 @@
             },
             "right_field": {
               "type": "attribute",
-              "var_type": "lineitem",
-              "value": "l_receiptdate"
+              "relation": "lineitem",
+              "name": "l_receiptdate"
             },
             "operator": "<"
           }
@@ -39,7 +39,7 @@
       }
     },
     {
-      "name": "Q3Orders",
+      "name": "Q4Orders",
       "relation": "orders",
       "this_key": [
         "custkey"
@@ -66,7 +66,7 @@
               "value": "1993-07-01"
             },
             "operator": ">="
-          }, 
+          },
           {
             "left_field": {
               "type": "attribute",
@@ -94,12 +94,12 @@
         "o_orderpriority"
       ],
       "delta_output": true,
-      "AggregateValue": [ 
-      	{
-	        "name" : "DIST_COUNT",
-	        "type" : "constant",
-	        "var_type" : "int",
-	        "value" : "1"
+      "AggregateValue": [
+        {
+          "name": "DIST_COUNT",
+          "type": "constant",
+          "var_type": "int",
+          "value": "1"
         }
       ],
       "aggregation": "+",
@@ -116,58 +116,72 @@
       "delta_output": true,
       "AggregateValue": [
         {
-        	"name" : "order_count",
-        	"type" : "expression",
-        	"operator" : "CASE",
-        	"values" : [
-        		{
-		        	"type": "expression",
-		        	"operator": "IF",
-		        	"values" : [
-		        		{
-		        			"type" : "expression",
-		        			"operator" : "=",
-		        			"values" : [
-		        				{
-		        					"type" : "attribute",
-		        					"value" : "DIST_COUNT"
-		        				},
-		        				{
-		        					"type" : "constant",
-		        					"var_type" : "int",
-		        					"value" : "1" 
-		        				}
-		        			]
-		        		}
-		        	]
-		        },
-		        {
-		        	"type" : "expression",
-		        	"operator" : "IF",
-		        	"values" : [
-		        		{
-		        			"type" : "expression",
-		        			"operator" : "=",
-		        			"values" : [
-		        				{
-		        					"type" : "attribute",
-		        					"value" : "DIST_COUNT"
-		        				},
-		        				{
-		        					"type" : "constant",
-		        					"var_type" : "int",
-		        					"value" : "-1" 
-		        				}
-		        			]
-		        		}
-		        	]
-		        },
-        		{
-        			"type" : "constant",
-        			"var_type" : "int",
-        			"value" : "0"
-        		}
-		    ]
+          "name": "order_count",
+          "type": "expression",
+          "operator": "CASE",
+          "values": [
+            {
+              "type": "expression",
+              "operator": "IF",
+              "values": [
+                {
+                  "type": "expression",
+                  "operator": "==",
+                  "values": [
+                    {
+                      "type": "aggregate_attribute",
+                      "name": "DIST_COUNT",
+                      "store_type": "String",
+                      "var_type": "int"
+                    },
+                    {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": "1"
+                    }
+                  ]
+                },
+                {
+                  "type": "constant",
+                  "var_type": "int",
+                  "value": "1"
+                }
+              ]
+            },
+            {
+              "type": "expression",
+              "operator": "IF",
+              "values": [
+                {
+                  "type": "expression",
+                  "operator": "==",
+                  "values": [
+                    {
+                      "type": "attribute",
+                      "value": "DIST_COUNT",
+                      "store_type": "String",
+                      "var_type": "int"
+                    },
+                    {
+                      "type": "constant",
+                      "var_type": "int",
+                      "value": "0"
+                    }
+                  ]
+                },
+                {
+                  "type": "constant",
+                  "var_type": "int",
+                  "value": "-1"
+                }
+              ]
+            },
+            {
+              "type": "constant",
+              "var_type": "int",
+              "value": "0"
+            }
+          ]
         }
       ],
       "aggregation": "+",

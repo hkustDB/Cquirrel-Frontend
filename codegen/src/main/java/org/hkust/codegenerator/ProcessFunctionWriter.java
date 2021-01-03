@@ -66,8 +66,8 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
             attributeValueToCode((AttributeValue) value, code);
-        } else if (value instanceof AggregationAttribute) {
-            aggregationAttributeToCode((AggregationAttribute) value, code);
+        } else if (value instanceof AggregateAttributeValue) {
+            aggregationAttributeToCode((AggregateAttributeValue) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -100,12 +100,12 @@ abstract class ProcessFunctionWriter implements ClassWriter {
                 .append("]");
     }
 
-    protected void aggregationAttributeToCode(AggregationAttribute aggregationAttribute, StringBuilder code) {
+    protected void aggregationAttributeToCode(AggregateAttributeValue aggregateAttributeValue, StringBuilder code) {
         requireNonNull(code);
-        requireNonNull(aggregationAttribute);
-        Class<?> type = aggregationAttribute.getVarType();
+        requireNonNull(aggregateAttributeValue);
+        Class<?> type = aggregateAttributeValue.getVarType();
         code.append("value(\"")
-                .append(aggregationAttribute.getName().toUpperCase())
+                .append(aggregateAttributeValue.getName().toUpperCase())
                 .append("\")")
                 .append(".asInstanceOf[")
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())

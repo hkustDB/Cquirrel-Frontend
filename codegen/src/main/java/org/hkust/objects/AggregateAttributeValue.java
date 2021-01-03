@@ -2,12 +2,12 @@ package org.hkust.objects;
 
 import static java.util.Objects.requireNonNull;
 
-public class AggregationAttribute implements Value {
+public class AggregateAttributeValue implements Value {
     private final String type;
     private final String name;
     private final Class<?> varType;
 
-    public AggregationAttribute(String type, String name, Class<?> varType) {
+    public AggregateAttributeValue(String type, String name, Class<?> varType) {
         requireNonNull(type);
         requireNonNull(name);
         requireNonNull(varType);

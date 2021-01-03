@@ -83,7 +83,8 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
                 writer.writeln(code.toString());
             } else if (aggregateValue.getType().equals("attribute")) {
                 AttributeValue attributeValue = (AttributeValue) aggregateValue.getValue();
-                writer.writeln("value(\"" + attributeValue.getColumnName().toUpperCase() + ")\".asInstanceOf[" + aggregateValue.getType() + "]");
+                attributeValueToCode(attributeValue, code);
+                writer.writeln(code.toString());
             } else {
                 throw new RuntimeException("Only Expression type is supported for AggregateValue");
             }

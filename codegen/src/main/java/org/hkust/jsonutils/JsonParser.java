@@ -120,6 +120,8 @@ public class JsonParser {
                 agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
             } else if (type.equals("attribute")) {
                 agv = new AttributeValue(Relation.getRelation((String) aggValue.get("relation")), (String) aggValue.get("value"));
+            } else if (type.equals("constant")) {
+                agv = new ConstantValue( (String) aggValue.get("value"), (String) aggValue.get("var_type"));
             } else {
                 throw new IllegalArgumentException("Unsupported type of aggregate value");
             }
@@ -132,10 +134,10 @@ public class JsonParser {
     @VisibleForTesting
     static AggregateValue makeAggregateValue(Map<String, Object> avMap, Value value) {
         String type = (String) avMap.get("type");
-        if (!("expression".equals(type) || "attribute".equals(type))) {
-            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression & attribute type. Got: " + type);
+        /*if (!("expression".equals(type) || "attribute".equals(type) || "constant".equals(type))) {
+            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression, attribute and constant type. Got: " + type);
 
-        }
+        }*/
         String aggregateName = (String) avMap.get("name");
         return new AggregateValue(aggregateName, type, value);
     }
@@ -191,7 +193,7 @@ public class JsonParser {
         } else if (type.equals("expression")) {
             return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else if (type.equals("aggregate_attribute")) {
-            return new AggregationAttribute(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")));
+            return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }
