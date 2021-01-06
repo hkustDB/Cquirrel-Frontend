@@ -77,16 +77,20 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         List<AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         for (AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
-            if (aggregateValue.getType().equals("expression")) {
+            String type = aggregateValue.getType();
+            if (type.equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
                 expressionToCode(expression, code);
                 writer.writeln(code.toString());
-            } else if (aggregateValue.getType().equals("attribute")) {
+            } else if (type.equals("attribute")) {
                 AttributeValue attributeValue = (AttributeValue) aggregateValue.getValue();
                 attributeValueToCode(attributeValue, code);
                 writer.writeln(code.toString());
+            } else if (type.equals("constant")) {
+                constantValueToCode((ConstantValue) aggregateValue.getValue(), code);
+                writer.writeln(code.toString());
             } else {
-                throw new RuntimeException("Only Expression type is supported for AggregateValue");
+                throw new RuntimeException("Unknown type for AggregateValue, got: " + type);
             }
         }
         writer.writeln_l("}");

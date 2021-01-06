@@ -177,7 +177,7 @@ public class JsonParser {
             values.add(makeValue(value));
         }
 
-        return new Expression(values, Operator.getOperator(operator));
+        return new Expression(values, Operator.getOperator(operator.toLowerCase()));
     }
 
 

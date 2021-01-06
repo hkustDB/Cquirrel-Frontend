@@ -14,7 +14,9 @@ public enum Operator {
     AVG("~"),
     AND("&&"),
     OR("||"),
-    NOT("!");
+    NOT("!"),
+    IF("if"),
+    CASE("case");
 
     private String operator;
 

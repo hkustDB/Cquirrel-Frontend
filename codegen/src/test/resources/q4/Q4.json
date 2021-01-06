@@ -47,7 +47,7 @@
       "next_key": [
         "orderkey"
       ],
-      "child_nodes": 1,
+      "child_nodes": 0,
       "is_Root": false,
       "is_Last": true,
       "rename_attribute": null,
@@ -157,8 +157,8 @@
                   "operator": "==",
                   "values": [
                     {
-                      "type": "attribute",
-                      "value": "DIST_COUNT",
+                      "type": "aggregate_attribute",
+                      "name": "DIST_COUNT",
                       "store_type": "String",
                       "var_type": "int"
                     },
