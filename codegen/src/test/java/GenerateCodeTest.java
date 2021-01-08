@@ -58,7 +58,7 @@ public class GenerateCodeTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"4"})
+    @CsvSource({"18"})
     public void generateCodeForGivenQuery(int queryIdx) throws Exception {
         try {
             generateCodeUsingMainFunction(queryIdx);

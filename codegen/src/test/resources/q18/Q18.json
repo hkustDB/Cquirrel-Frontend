@@ -62,7 +62,7 @@
       "this_key": [
         "orderkey"
       ],
-      "next_key": [
+      "output_key": [
         "c_name",
         "custkey",
         "orderkey",
@@ -72,20 +72,21 @@
       "delta_output": true,
       "AggregateValue": [
         {
-          "name": "aggregate",
+          "name": "AGGREGATE",
           "type": "attribute",
           "relation": "lineitem",
           "value": "l_quantity"
-      }],
+        }
+      ],
       "aggregation": "+",
       "value_type": "Double",
-      "OutputSelectCondition" :  {
-          "values": [
+      "OutputSelectCondition": {
+        "values": [
           {
             "left_field": {
-              "type" : "aggregate_attribute",
-              "name" : "aggregate",
-              "var_type" : "Double"
+              "type": "aggregate_attribute",
+              "name": "aggregate",
+              "var_type": "Double"
             },
             "right_field": {
               "type": "constant",
@@ -96,5 +97,6 @@
           }
         ]
       }
-    }]  
+    }
+  ]
 }

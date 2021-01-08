@@ -48,6 +48,8 @@ public class AggregateProcessFunction extends ProcessFunction {
             if (value instanceof Expression) {
                 Expression expression = (Expression) value;
                 addExpressionAttributes(expression, result, schema);
+            } else if (value instanceof AttributeValue) {
+                addIfAttributeValue(result, value, schema);
             }
         });
 
