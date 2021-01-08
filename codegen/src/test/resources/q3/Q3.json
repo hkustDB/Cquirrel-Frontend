@@ -113,7 +113,7 @@
       "this_key": [
         "orderkey"
       ],
-      "next_key": [
+      "output_key": [
         "orderkey",
         "orderdate",
         "shippriority"

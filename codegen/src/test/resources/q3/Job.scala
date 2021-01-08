@@ -18,9 +18,9 @@ object Job {
       val inputpath = "file:///aju/q3flinkInput.csv"
       val outputpath = "file:///aju/q3flinkOutput.csv"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
-      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
-      val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
+      val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
+      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
       val customerS = customer.keyBy(i => i._3)
       .process(new Q3CustomerProcessFunction())
       val ordersS = customerS.connect(orders)
@@ -50,35 +50,35 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple5(cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
+         val i = Tuple5(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(5).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
-         Array[String]("L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
+         Array[String]("L_SHIPDATE","ORDERKEY","LINENUMBER","L_DISCOUNT","L_EXTENDEDPRICE"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple5(cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
+         val i = Tuple5(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(5).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
-         Array[String]("L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
+         Array[String]("L_SHIPDATE","ORDERKEY","LINENUMBER","L_DISCOUNT","L_EXTENDEDPRICE"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"
-         val i = Tuple3(cells(1).toLong,format.parse(cells(4)),cells(0).toLong)
+         val i = Tuple4(cells(1).toLong,cells(0).toLong,format.parse(cells(4)),cells(7).toInt)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3),
-         Array[String]("CUSTKEY","O_ORDERDATE","ORDERKEY"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4),
+         Array[String]("CUSTKEY","ORDERKEY","O_ORDERDATE","O_SHIPPRIORITY"), cnt))
          case "-OR" =>
          action = "Delete"
          relation = "orders"
-         val i = Tuple3(cells(1).toLong,format.parse(cells(4)),cells(0).toLong)
+         val i = Tuple4(cells(1).toLong,cells(0).toLong,format.parse(cells(4)),cells(7).toInt)
          cnt = cnt + 1
          ctx.output(ordersTag, Payload(relation, action, cells(1).toLong.asInstanceOf[Any],
-         Array[Any](i._1,i._2,i._3),
-         Array[String]("CUSTKEY","O_ORDERDATE","ORDERKEY"), cnt))
+         Array[Any](i._1,i._2,i._3,i._4),
+         Array[String]("CUSTKEY","ORDERKEY","O_ORDERDATE","O_SHIPPRIORITY"), cnt))
          case "+CU" =>
          action = "Insert"
          relation = "customer"
