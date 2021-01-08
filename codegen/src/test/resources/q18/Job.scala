@@ -18,9 +18,9 @@ object Job {
       val inputpath = "file:///aju/q3flinkInput.csv"
       val outputpath = "file:///aju/q3flinkOutput.csv"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
-      val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
       val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
+      val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val customerS = customer.keyBy(i => i._3)
       .process(new Q18CustomerProcessFunction())
       val ordersS = customerS.connect(orders)

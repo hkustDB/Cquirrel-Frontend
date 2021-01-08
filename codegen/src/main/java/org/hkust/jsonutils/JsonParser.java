@@ -193,7 +193,7 @@ public class JsonParser {
         } else if (type.equals("expression")) {
             return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else if (type.equals("aggregate_attribute")) {
-            return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")));
+            return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")), Type.getClass((String) field.get("store_type")));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }

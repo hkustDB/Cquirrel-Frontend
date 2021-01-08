@@ -8,7 +8,7 @@ class Q18AggregateProcessFunction extends AggregateProcessFunction[Any, Double](
    }
    override def addition(value1: Double, value2: Double): Double = value1 + value2
    override def subtraction(value1: Double, value2: Double): Double = value1 - value2
-   override def isOutputValid(value: Payload): Boolean = {if(value("AGGREGATE").asInstanceOf[Double]>300){
+   override def isOutputValid(value: Payload): Boolean = {if(value("AGGREGATE").asInstanceOf[String].toDouble>300){
    true}else{
    false}
 }

@@ -86,7 +86,8 @@
             "left_field": {
               "type": "aggregate_attribute",
               "name": "aggregate",
-              "var_type": "Double"
+              "var_type": "Double",
+              "store_type": "String"
             },
             "right_field": {
               "type": "constant",

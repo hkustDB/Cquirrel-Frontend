@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.hkust.objects.Type.getStringConversionMethod;
 
 abstract class ProcessFunctionWriter implements ClassWriter {
     private final RelationSchema relationSchema;
@@ -107,13 +108,14 @@ abstract class ProcessFunctionWriter implements ClassWriter {
     protected void aggregationAttributeToCode(AggregateAttributeValue aggregateAttributeValue, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(aggregateAttributeValue);
-        Class<?> type = aggregateAttributeValue.getVarType();
+        Class<?> type = aggregateAttributeValue.getStoreType();
         code.append("value(\"")
                 .append(aggregateAttributeValue.getName().toUpperCase())
                 .append("\")")
                 .append(".asInstanceOf[")
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
-                .append("]");
+                .append("].")
+                .append(getStringConversionMethod(aggregateAttributeValue.getVarType()));
     }
 
     private void caseIfCode(Expression expression, StringBuilder code) {
