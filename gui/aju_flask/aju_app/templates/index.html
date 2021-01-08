@@ -2,65 +2,80 @@
 
 {% block div_uploaded_file %}
 
-    <div class="container h-15">
+    <div class="container-fluid h-15">
+
         <div class="row h-10 align-items-center justify-content-center text-center">
         </div>
+        <hr/>
         <div class="row h-10 align-items-center justify-content-center text-center text-danger text-uppercase">
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                        {% for message in messages %}
-                            <span>{{ message }}</span>
-                        {% endfor %}
+                    {% for message in messages %}
+                        <span>{{ message }}</span>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
         </div>
-        <div class="row h-10 align-items-center justify-content-center text-center">
-            Please select the json file which you want to upload.
-        </div>
-        <div class="row h-25 align-items-center justify-content-center text-center">
-            <form method="post" enctype="multipart/form-data" onsubmit="return checkSubmit();">
-                <div class="input-group">
-                    <div class="custom-file">
-                        <input type="file" accept=".json" class="custom-file-input" name="json_file"
-                               id="selected_uploaded_file">
-                        <label class="custom-file-label" for="uploaded_json_file">Choose file</label>
-                    </div>
-                    <div class="input-group-append ">
-                        <button class="btn btn-primary" type="submit">Upload</button>
-                    </div>
+        <div class="row">
+            <div class="col">
+                <div class="row h-10 align-items-center justify-content-center text-center">
+                    <span>Please input the sql content:</span>
                 </div>
-            </form>
-            <script>
-                var submitStatus = false;
+                <div class="row h-10">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="input-group">
+                            <textarea type="text" name="input_sql"
+                                   id="input_sql" placeholder="Please input the SQL here.">
+                            </textarea>
+                            <button class="btn btn-primary" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
 
-                function checkSubmit() {
-                    if (!submitStatus) {
-                        submitStatus = true;
-                        return true;
-                    }
-                    alert("Please do not submit repeatedly.");
-                    return false;
-                }
 
-                // Add the following code if you want the name of the file appear on select
-                $(".custom-file-input").on("change", function () {
-                    var fileName = $(this).val().split("\\").pop();
-                    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-                });
-            </script>
+            </div>
+            <div class="col">
+                <div class="row h-25 align-items-center justify-content-center text-center">
+                    <div class="row h-10">
+                        Or upload the json file:
+                    </div>
+                    <div class="row h-10">
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" accept=".json" class="custom-file-input" name="json_file"
+                                           id="selected_uploaded_file">
+                                    <label class="custom-file-label" for="uploaded_json_file">Choose file</label>
+                                </div>
+                                <div class="input-group-append ">
+                                    <button class="btn btn-primary" type="submit">Upload</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <script>
+                        // Add the following code if you want the name of the file appear on select
+                        $(".custom-file-input").on("change", function () {
+                            var fileName = $(this).val().split("\\").pop();
+                            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                        });
+                    </script>
+                </div>
+
+                <div class="row h-30 text-uppercase align-items-center justify-content-center text-center">
+                    {{ uploaded_result }}
+                </div>
+            </div>
+
         </div>
-
-        <div class="row h-30 text-uppercase align-items-center justify-content-center text-center">
-            {{ uploaded_result }}
-        </div>
-
     </div>
     <hr>
 {% endblock %}
 
 {% block div_show_results %}
 
-    <div class="container h-30">
+    <div class="container-fluid h-30">
         <div class="h-100 panel panel-default">
             <div class="panel-heading h-10">
                 <h4 class="panel-title">
@@ -68,7 +83,8 @@
                 </h4>
             </div>
             <div class="panel-body h-50">
-            <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="9" readonly>
+            <textarea id="codegen_log_textarea" class="form-control codegen-log-area" rows="9"
+                      style="font-family:monospace;" readonly>
                 {{ codegen_log_content }}
             </textarea>
                 <div class="text-right" style="margin-top: 10px">
@@ -83,7 +99,7 @@
     <hr>
 
 
-    <div class="container h-100">
+    <div class="container-fluid h-100">
         <div class="panel panel-default h-100">
             <div class="panel-heading h-10">
                 <h4 class="panel-title">

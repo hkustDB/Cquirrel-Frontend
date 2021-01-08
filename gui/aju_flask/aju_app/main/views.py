@@ -19,6 +19,7 @@ def index():
 
 @main.route('/', methods=['POST'])
 def upload_json_file():
+
     aju_app.stop_send_data_thread()
 
     f = request.files['json_file']
@@ -96,17 +97,3 @@ def download_generated_jar():
         flash("Generated Jar does not exists.")
         return redirect(url_for("main.index"))
 
-
-@main.route('/settings')
-def settings():
-    return render_template('settings.html')
-
-
-@main.route('/about')
-def about():
-    return render_template('about.html')
-
-
-@main.route('/contact')
-def contact():
-    return render_template('contact.html')

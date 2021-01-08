@@ -22,6 +22,8 @@ Q6_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_
 Q6_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q6_all_insert.csv')
 Q3_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_q3_all_insert.csv')
 Q3_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q3_all_insert.csv')
+Q10_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data_q10.csv')
+Q10_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q10.csv')
 
 
 class BaseConfig:
