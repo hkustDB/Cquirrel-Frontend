@@ -18,9 +18,9 @@ object Job {
       val inputpath = "file:///aju/q3flinkInput.csv"
       val outputpath = "file:///aju/q3flinkOutput.csv"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
+      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
-      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
       val customerS = customer.keyBy(i => i._3)
       .process(new Q3CustomerProcessFunction())
       val ordersS = customerS.connect(orders)
@@ -30,7 +30,7 @@ object Job {
       .keyBy(i => i._3, i => i._3)
       .process(new Q3LineitemProcessFunction())
       val result = lineitemS.keyBy(i => i._3)
-      .process(new Q3AggregateProcessFunction)
+      .process(new Q3AggregateProcessFunction())
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
       .writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)
       .setParallelism(1)
@@ -50,19 +50,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple5(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(5).toDouble)
+         val i = Tuple5(format.parse(cells(10)),cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
-         Array[String]("L_SHIPDATE","ORDERKEY","LINENUMBER","L_DISCOUNT","L_EXTENDEDPRICE"), cnt))
+         Array[String]("L_SHIPDATE","LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_DISCOUNT"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple5(format.parse(cells(10)),cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(5).toDouble)
+         val i = Tuple5(format.parse(cells(10)),cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5),
-         Array[String]("L_SHIPDATE","ORDERKEY","LINENUMBER","L_DISCOUNT","L_EXTENDEDPRICE"), cnt))
+         Array[String]("L_SHIPDATE","LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_DISCOUNT"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"

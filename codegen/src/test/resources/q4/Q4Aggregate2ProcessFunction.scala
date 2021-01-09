@@ -4,8 +4,8 @@ import org.apache.flink.api.common.typeinfo.{TypeHint, TypeInformation}
 import org.hkust.BasedProcessFunctions.AggregateProcessFunction
 class Q4Aggregate2ProcessFunction extends AggregateProcessFunction[Any, Integer]("Q4Aggregate2ProcessFunction", Array("O_ORDERPRIORITY"), Array("O_ORDERPRIORITY"), aggregateName = "order_count", deltaOutput = true) {
    override def aggregate(value: Payload): Integer = {
-      if(value("DIST_COUNT").asInstanceOf[Integer]==1) 1
-if(value("DIST_COUNT").asInstanceOf[Integer]==0) -1
+      if(value("DIST_COUNT").asInstanceOf[String].toInt==1) 1
+if(value("DIST_COUNT").asInstanceOf[String].toInt==0) -1
 else 0
    }
    override def addition(value1: Integer, value2: Integer): Integer = value1 + value2

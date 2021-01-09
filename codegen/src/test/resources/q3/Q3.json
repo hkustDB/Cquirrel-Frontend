@@ -115,8 +115,8 @@
       ],
       "output_key": [
         "orderkey",
-        "orderdate",
-        "shippriority"
+        "o_orderdate",
+        "o_shippriority"
       ],
       "delta_output": true,
       "AggregateValue": [

@@ -19,10 +19,10 @@ object Job {
       val inputpath = "file:///aju/q3flinkInput.csv"
       val outputpath = "file:///aju/q3flinkOutput.csv"
       val inputStream : DataStream[Payload] = getStream(env,inputpath)
+      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
       val lineitem : DataStream[Payload] = inputStream.getSideOutput(lineitemTag)
       val nation : DataStream[Payload] = inputStream.getSideOutput(nationTag)
       val customer : DataStream[Payload] = inputStream.getSideOutput(customerTag)
-      val orders : DataStream[Payload] = inputStream.getSideOutput(ordersTag)
       val nationS = nation.keyBy(i => i._3)
       .process(new Q10NationProcessFunction())
       val customerS = nationS.connect(customer)
@@ -35,7 +35,7 @@ object Job {
       .keyBy(i => i._3, i => i._3)
       .process(new Q10LineitemProcessFunction())
       val result = lineitemS.keyBy(i => i._3)
-      .process(new Q10AggregateProcessFunction)
+      .process(new Q10AggregateProcessFunction())
       .map(x => (x._4.mkString(", "), x._5.mkString(", "), x._6))
       .writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)
       .setParallelism(1)
@@ -55,19 +55,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(8),cells(5).toDouble,cells(15))
+         val i = Tuple6(cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(8),cells(15),cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("ORDERKEY","LINENUMBER","L_DISCOUNT","L_RETURNFLAG","L_EXTENDEDPRICE","L_COMMENT"), cnt))
+         Array[String]("LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_RETURNFLAG","L_COMMENT","L_DISCOUNT"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(cells(0).toLong,cells(3).toInt,cells(6).toDouble,cells(8),cells(5).toDouble,cells(15))
+         val i = Tuple6(cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(8),cells(15),cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, cells(0).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("ORDERKEY","LINENUMBER","L_DISCOUNT","L_RETURNFLAG","L_EXTENDEDPRICE","L_COMMENT"), cnt))
+         Array[String]("LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_RETURNFLAG","L_COMMENT","L_DISCOUNT"), cnt))
          case "+OR" =>
          action = "Insert"
          relation = "orders"
@@ -87,19 +87,19 @@ object Job {
          case "+CU" =>
          action = "Insert"
          relation = "customer"
-         val i = Tuple7(cells(3).toLong,cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
+         val i = Tuple7(cells(0).toLong,cells(3).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7),
-         Array[String]("NATIONKEY","CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
+         Array[String]("CUSTKEY","NATIONKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "-CU" =>
          action = "Delete"
          relation = "customer"
-         val i = Tuple7(cells(3).toLong,cells(0).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
+         val i = Tuple7(cells(0).toLong,cells(3).toLong,cells(1),cells(5).toDouble,cells(4),cells(2),cells(7))
          cnt = cnt + 1
          ctx.output(customerTag, Payload(relation, action, cells(3).toLong.asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6,i._7),
-         Array[String]("NATIONKEY","CUSTKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
+         Array[String]("CUSTKEY","NATIONKEY","C_NAME","C_ACCTBAL","C_PHONE","C_ADDRESS","C_COMMENT"), cnt))
          case "+NA" =>
          action = "Insert"
          relation = "nation"

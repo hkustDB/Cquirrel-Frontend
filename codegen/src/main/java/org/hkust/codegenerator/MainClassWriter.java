@@ -114,8 +114,7 @@ class MainClassWriter implements ClassWriter {
         RelationProcessFunction parent = getRelation(joinStructure.get(relation));
         if (parent == null) {
             writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
-            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + ")");
-            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+            linkAggregateProcessFunctions(writer);
             writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
             writer.writeln(".setParallelism(1)");
             return;
@@ -146,10 +145,23 @@ class MainClassWriter implements ClassWriter {
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        linkAggregateProcessFunctions(writer);
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
+    }
+
+    private void linkAggregateProcessFunctions(final PicoWriter writer) {
+        int size = aggregateProcessFunctions.size();
+        if (size == 1) {
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        } else if (size == 2) {
+            writer.writeln(".map(x => Payload(\"Aggregate\", \"Addition\", x._3, x._4, x._5, x._6))");
+            writer.writeln(".keyBy(i => i._3)");
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(1).getName()) + "())");
+        } else {
+            throw new RuntimeException("Currently only 1 or 2 aggregate process functions are supported");
+        }
     }
 
     @Nullable
