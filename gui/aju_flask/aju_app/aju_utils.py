@@ -72,6 +72,14 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
                   + 'file://' + config.Q10_INPUT_DATA_FILE + ' ' \
                   + 'file://' + config.Q10_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q10: ")
+    elif query_idx == 18:
+        cmd_str = 'java -jar' + ' ' \
+                  + config.CODEGEN_FILE + ' ' \
+                  + uploaded_json_file_save_path + ' ' \
+                  + config.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + config.Q18_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + config.Q18_OUTPUT_DATA_FILE + ' ' + 'file'
+        logging.info("Q18: ")
     else:
         logging.error("query index is not supported.")
         raise Exception("query index is not supported.")
@@ -90,6 +98,8 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
         os.remove(uploaded_json_file_save_path)
 
     logging.info('codegen_log_result: ' + codegen_log_result)
+
+    # aju_app.r_send_codgen_log_and_retcode(codegen_log_result, ret.returncode)
     return codegen_log_result, ret.returncode
 
 
@@ -131,8 +141,9 @@ def clean_flink_output_files():
     from config import Q6_OUTPUT_DATA_FILE
     from config import Q3_OUTPUT_DATA_FILE
     from config import Q10_OUTPUT_DATA_FILE
+    from config import Q18_OUTPUT_DATA_FILE
 
-    output_files = [Q3_OUTPUT_DATA_FILE, Q6_OUTPUT_DATA_FILE, Q10_OUTPUT_DATA_FILE]
+    output_files = [Q3_OUTPUT_DATA_FILE, Q6_OUTPUT_DATA_FILE, Q10_OUTPUT_DATA_FILE, Q18_OUTPUT_DATA_FILE]
 
     for strfile in output_files:
         if os.path.exists(strfile):
@@ -141,27 +152,6 @@ def clean_flink_output_files():
         else:
             f = open(strfile, 'w')
             f.close()
-    #
-    # if os.path.exists(Q10_OUTPUT_DATA_FILE):
-    #     os.truncate(Q10_OUTPUT_DATA_FILE, 0)
-    #     logging.info('truncate the output data file : ' + Q10_OUTPUT_DATA_FILE)
-    # else:
-    #     f = open(Q10_OUTPUT_DATA_FILE, 'w')
-    #     f.close()
-    #
-    # if os.path.exists(Q6_OUTPUT_DATA_FILE):
-    #     os.truncate(Q6_OUTPUT_DATA_FILE, 0)
-    #     logging.info('truncate the output data file : ' + Q6_OUTPUT_DATA_FILE)
-    # else:
-    #     f = open(Q6_OUTPUT_DATA_FILE, 'w')
-    #     f.close()
-    #
-    # if os.path.exists(Q3_OUTPUT_DATA_FILE):
-    #     os.truncate(Q3_OUTPUT_DATA_FILE, 0)
-    #     logging.info('truncate the output data file : ' + Q3_OUTPUT_DATA_FILE)
-    # else:
-    #     f = open(Q3_OUTPUT_DATA_FILE, 'w')
-    #     f.close()
 
 
 def r_run_flink_task(filename, query_idx):
