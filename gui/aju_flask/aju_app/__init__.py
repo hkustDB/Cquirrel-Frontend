@@ -387,7 +387,7 @@ def r_send_query_result_data_file_q6(filepath):
 
 
 def r_send_query_result_data_file_q3(filepath):
-    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.08
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
     socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
 
     # tmp set
