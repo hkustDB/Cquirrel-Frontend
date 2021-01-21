@@ -117,6 +117,22 @@ def is_flink_cluster_running():
             return False
 
 
+def kill_5001_port():
+    ret = subprocess.run("lsof -i tcp:5001", shell=True, capture_output=True)
+    content = str(ret.stdout, 'utf-8')
+    if not content:
+        print("5001 port is available.")
+        return
+    try:
+        port_pid_str = content.splitlines()[1].split(' ')[1]
+    except IndexError:
+        print("can not find the pid of port 5001.")
+        return
+    ret = subprocess.run("kill " + port_pid_str, shell=True, capture_output=True)
+    if ret.returncode == 0:
+        print("kill 5001 successfully.")
+
+
 def get_query_idx(filename):
     if filename.split('.')[1] == "json":
         query = filename.split('.')[0]
@@ -154,7 +170,7 @@ def clean_flink_output_files():
             f.close()
 
 
-def r_run_flink_task(filename, query_idx):
+def r_run_flink_task(filename, query_idx, queue):
     from config import REMOTE_FLINK
     from config import REMOTE_FLINK_URL
 
@@ -183,5 +199,6 @@ def r_run_flink_task(filename, query_idx):
     logging.info('flink jobs return: ' + result)
 
     aju_app.r_set_step_to(4)
-    aju_app.r_send_query_result_data_to_client(query_idx)
+    aju_app.r_send_query_result_data_from_socket_q3(queue)
+    # aju_app.r_send_query_result_data_to_client(query_idx)
     return ret
