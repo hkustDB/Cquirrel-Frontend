@@ -158,9 +158,11 @@ class MainClassWriter implements ClassWriter {
             writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
             writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         } else if (size == 2) {
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
             writer.writeln(".map(x => Payload(\"Aggregate\", \"Addition\", x._3, x._4, x._5, x._6))");
             writer.writeln(".keyBy(i => i._3)");
             writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(1).getName()) + "())");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
         } else {
             throw new RuntimeException("Currently only 1 or 2 aggregate process functions are supported");
         }
