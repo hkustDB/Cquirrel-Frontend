@@ -15,7 +15,7 @@
     ],
     "RelationProcessFunction": [
       {
-        "name": "Q10lineitem",
+        "name": "Q10Lineitem",
         "relation": "lineitem",
         "this_key": [
           "orderkey" 
@@ -40,7 +40,7 @@
               "left_field": {
                 "type": "attribute",
                 "relation": "lineitem",
-                "name": "returnflag"
+                "name": "l_returnflag"
               },
               "right_field": {
                 "type": "constant",
@@ -72,7 +72,7 @@
               "left_field": {
                 "type": "attribute",
                 "relation": "orders",
-                "name": "orderdate"
+                "name": "o_orderdate"
               },
               "right_field": {
                 "type": "constant",
@@ -85,7 +85,7 @@
                 "left_field": {
                   "type": "attribute",
                   "relation": "orders",
-                  "name": "orderdate"
+                  "name": "o_orderdate"
                 },
                 "right_field": {
                   "type": "constant",
@@ -101,7 +101,7 @@
         "name": "Q10Customer",
         "relation": "customer",
         "this_key": [
-          "custkey"
+          "nationkey"
         ],
         "next_key": [
           "custkey"
@@ -158,7 +158,7 @@
               {
                 "type": "attribute",
                 "relation": "lineitem",
-                "name": "extendedprice"
+                "name": "l_extendedprice"
               },
               {
                 "type": "expression",
@@ -172,7 +172,7 @@
                   {
                     "type": "attribute",
                     "relation": "lineitem",
-                    "name": "discount"
+                    "name": "l_discount"
                   }
                 ]
               }

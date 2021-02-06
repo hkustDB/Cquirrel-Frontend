@@ -4,7 +4,7 @@ import org.hkust.RelationType.Payload
 import java.util.Date
 class Q3CustomerProcessFunction extends RelationFKProcessFunction[Any]("customer",Array("CUSTKEY"),Array("CUSTKEY"),false) {
 override def isValid(value: Payload): Boolean = {
-   if(value("MKTSEGMENT").asInstanceOf[String]=="BUILDING"){
+   if(value("C_MKTSEGMENT").asInstanceOf[String]=="BUILDING"){
    true}else{
    false}
 }

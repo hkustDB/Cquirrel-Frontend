@@ -22,11 +22,12 @@ public class RelationProcessFunction extends ProcessFunction {
     private final boolean isLast;
     @Nullable
     private final Map<String, String> renaming;
+    @Nullable
     private final List<SelectCondition> selectConditions;
 
-    public RelationProcessFunction(String name, String relationName, List<String> thisKey, List<String> nextKey, int childNodes,
-                                   boolean isRoot, boolean isLast, Map<String, String> renaming,
-                                   List<SelectCondition> selectConditions) {
+    public RelationProcessFunction(String name, String relationName, List<String> thisKey, @Nullable List<String> nextKey, int childNodes,
+                                   boolean isRoot, boolean isLast, @Nullable Map<String, String> renaming,
+                                   @Nullable List<SelectCondition> selectConditions) {
         super(name, thisKey, nextKey);
         this.name = name;
         this.thisKey = thisKey;
@@ -40,28 +41,34 @@ public class RelationProcessFunction extends ProcessFunction {
         this.isLast = isLast;
         CheckerUtils.validateNonNullNonEmpty((Collection) renaming, "renaming");
         this.renaming = renaming;
-        CheckerUtils.checkNullOrEmpty(selectConditions, "selectConditions");
         this.selectConditions = selectConditions;
     }
 
+    //Used for getStream in main
     @Override
     public Set<Attribute> getAttributeSet(RelationSchema schema) {
         Set<Attribute> result = new HashSet<>(schema.getSchema(relation).getPrimaryKey());
-        selectConditions.forEach(selectCondition -> {
-            selectCondition.getExpression().getValues().forEach(value -> {
-                addIfAttributeValue(result, value, schema);
-            });
-        });
-
-        if (thisKey != null) {
-            thisKey.forEach(key -> {
-                result.add(schema.getColumnAttribute(relation, key));
+        if (selectConditions != null) {
+            selectConditions.forEach(selectCondition -> {
+                selectCondition.getExpression().getValues().forEach(value -> {
+                    addIfAttributeValue(result, value, schema);
+                });
             });
         }
 
+        //this_key contains elements from this relation only
+        if (thisKey != null) {
+            thisKey.forEach(key -> {
+                result.add(schema.getColumnAttributeByRawName(relation, key));
+            });
+        }
+
+        //next_key can contain elements from other relations --> skip them
         if (nextKey != null) {
             nextKey.forEach(key -> {
-                result.add(schema.getColumnAttribute(relation, key));
+                Attribute attribute = schema.getColumnAttributeByRawName(relation, key);
+                if (attribute != null)
+                    result.add(attribute);
             });
         }
 
