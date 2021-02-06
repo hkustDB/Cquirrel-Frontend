@@ -148,7 +148,8 @@ class MainClassWriter implements ClassWriter {
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
         linkAggregateProcessFunctions(writer);
-        writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
+        writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema())");
+        writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
     }
 
