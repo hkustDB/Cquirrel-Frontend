@@ -92,7 +92,7 @@ public class RelationProcessFunctionWriterTest {
 
     private void isValidFunctionTest(List<SelectCondition> selectConditions, final String expectedCode, Attribute mockAttribute) throws Exception {
         PicoWriter picoWriter = new PicoWriter();
-        when(schema.getColumnAttribute(any(), any())).thenReturn(mockAttribute);
+        when(schema.getColumnAttributeByRawName(any(), any())).thenReturn(mockAttribute);
         getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
         assertEquals(picoWriter.toString().replaceAll("\\s+", ""), expectedCode);
     }
