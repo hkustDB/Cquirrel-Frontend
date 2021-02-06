@@ -199,6 +199,6 @@ def r_run_flink_task(filename, query_idx, queue):
     logging.info('flink jobs return: ' + result)
 
     aju_app.r_set_step_to(4)
-    aju_app.r_send_query_result_data_from_socket_q3(queue)
+    aju_app.r_send_query_result_data_from_socket(queue)
     # aju_app.r_send_query_result_data_to_client(query_idx)
     return ret

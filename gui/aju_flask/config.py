@@ -28,7 +28,9 @@ Q18_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/input_data
 Q18_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'aju_app/resources/output_data_q18.csv')
 
 # Top N Value Setting
-TopNValue = 5
+TopNValue = 10
+DefaultAggregateName = "revenue"
+
 
 class BaseConfig:
     pass
