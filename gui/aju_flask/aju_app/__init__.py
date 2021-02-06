@@ -327,13 +327,11 @@ def background_send_kafka_data_thread_real():
 
 def r_send_codgen_log_and_retcode(codegen_log, retcode):
     logging.info("r_send_codgen_log_and_retcode: ")
-    # socketio.emit('r_codegen_log', {"codegen_log": codegen_log, "retcode": retcode}, namespace='/ws')
     socketio.start_background_task(target=_send_codgen_log_and_retcode, codegen_log=codegen_log, retcode=retcode)
 
 
 def _send_codgen_log_and_retcode(codegen_log, retcode):
     logging.info("_send_codgen_log_and_retcode: ")
-    # socketio.sleep(0.001)
     if retcode == 0:
         socketio.emit('r_set_step', {"step": 3}, namespace='/ws')
     else:
@@ -342,13 +340,11 @@ def _send_codgen_log_and_retcode(codegen_log, retcode):
 
 
 def r_set_step_to(n):
-    # socketio.emit('r_set_step', {"step": n}, namespace='/ws')
     print("r_set_step_to: ", n)
     socketio.start_background_task(target=_set_step_to, n=n)
 
 
 def _set_step_to(n):
-    # socketio.sleep(0.001)
     print("_set_step_to: ", n)
     socketio.emit('r_set_step', {"step": n}, namespace='/ws')
 
@@ -368,16 +364,12 @@ def r_send_query_result_data_to_client(query_idx):
     global send_data_control
     send_data_control = "send"
     if query_idx == 3:
-        # logging.info("sending query " + str(query_idx) + " result data to client...")
         r_send_query_result_data_file_q3(Q3_OUTPUT_DATA_FILE)
     elif query_idx == 6:
-        # logging.info("sending query " + str(query_idx) + " result data to client...")
         r_send_query_result_data_file_q6(Q6_OUTPUT_DATA_FILE)
     elif query_idx == 10:
-        # logging.info("sending query " + str(query_idx) + " result data to client...")
         r_send_query_result_data_file_q10(Q10_OUTPUT_DATA_FILE)
     elif query_idx == 18:
-        # logging.info("sending query " + str(query_idx) + " result data to client...")
         r_send_query_result_data_file_q18(Q18_OUTPUT_DATA_FILE)
     else:
         logging.error("query " + str(query_idx) + " does not support for now.")
@@ -704,110 +696,6 @@ def r_send_query_result_data_file_q18(filepath):
             else:
                 r_set_step_to(5)
                 break
-
-
-def r_send_query_result_data_from_socket_q3(queue):
-    print("r_send_query_result_data_from_socket_q3: ")
-    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
-    socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
-
-    # tmp set
-    line_list_len = 9
-    aggregate_name_idx = 7
-
-    x_timestamp_idx = line_list_len - 1
-    y_value_idx = int((aggregate_name_idx - 1) / 2)
-    attribute_length = int((line_list_len - 1) / 2)
-
-    total_data = {}
-    x_timestamp = []
-    max_record = {}
-
-    global stop_send_data_thread_flag
-    global send_data_control
-    stop_send_data_thread_flag = False
-    while True:
-        # print("r_send_query_result_data_from_socket_q3: stop_send_data_thread_flag, send_data_control: ",
-        #       stop_send_data_thread_flag, send_data_control)
-        if send_data_control == "pause":
-            while True:
-                if send_data_control == "send":
-                    break
-                if stop_send_data_thread_flag:
-                    break
-                socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
-        if stop_send_data_thread_flag:
-            break
-        # print("r_send_query_result_data_from_socket_q3: stop_send_data_thread_flag, send_data_control: ",
-        #       stop_send_data_thread_flag, send_data_control)
-        socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
-
-        print(queue)
-        line = queue.get()
-        print("r_send_query_result_data_from_socket_q3: line: ", line)
-        if line:
-            line_list = line.strip().lstrip('(').rstrip(')').split(',')
-            for i in range(len(line_list)):
-                line_list[i] = line_list[i].strip()
-
-            #
-            # top 5 query according to revenue
-            #
-            # N = 5
-            # N = TopNValue
-            N = 10
-
-            # get current key_tag
-            key_tag = ""
-            for i in range(attribute_length):
-                if i == y_value_idx:
-                    continue
-                key_tag = key_tag + line_list[attribute_length + i] + ":" + line_list[i] + ","
-            key_tag = key_tag[: (len(key_tag) - 1)]
-
-            # add the new value into total_data
-            if key_tag not in total_data:
-                # if total_data is not null, in each key, add the last value
-                if len(total_data) != 0:
-                    # add other key_tag
-                    for key in total_data:
-                        tmpValue = total_data.get(key)
-                        total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
-                # add the new key_tag
-                total_data[key_tag] = []
-                for i in range(len(x_timestamp)):
-                    total_data[key_tag].append(0.0)
-                total_data[key_tag].append(float(line_list[y_value_idx]))
-            else:
-                for key in total_data:
-                    tmpValue = total_data.get(key)
-                    total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
-                total_data[key_tag].pop(len(total_data[key_tag]) - 1)
-                total_data[key_tag].append(float(line_list[y_value_idx]))
-
-            # add timestamp
-            x_timestamp.append(line_list[x_timestamp_idx])
-            # update the max condition
-            # max_record[key_tag] = max(total_data[key_tag])
-            for key in total_data:
-                max_record[key] = (total_data[key])[-1]
-
-            # get top N key_tag
-            topN = sorted(max_record.items(), key=lambda item: item[1], reverse=True)
-            topN = topN[:N]
-            top_value_data = {}
-            for k, v in topN:
-                top_value_data[k] = total_data[k]
-
-            logging.info("send: " + str(line_list))
-            socketio.emit('r_figure_data',
-                          {'queryNum': 3,
-                           'data': line_list,
-                           'x_timestamp': x_timestamp,
-                           "top_value_data": top_value_data}, namespace='/ws')
-        else:
-            r_set_step_to(5)
-            break
 
 
 def r_send_query_result_data_from_socket(queue):
