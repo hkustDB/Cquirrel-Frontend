@@ -6,12 +6,12 @@ import java.util.Objects;
 
 public class ConstantValue implements Value {
     private final String value;
-    private final Class type;
+    private final Class<?> type;
     public String getValue() {
         return value;
     }
 
-    public Class getType() {
+    public Class<?> getType() {
         return type;
     }
 
@@ -20,7 +20,7 @@ public class ConstantValue implements Value {
         CheckerUtils.checkNullOrEmpty(type, "type");
 
         String typeLower = type.toLowerCase();
-        Class clss = Type.getClass(typeLower);
+        Class<?> clss = Type.getClass(typeLower);
         if (clss == null) {
             throw new RuntimeException("Unknown data type: " + type);
         }

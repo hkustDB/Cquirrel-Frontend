@@ -36,7 +36,8 @@ public class JsonParser {
         rpfList.forEach(rpf -> {
             Map<String, Object> scMap = (Map<String, Object>) rpf.get("select_conditions");
             List<Expression> scExpressions = makeSelectConditionsExpressions((List<Map<String, Object>>) scMap.get("values"));
-            List<SelectCondition> selectConditions = makeSelectConditions(scMap, scExpressions);
+            String operator = (String) scMap.get("operator");
+            List<SelectCondition> selectConditions = makeSelectConditions(operator == null ? null : Operator.getOperator(operator), scExpressions);
             result.add(makeRelationProcessFunction(rpf, selectConditions));
         });
 
@@ -76,7 +77,7 @@ public class JsonParser {
         List<AggregateProcessFunction> result = new ArrayList<>();
         apfList.forEach(apf -> {
             List<Map<String, Object>> agMap = (List<Map<String, Object>>) apf.get("AggregateValue");
-            List<AggregateProcessFunction.AggregateValue> aggregateValues = makeAggregateValues(agMap);
+            List<AggregateValue> aggregateValues = makeAggregateValues(agMap);
             result.add(makeAggregateProcessFunction(apf, aggregateValues));
         });
 
@@ -85,8 +86,8 @@ public class JsonParser {
 
 
     @VisibleForTesting
-    static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateProcessFunction.AggregateValue> aggregateValues) {
-
+    static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateValue> aggregateValues) {
+        List<SelectCondition> outputSelectConditions = getOutputSelectConditions(apfMap);
         return new AggregateProcessFunction(
                 (String) apfMap.get("name"),
                 (List<String>) apfMap.get("this_key"),
@@ -94,37 +95,57 @@ public class JsonParser {
                 //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
                 aggregateValues,
                 Operator.getOperator((String) apfMap.get("aggregation")),
-                Type.getClass((String) apfMap.get("value_type"))
-        );
+                Type.getClass((String) apfMap.get("value_type")),
+                outputSelectConditions);
     }
 
-    private static List<AggregateProcessFunction.AggregateValue> makeAggregateValues(List<Map<String, Object>> aggregateValues) {
-        List<AggregateProcessFunction.AggregateValue> result = new ArrayList<>();
+    @Nullable
+    private static List<SelectCondition> getOutputSelectConditions(Map<String, Object> apfMap) {
+        Map<String, Object> outputSelectConditionMap = (Map<String, Object>) apfMap.get("OutputSelectCondition");
+        List<SelectCondition> outputSelectConditions = null;
+        if (outputSelectConditionMap != null) {
+            List<Map<String, Object>> values = (List<Map<String, Object>>) outputSelectConditionMap.get("values");
+            List<Expression> expressions = makeSelectConditionsExpressions(values);
+            outputSelectConditions = makeSelectConditions(null, expressions);
+        }
+        return outputSelectConditions;
+    }
+
+    private static List<AggregateValue> makeAggregateValues(List<Map<String, Object>> aggregateValues) {
+        List<AggregateValue> result = new ArrayList<>();
         for (Map<String, Object> aggValue : aggregateValues) {
-            Expression agExpression = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
-            result.add(makeAggregateValue(aggValue, agExpression));
+            String type = (String) aggValue.get("type");
+            Value agv;
+            if (type.equals("expression")) {
+                agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
+            } else if (type.equals("attribute")) {
+                agv = new AttributeValue(Relation.getRelation((String) aggValue.get("relation")), (String) aggValue.get("value"));
+            } else if (type.equals("constant")) {
+                agv = new ConstantValue( (String) aggValue.get("value"), (String) aggValue.get("var_type"));
+            } else {
+                throw new IllegalArgumentException("Unsupported type of aggregate value");
+            }
+            result.add(makeAggregateValue(aggValue, agv));
         }
 
         return result;
     }
 
     @VisibleForTesting
-    static AggregateProcessFunction.AggregateValue makeAggregateValue(Map<String, Object> avMap, Expression expression) {
+    static AggregateValue makeAggregateValue(Map<String, Object> avMap, Value value) {
         String type = (String) avMap.get("type");
-        if (!"expression".equals(type)) {
-            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression type. Got: " + type);
+        /*if (!("expression".equals(type) || "attribute".equals(type) || "constant".equals(type))) {
+            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression, attribute and constant type. Got: " + type);
 
-        }
+        }*/
         String aggregateName = (String) avMap.get("name");
-        return new AggregateProcessFunction.AggregateValue(aggregateName, type, expression);
+        return new AggregateValue(aggregateName, type, value);
     }
 
     @VisibleForTesting
-    static List<SelectCondition> makeSelectConditions(Map<String, Object> scMap, List<Expression> expressions) {
-        if(scMap == null || scMap.isEmpty()) return null;
+    static List<SelectCondition> makeSelectConditions(Operator nextOperator, List<Expression> expressions) {
+        if (expressions == null) return null;
         List<SelectCondition> selectConditions = new ArrayList<>();
-        //TODO: this will throw nullptr exception if there is only 1 select condition, this operator will not be needed
-        Operator nextOperator = Operator.getOperator((String) scMap.get("operator"));
         for (Expression expression : expressions) {
             SelectCondition sc = new SelectCondition(expression, nextOperator);
             selectConditions.add(sc);
@@ -136,7 +157,7 @@ public class JsonParser {
     @VisibleForTesting
     @Nullable
     static List<Expression> makeSelectConditionsExpressions(List<Map<String, Object>> values) {
-        if(values == null || values.isEmpty()) return null;
+        if (values == null || values.isEmpty()) return null;
 
         List<Expression> expressions = new ArrayList<>();
         for (Map<String, Object> value : values) {
@@ -150,13 +171,13 @@ public class JsonParser {
     }
 
     @VisibleForTesting
-    static Expression makeAggregateValueExpression(List<Map<String, Object>> valuesList, String operator) {
+    static Value makeAggregateValueExpression(List<Map<String, Object>> valuesList, String operator) {
         List<Value> values = new ArrayList<>();
         for (Map<String, Object> value : valuesList) {
             values.add(makeValue(value));
         }
 
-        return new Expression(values, Operator.getOperator(operator));
+        return new Expression(values, Operator.getOperator(operator.toLowerCase()));
     }
 
 
@@ -171,6 +192,8 @@ public class JsonParser {
             value = new ConstantValue(field.get("value").toString(), (String) field.get("var_type"));
         } else if (type.equals("expression")) {
             return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
+        } else if (type.equals("aggregate_attribute")) {
+            return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")), Type.getClass((String) field.get("store_type")));
         } else {
             throw new RuntimeException("Unknown field type " + type);
         }

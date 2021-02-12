@@ -1,6 +1,8 @@
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -51,17 +53,22 @@ public class GenerateCodeTest {
     @Test
     public void generateCodeForEachQuery() throws Exception {
         for (int queryIdx : queryArrayList) {
-            try {
-                generateCodeUsingMainFunction(queryIdx);
-                copyGeneratedCodeToQueryFolder(queryIdx);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            } finally {
-                removeEveryGeneratedCodeFolder();
-            }
+            generateCodeForGivenQuery(queryIdx);
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({"4"})
+    public void generateCodeForGivenQuery(int queryIdx) throws Exception {
+        try {
+            generateCodeUsingMainFunction(queryIdx);
+            copyGeneratedCodeToQueryFolder(queryIdx);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            removeEveryGeneratedCodeFolder();
+        }
+    }
 
     private static File getQueryFolderFile(int queryIdx) throws FileNotFoundException {
         File queryFolderFile = new File(RESOURCE_FOLDER + separator + QUERY_FOLDER_PREFIX + queryIdx);

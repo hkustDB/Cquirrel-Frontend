@@ -4,7 +4,8 @@ public enum Relation {
     LINEITEM("lineitem"),
     ORDERS("orders"),
     CUSTOMER("customer"),
-    NATION("nation");
+    NATION("nation"),
+    PART("part");
 
     private String relation;
 

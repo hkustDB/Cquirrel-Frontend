@@ -2,6 +2,7 @@ package org.hkust.codegenerator;
 
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.AggregateValue;
 import org.hkust.objects.AttributeValue;
 import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
@@ -76,7 +77,7 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addInitStateFunction(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""),("override def initstate(): Unit = {\n" +
+        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("override def initstate(): Unit = {\n" +
                 "   val valueDescriptor = TypeInformation.of(new TypeHint[Integer](){})\n" +
                 "   val aliveDescriptor : ValueStateDescriptor[Integer] = new ValueStateDescriptor[Integer](\"ClassNameProcessFunction\"+\"Alive\", valueDescriptor)\n" +
                 "   alive = getRuntimeContext.getState(aliveDescriptor)\n" +
@@ -87,8 +88,7 @@ public class AggregateProcessFunctionWriterTest {
     private AggregateProcessFunctionWriter getAggregateProcessFunctionWriter(Class<?> aggregateType) {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
         when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
-        AggregateProcessFunction.AggregateValue aggregateValue = new AggregateProcessFunction
-                .AggregateValue("aggregateName", "expression", new AttributeValue(Relation.LINEITEM, "attributeValue"));
+        AggregateValue aggregateValue = new AggregateValue("aggregateName", "expression", new AttributeValue(Relation.LINEITEM, "attributeValue"));
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
         return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }

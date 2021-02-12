@@ -40,19 +40,19 @@ object Job {
          case "+LI" =>
          action = "Insert"
          relation = "lineitem"
-         val i = Tuple6(cells(4).toDouble,cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
+         val i = Tuple6(cells(4).toDouble,format.parse(cells(10)),cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("L_QUANTITY","L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
+         Array[String]("L_QUANTITY","L_SHIPDATE","LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_DISCOUNT"), cnt))
          case "-LI" =>
          action = "Delete"
          relation = "lineitem"
-         val i = Tuple6(cells(4).toDouble,cells(5).toDouble,cells(3).toInt,cells(6).toDouble,cells(0).toLong,format.parse(cells(10)))
+         val i = Tuple6(cells(4).toDouble,format.parse(cells(10)),cells(3).toInt,cells(0).toLong,cells(5).toDouble,cells(6).toDouble)
          cnt = cnt + 1
          ctx.output(lineitemTag, Payload(relation, action, Tuple2( cells(0).toLong, cells(3).toInt).asInstanceOf[Any],
          Array[Any](i._1,i._2,i._3,i._4,i._5,i._6),
-         Array[String]("L_QUANTITY","L_EXTENDEDPRICE","LINENUMBER","L_DISCOUNT","ORDERKEY","L_SHIPDATE"), cnt))
+         Array[String]("L_QUANTITY","L_SHIPDATE","LINENUMBER","ORDERKEY","L_EXTENDEDPRICE","L_DISCOUNT"), cnt))
          case _ =>
          out.collect(Payload("", "", 0, Array(), Array(), 0))
          }

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
+import static org.hkust.objects.Type.getStringConversionMethod;
 
 class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
@@ -27,14 +28,7 @@ class MainClassWriter implements ClassWriter {
     private final RelationSchema schema;
     private final Map<Relation, String> tagNames;
     private final Map<String, String> ACTIONS = ImmutableMap.of("Insert", "+", "Delete", "-");
-    private static final Map<Class<?>, String> stringConversionMethods = new HashMap<>();
 
-    static {
-        stringConversionMethods.put(Integer.class, "toInt");
-        stringConversionMethods.put(Double.class, "toDouble");
-        stringConversionMethods.put(Long.class, "toLong");
-        stringConversionMethods.put(Date.class, "format.parse");
-    }
 
     MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath) {
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
@@ -74,6 +68,7 @@ class MainClassWriter implements ClassWriter {
         writer.writeln("import org.hkust.RelationType.Payload");
         writer.writeln("import org.apache.flink.streaming.api.functions.ProcessFunction");
         writer.writeln("import org.apache.flink.util.Collector");
+        writer.writeln("import org.apache.flink.api.common.serialization.SimpleStringSchema");
     }
 
     @Override
@@ -120,9 +115,9 @@ class MainClassWriter implements ClassWriter {
         RelationProcessFunction parent = getRelation(joinStructure.get(relation));
         if (parent == null) {
             writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
-            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + ")");
-            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
-            writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
+            linkAggregateProcessFunctions(writer);
+            writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema())");
+            writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
             writer.writeln(".setParallelism(1)");
             return;
         }
@@ -152,10 +147,25 @@ class MainClassWriter implements ClassWriter {
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
-        writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
-        writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        linkAggregateProcessFunctions(writer);
         writer.writeln(".writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
         writer.writeln(".setParallelism(1)");
+    }
+
+    private void linkAggregateProcessFunctions(final PicoWriter writer) {
+        int size = aggregateProcessFunctions.size();
+        if (size == 1) {
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        } else if (size == 2) {
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
+            writer.writeln(".map(x => Payload(\"Aggregate\", \"Addition\", x._3, x._4, x._5, x._6))");
+            writer.writeln(".keyBy(i => i._3)");
+            writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(1).getName()) + "())");
+            writer.writeln(".map(x => (x._4.mkString(\", \"), x._5.mkString(\", \"), x._6))");
+        } else {
+            throw new RuntimeException("Currently only 1 or 2 aggregate process functions are supported");
+        }
     }
 
     @Nullable
@@ -225,7 +235,7 @@ class MainClassWriter implements ClassWriter {
             String thisKey = thisKeyAttributes.get(0);
             Attribute keyAttribute = schema.getColumnAttributeByRawName(rpf.getRelation(), thisKey);
             requireNonNull(keyAttribute);
-            return "cells(" + keyAttribute.getPosition() + ")." + stringConversionMethods.get(keyAttribute.getType()) + ".asInstanceOf[Any],";
+            return "cells(" + keyAttribute.getPosition() + ")." + getStringConversionMethod(keyAttribute.getType()) + ".asInstanceOf[Any],";
         } else if (rpfThisKeySize == 2) {
             String thisKey1 = thisKeyAttributes.get(0);
             String thisKey2 = thisKeyAttributes.get(1);
@@ -233,8 +243,8 @@ class MainClassWriter implements ClassWriter {
             requireNonNull(keyAttribute1);
             Attribute keyAttribute2 = schema.getColumnAttributeByRawName(rpf.getRelation(), thisKey2);
             requireNonNull(keyAttribute2);
-            return "Tuple2( cells(" + keyAttribute1.getPosition() + ")." + stringConversionMethods.get(keyAttribute1.getType()) +
-                    ", cells(" + keyAttribute2.getPosition() + ")." + stringConversionMethods.get(keyAttribute2.getType()) + ").asInstanceOf[Any],";
+            return "Tuple2( cells(" + keyAttribute1.getPosition() + ")." + getStringConversionMethod(keyAttribute1.getType()) +
+                    ", cells(" + keyAttribute2.getPosition() + ")." + getStringConversionMethod(keyAttribute2.getType()) + ").asInstanceOf[Any],";
         } else {
             throw new RuntimeException("Expecting 1 or 2 thisKey values got: " + rpfThisKeySize);
         }
@@ -293,7 +303,7 @@ class MainClassWriter implements ClassWriter {
 
             columnNamesCode.append("\"").append(attribute.getName().toUpperCase()).append("\"");
             Class<?> type = attribute.getType();
-            String conversionMethod = stringConversionMethods.get(type);
+            String conversionMethod = getStringConversionMethod(type);
             int position = attribute.getPosition();
             if (!type.equals(Date.class)) {
                 tupleCode.append("cells(").append(position).append(")").append(conversionMethod == null ? "" : "." + conversionMethod);
