@@ -7,12 +7,12 @@ The code is divided in to the following packages:
 * codegenerator: this is where the actual generation happens.
 Below is the structure:
 
-![codegenerator_class_diagram](/readme_resources/codegenerator_class_diagram.png)
+![codegenerator_class_diagram](readme_resources/codegenerator_class_diagram.png)
 * jsonutils: This is where the parsing of the input json happens and returns a Node object.
 * objects: These are the domain objects. Most of these objects are made as a result of parsing the input json file. The most important object is Node, an instance of it represents a query and it has these object: List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions and Map<Relation, Relation> joinStructure.
 Below is the class diagram for this package:
 
-![objects_class_diagram](/readme_resources/objects_class_diagram.png)
+![objects_class_diagram](readme_resources/objects_class_diagram.png)
 
 * schema
 This package describes the TPCH schema. The most important class is the RelationSchema class as it makes the actual relations used in the supported relations.
@@ -31,7 +31,11 @@ There is a total of 5 compulsory arguments, which are, in order:
 1. The I/O type of the generated code, there are 2 options: "file" and "kafka"
 
 ## Contributing
-The master branch is protected and pushing to it is not possible. In order to contribute discuss with the team the new idea and make a corresponding jira story ticket with the proper description, then make a branch with the same jira id and raise a pull request and ask Qichen to review and merge it. Testing evidence must be provided for the branch to be merged.
+The master branch is protected and pushing to it is not possible. In order to contribute discuss with the team the new idea and make a corresponding jira story ticket with the proper description, then make a branch with the same jira id (e.g. GCG-XX) and raise a pull request and ask Qichen to review and merge it. Testing evidence must be provided for the branch to be merged.
+
+Make sure to follow basic software engineering practices e.g. SOLID principles, design patterns where possible (builder design pattern is used in more than one place already e.g. in Schema.java), avoid repetition and magic constants etc. and always have meaningful commit messages and always start a commit message with the jira ticket number e.g. GCG-XX. These practices pay off in the long run.
+
+
 
 
 
