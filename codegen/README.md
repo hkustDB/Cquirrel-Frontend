@@ -65,6 +65,7 @@ The following are the fields:
     * operator: this is the operator that binds each of the left and right values
 
 Here is an example:
+
 ![rpf](readme_resources/rpf.PNG)
 
 #### AggregateProcessFunction
