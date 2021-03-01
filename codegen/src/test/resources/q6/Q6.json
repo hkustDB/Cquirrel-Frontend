@@ -88,7 +88,7 @@
     {
       "name": "Q6Aggregate",
       "this_key": null,
-      "next_key": null,
+      "output_key": null,
       "AggregateValue": [
         {
           "name": "revenue",

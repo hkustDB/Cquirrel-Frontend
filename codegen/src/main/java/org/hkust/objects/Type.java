@@ -25,8 +25,22 @@ public class Type {
         types = ImmutableMap.copyOf(typesTemp);
     }
 
+    private static final Map<Class<?>, String> stringConversionMethods = new HashMap<>();
+
+    static {
+        stringConversionMethods.put(Integer.class, "toInt");
+        stringConversionMethods.put(Double.class, "toDouble");
+        stringConversionMethods.put(Long.class, "toLong");
+        stringConversionMethods.put(Date.class, "format.parse");
+    }
+
     @Nullable
-    public static Class getClass(final String className) {
+    public static String getStringConversionMethod(Class<?> clss) {
+        return stringConversionMethods.get(clss);
+    }
+
+    @Nullable
+    public static Class<?> getClass(final String className) {
         CheckerUtils.checkNullOrEmpty(className, "className");
         String typeLower = className.toLowerCase();
         return types.get(typeLower);

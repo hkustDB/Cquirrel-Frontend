@@ -32,7 +32,7 @@ public class Expression implements Value {
         } else if (numOfValues == 1 && operator != Operator.NOT) {
             throw new IllegalArgumentException("Expression with 1 value can only have ! as the operator");
         } else if (numOfValues > 2) {
-            if (operator != Operator.AND && operator != Operator.OR) {
+            if (operator != Operator.AND && operator != Operator.OR && operator != Operator.CASE) {
                 throw new IllegalArgumentException("Expression with more than 2 values can only have && or || as the operator");
             }
         }

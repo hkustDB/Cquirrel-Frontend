@@ -16,6 +16,7 @@ public final class RelationSchema {
     public final Schema orders;
     public final Schema customer;
     public final Schema nation;
+    public final Schema part;
 
     private final Map<Relation, Schema> SCHEMAS;
 
@@ -99,6 +100,24 @@ public final class RelationSchema {
                 .withPrimaryKey(singletonList(nationPrimaryKey))
                 .withRelationName(NATION)
                 .withColumnPrefix("n_")
+                .build();
+
+        Attribute partPrimaryKey = new Attribute(Type.getClass("long"), 0, "partkey");
+        part = Schema.builder().
+                withAttributes(new HashMap<String, Attribute>() {{
+                    put("partkey", partPrimaryKey);
+                    put("p_name", new Attribute(Type.getClass("string"), 1, "p_name"));
+                    put("p_mfgr", new Attribute(Type.getClass("string"), 2, "p_mfgr"));
+                    put("p_brand", new Attribute(Type.getClass("string"), 3, "p_brand"));
+                    put("p_type", new Attribute(Type.getClass("string"), 4, "p_type"));
+                    put("p_size", new Attribute(Type.getClass("string"), 5, "p_size"));
+                    put("p_container", new Attribute(Type.getClass("string"), 6, "p_container"));
+                    put("p_retailprice", new Attribute(Type.getClass("string"), 7, "p_retailprice"));
+                    put("p_comment", new Attribute(Type.getClass("string"), 8, "p_comment"));
+                }})
+                .withPrimaryKey(singletonList(partPrimaryKey))
+                .withRelationName(PART)
+                .withColumnPrefix("p_")
                 .build();
 
         SCHEMAS = ImmutableMap.of(LINEITEM, lineitem, ORDERS, orders, CUSTOMER, customer, NATION, nation);

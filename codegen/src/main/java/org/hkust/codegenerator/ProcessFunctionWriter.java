@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.hkust.objects.Type.getStringConversionMethod;
 
 abstract class ProcessFunctionWriter implements ClassWriter {
     private final RelationSchema relationSchema;
@@ -40,9 +41,13 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         return code.toString();
     }
 
-    protected void expressionToCode(final Expression expression, StringBuilder code) throws Exception {
+    protected void expressionToCode(final Expression expression, StringBuilder code) {
         List<Value> values = expression.getValues();
         int size = values.size();
+        if (expression.getOperator().equals(Operator.CASE)) {
+            caseIfCode(expression, code);
+            return;
+        }
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
@@ -58,7 +63,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
-    protected void valueToCode(Value value, StringBuilder code) throws Exception {
+    protected void valueToCode(Value value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
         //Note: expression can have an expression as one of its values, currently it is not being handled
@@ -66,6 +71,8 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             constantValueToCode((ConstantValue) value, code);
         } else if (value instanceof AttributeValue) {
             attributeValueToCode((AttributeValue) value, code);
+        } else if (value instanceof AggregateAttributeValue) {
+            aggregationAttributeToCode((AggregateAttributeValue) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -96,6 +103,56 @@ abstract class ProcessFunctionWriter implements ClassWriter {
                 .append(".asInstanceOf[")
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
                 .append("]");
+    }
+
+    protected void aggregationAttributeToCode(AggregateAttributeValue aggregateAttributeValue, StringBuilder code) {
+        requireNonNull(code);
+        requireNonNull(aggregateAttributeValue);
+        Class<?> type = aggregateAttributeValue.getStoreType();
+        code.append("value(\"")
+                .append(aggregateAttributeValue.getName().toUpperCase())
+                .append("\")")
+                .append(".asInstanceOf[")
+                .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
+                .append("].")
+                .append(getStringConversionMethod(aggregateAttributeValue.getVarType()));
+    }
+
+    private void caseIfCode(Expression expression, StringBuilder code) {
+        if (expression.getValues().size() != 3) {
+            throw new RuntimeException("Expecting exactly 3 values with case if as operator for Expression, got: " + expression.getValues().size());
+        }
+        for (Value value : expression.getValues()) {
+            if (value instanceof Expression) {
+                Expression exp = (Expression) value;
+                if (exp.getValues().size() != 2) {
+                    throw new RuntimeException("Expecting exactly 2 values in the expression of the if condition of a case if, got: " + exp.getValues().size());
+                }
+                if (exp.getValues().get(0) instanceof Expression) {
+                    ifStatementCode(code, exp, 0, 1);
+                } else {
+                    ifStatementCode(code, exp, 1, 0);
+                }
+            } else if (value instanceof ConstantValue) {
+                ConstantValue defaultReturn = (ConstantValue) value;
+                code.append("else ");
+                constantValueToCode(defaultReturn, code);
+            } else {
+                throw new RuntimeException("Expecting only expressions and 1 constant value for case if, got: " + value);
+            }
+        }
+    }
+
+    private void ifStatementCode(StringBuilder code, Expression exp, int i, int i2) {
+        Expression exp1 = (Expression) exp.getValues().get(i);
+        code.append("if(");
+        valueToCode(exp1.getValues().get(0), code);
+        code.append(exp1.getOperator().getValue());
+        valueToCode(exp1.getValues().get(1), code);
+        code.append(")");
+        code.append(" ");
+        valueToCode(exp.getValues().get(i2), code);
+        code.append("\n");
     }
 
     protected List<String> optimizeKey(List<String> rpfNextKeys) {
