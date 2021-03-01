@@ -17,13 +17,14 @@ class CodeGen {
     private static final int IO_TYPE_INDEX = 4;
 
     public static void main(String[] args) throws Exception {
-        System.out.println("\n" +
-                "   _     __                                 _        ___           \n" +
-                "  /_\\    \\ \\  /\\ /\\            ___ ___   __| | ___  / _ \\___ _ __  \n" +
-                " //_\\\\    \\ \\/ / \\ \\  _____   / __/ _ \\ / _` |/ _ \\/ /_\\/ _ \\ '_ \\ \n" +
-                "/  _  \\/\\_/ /\\ \\_/ / |_____| | (_| (_) | (_| |  __/ /_\\\\  __/ | | |\n" +
-                "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
-                "                                                                   \n");
+//        System.out.println("\n" +
+//                "   _     __                                 _        ___           \n" +
+//                "  /_\\    \\ \\  /\\ /\\            ___ ___   __| | ___  / _ \\___ _ __  \n" +
+//                " //_\\\\    \\ \\/ / \\ \\  _____   / __/ _ \\ / _` |/ _ \\/ /_\\/ _ \\ '_ \\ \n" +
+//                "/  _  \\/\\_/ /\\ \\_/ / |_____| | (_| (_) | (_| |  __/ /_\\\\  __/ | | |\n" +
+//                "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
+//                "                                                                   \n");
+        System.out.println("\nCquirrel -- CodeGen\n");
         validateArgs(args);
         prepareEnvironment(args[GENERATED_JAR_PATH_INDEX]);
         CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_PATH_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
