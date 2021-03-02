@@ -58,11 +58,8 @@ The following are the fields:
 * is_Last: whether the relation is last in the tree or not
 * rename_attribute: whether any attributes need to be renamed in the result
 * select_conditions: these are the conditions appearing after the WHERE clause in the sql for the query being described in the json. Select conditions are represented as a map and consist of the following fields:
-    * 	operator: the operator binding multiple select conditions with each other e.g. where x = 1 AND y =2, here the operator is AND
-    *	Values: these are the values of each select condition and is a list, each value is a map and there are 2 types of values:
-    * left_field: the fields to the left of the operator, this can either be an attribute or a constant
-    * right_field: the fields to the left of the operator, this can either be an attribute or a constant
-    * operator: this is the operator that binds each of the left and right values
+    * 	operator: the operator binding multiple select conditions with each other e.g. where x = 1 AND y =2, here the operator is AND. Currently we force the operator to be AND (&&) operator, i.e., the user should rephase the select conditions into the form of Value_A AND Value_B AND Value_C AND ... .
+    *	Values: these are the values of each select condition and is a list.
 
 Here is an example:
 
@@ -73,12 +70,10 @@ This represents the aggregate process function and has the following fields:
 * name: the name of the aggregate process function class
 * this_key: the this key of the functions
 * output_key: the output key of the function
-* AggregateValue: this is the value of the aggregation and has the following fields in it:
-    * Name: name of the value
-    * Type: type of the value e.g. expression i.e. how the value is calculated
-    * Operator: the operator of the value
-    * Values: this is a list of values, each value can either be an attribute, aggregate_attribute or a constant.
-    * Aggregation: the operator of the aggregation
+* AggregateValue: a list of all aggregations that should calculate in the aggregate process function.  Each aggregation contains the following fields:
+    * Name: name of the aggregation
+    * value: a value that represents the aggregation, usually an expression like l_extendedprice*(1-l_discount), also can be a value like 1/l_quantity
+    * aggregation: the operator of the aggregation
     * Value_type: the value type of the value
 Below is an example:
 ![apf](readme_resources/apf.PNG)
@@ -88,7 +83,29 @@ The below is a list of the supported operators, these operators are used in thin
 ![ops](readme_resources/operators.png)
 
 #### Value semantics
-Values is a type-marker interface that denotes the different kinds of values in the json. There are currently 5 types of Values as shown in the objects package class diagram above.
+Values is a type-marker interface that denotes the different kinds of values in the json. 
+
+A value can be either a constant, an attribute or an expression, distinguish by the "type" field.  Here are example of values:
+{ //constant value
+  "var_type": "varchar",
+  "type": "constant",
+  "value": "BUILDING"
+}
+{ // attribute value
+  "name": "c_mktsegment",
+  "type": "attribute",
+  "relation": "customer"
+} 
+
+An expression must represent a binary operator expression, such as add, minus, AND, OR, etc.  There will be four fields to represent an expression
+*  left_field: a value that represents the left field of the expression.
+*  right_field: a value that represents the right field of the expression.  Note the left field and right field can be another expression.
+*  operator: the binary operator in the expression.
+*  type: "expression", indicates the value is a expression. 
+
+In SQL, more general operator like IN, CASE and NOT("!") is legal.  In Cquirrel, the IN expression will be expressed as multiple OR operators, and NOT("!") is currently not supported.  Users should rewrite the SQL or the json file to avoid NOT("!") operation, for example, evaluate the NOT("!") operators before writing it into the SQL. 
+
+<s>There are currently 5 types of Values as shown in the objects package class diagram above.
  
 AggregateProcessFunction values:
 The Values prepended with “Aggregate” are means for AggregateProcessFunction values, used for aggregation:
@@ -101,5 +118,5 @@ Attribute value represent a column in a table e.g. linenumber in lineitem and is
 Constant value represents a constant e.g. 10.1 which is a double type with value 10.1; and thus is described by the value itself and its data type.
 An expression is a combination of a list of values and an operator that operates on them. Depending on the number of values in that list, there are certain operators allowed, not necessarily all:
 * If the number of values is 1, then only the logical negation operator is allowed i.e. NOT(“!”).
-* If the number of values is more than 2 then the allowed operators are AND(“&&”), OR)”||”) and CASE(“case”);
-For any of the values if the inner value is described as expression, then the following list of values will go in an expression object, notice the “type” filed value is often expression in the above examples.
+* If the number of values is more than 2 then the allowed operators are AND(“&&”), OR(”||”) and CASE(“case”);
+For any of the values if the inner value is described as expression, then the following list of values will go in an expression object, notice the “type” filed value is often expression in the above examples.</s>
