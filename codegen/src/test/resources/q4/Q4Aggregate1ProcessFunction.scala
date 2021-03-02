@@ -13,5 +13,5 @@ class Q4Aggregate1ProcessFunction extends AggregateProcessFunction[Any, Integer]
       val aliveDescriptor : ValueStateDescriptor[Integer] = new ValueStateDescriptor[Integer]("Q4Aggregate1ProcessFunction"+"Alive", valueDescriptor)
       alive = getRuntimeContext.getState(aliveDescriptor)
       }
-         override val init_value: Integer = 0.0
+         override val init_value: Integer = 0
          }

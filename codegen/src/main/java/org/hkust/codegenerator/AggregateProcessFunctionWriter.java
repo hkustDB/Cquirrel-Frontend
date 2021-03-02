@@ -131,7 +131,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln("val aliveDescriptor : ValueStateDescriptor[" + aggregateType + "] = new ValueStateDescriptor[" + aggregateType + "](\"" + className + "\"+\"Alive\", valueDescriptor)");
         writer.writeln("alive = getRuntimeContext.getState(aliveDescriptor)");
         writer.writeln_r("}");
-        //TODO: later substitute with default value for the class in question. May need to have a map for this as some don't have a default constructor e.g. Double
-        writer.writeln("override val init_value: " + aggregateType + " = 0.0");
+        Class<?> type = Type.getClass(aggregateType);
+        writer.writeln("override val init_value: " + aggregateType + (type != null && type.equals(Integer.class) ? " = 0" : " = 0.0"));
     }
 }

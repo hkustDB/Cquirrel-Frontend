@@ -16,6 +16,7 @@ public class Type {
     static {
         Map<String, Class> typesTemp = new HashMap<>();
         typesTemp.put("int", Integer.class);
+        typesTemp.put("integer", Integer.class);
         typesTemp.put("string", String.class);
         typesTemp.put("varchar", String.class);
         typesTemp.put("double", Double.class);
