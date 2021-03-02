@@ -42,6 +42,11 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.6.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.ainslec</groupId>
             <artifactId>picocog</artifactId>
             <version>1.0.3</version>

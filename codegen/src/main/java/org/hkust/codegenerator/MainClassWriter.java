@@ -25,7 +25,9 @@ class MainClassWriter implements ClassWriter {
     private final Map<Relation, Relation> joinStructure;
     private final String flinkInputPath;
     private final String flinkOutputPath;
-    private final String ioTypes;
+    private Boolean isFileSink = false;
+    private Boolean isSocketSink = false;
+    private Boolean isKafkaSink = false;
     private final RelationSchema schema;
     private final Map<Relation, String> tagNames;
     private final Map<String, String> ACTIONS = ImmutableMap.of("Insert", "+", "Delete", "-");
@@ -36,7 +38,6 @@ class MainClassWriter implements ClassWriter {
         CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
         this.flinkInputPath = flinkInputPath;
         this.flinkOutputPath = flinkOutputPath;
-        this.ioTypes = "file";
         this.aggregateProcessFunctions = node.getAggregateProcessFunctions();
         this.relationProcessFunctions = node.getRelationProcessFunctions();
         this.joinStructure = node.getJoinStructure();
@@ -47,19 +48,18 @@ class MainClassWriter implements ClassWriter {
         }
     }
 
-    MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath, String ioTypes) {
-        CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
-        CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
-        this.flinkInputPath = flinkInputPath;
-        this.flinkOutputPath = flinkOutputPath;
-        this.ioTypes = ioTypes;
-        this.aggregateProcessFunctions = node.getAggregateProcessFunctions();
-        this.relationProcessFunctions = node.getRelationProcessFunctions();
-        this.joinStructure = node.getJoinStructure();
-        this.schema = schema;
-        this.tagNames = new HashMap<>();
-        for (RelationProcessFunction rpf : relationProcessFunctions) {
-            tagNames.put(rpf.getRelation(), rpf.getRelation().getValue().toLowerCase() + "Tag");
+    MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath, String[] dataSinkTypes) {
+        this(node, schema, flinkInputPath, flinkOutputPath);
+        for (String sinkType : dataSinkTypes) {
+            if (sinkType.equals("socket")) {
+                this.isSocketSink = true;
+            }
+            if (sinkType.equals("kafka")) {
+                this.isKafkaSink = true;
+            }
+            if (sinkType.equals("file")) {
+                this.isFileSink= true;
+            }
         }
     }
 
@@ -119,6 +119,15 @@ class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
+    private void writeDataSink(final PicoWriter writer) {
+        if(this.isSocketSink) {
+            writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema()).setParallelism(1)");
+        }
+        if(this.isFileSink) {
+            writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE).setParallelism(1)");
+        }
+    }
+
     private void writeMultipleRelationStream(RelationProcessFunction rpf, final PicoWriter writer, String prevStreamName, String streamSuffix) {
         Relation relation = rpf.getRelation();
         String relationName = relation.toString().toLowerCase();
@@ -134,11 +143,7 @@ class MainClassWriter implements ClassWriter {
         if (parent == null) {
             writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
             linkAggregateProcessFunctions(writer);
-            if(this.ioTypes.contains("s")) {
-                writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema())");
-            }
-            writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
-            writer.writeln(".setParallelism(1)");
+            writeDataSink(writer);
             return;
         }
         writeMultipleRelationStream(requireNonNull(parent),
@@ -168,11 +173,7 @@ class MainClassWriter implements ClassWriter {
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
         linkAggregateProcessFunctions(writer);
-        if(this.ioTypes.contains("s")) {
-            writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema())");
-        }
-        writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE)");
-        writer.writeln(".setParallelism(1)");
+        writeDataSink(writer);
     }
 
     private void linkAggregateProcessFunctions(final PicoWriter writer) {

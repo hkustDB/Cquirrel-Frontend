@@ -1,33 +1,40 @@
 import com.google.common.collect.ImmutableSet;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.codegenerator.CodeGenerator;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Set;
 
-class CodeGen {
-    private static int NUM_OF_ARGS = 5;
-    private static final Set<String> IO_TYPES = ImmutableSet.of("file", "socket", "kafka", "fs", "fk", "sk", "fsk");
-    private static final int JSON_FILE_INDEX = 0;
-    private static final int GENERATED_JAR_PATH_INDEX = 1;
-    private static final int INPUT_PATH_INDEX = 2;
-    private static final int OUTPUT_PATH_INDEX = 3;
-    private static final int IO_TYPE_INDEX = 4;
+
+@Command(name = "CodeGen", version = "CodeGenCli 0.1", mixinStandardHelpOptions = true)
+class CodeGen implements Runnable {
+    private static final Set<String> IO_TYPES = ImmutableSet.of("file", "socket", "kafka");
+
+    @Option(names = {"-j", "--json-file"}, required = true, description = "Input json file path")
+    String jsonFile = "./input_json_file.json";
+
+    @Option(names = {"-g", "--generated-jar"}, required = true, description = "Generated code directory path")
+    String generatedDirectoryPath = ".";
+
+    @Option(names = {"-i", "--flink-input"}, required = true, description = "Flink data input file path")
+    String flinkInputPath = "file:///input.csv";
+
+    @Option(names = {"-o", "--flink-output"}, required = true, description = "Flink data output file path")
+    String flinkOutputPath = "file:///output.csv";
+
+    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, including file, socket, kafka")
+    String[] dataSinkTypes = {"file", "socket"};
 
     public static void main(String[] args) throws Exception {
-//        System.out.println("\n" +
-//                "   _     __                                 _        ___           \n" +
-//                "  /_\\    \\ \\  /\\ /\\            ___ ___   __| | ___  / _ \\___ _ __  \n" +
-//                " //_\\\\    \\ \\/ / \\ \\  _____   / __/ _ \\ / _` |/ _ \\/ /_\\/ _ \\ '_ \\ \n" +
-//                "/  _  \\/\\_/ /\\ \\_/ / |_____| | (_| (_) | (_| |  __/ /_\\\\  __/ | | |\n" +
-//                "\\_/ \\_/\\___/  \\___/           \\___\\___/ \\__,_|\\___\\____/\\___|_| |_|\n" +
-//                "                                                                   \n");
-        System.out.println("\nCquirrel -- CodeGen\n");
-        validateArgs(args);
-        prepareEnvironment(args[GENERATED_JAR_PATH_INDEX]);
-        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_PATH_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX], args[IO_TYPE_INDEX]);
+        int exitCode = new CommandLine(new CodeGen()).execute(args);
+        System.exit(exitCode);
     }
 
     private static void prepareEnvironment(String jarPath) throws IOException, URISyntaxException {
@@ -146,16 +153,12 @@ class CodeGen {
         outputStream.close();
     }
 
-    private static void validateArgs(String[] args) {
-        if (args.length != NUM_OF_ARGS) {
-            throw new RuntimeException("Expecting exactly " + NUM_OF_ARGS + " input strings: JSON file path, generated-code jar output path, flink input path, flink output path and flink I/O type");
-        }
-
-        validateJsonFile(args[JSON_FILE_INDEX]);
-        validateDirectoryPath(args[GENERATED_JAR_PATH_INDEX]);
-        CheckerUtils.checkNullOrEmpty(args[OUTPUT_PATH_INDEX], "flinkInputPath");
-        CheckerUtils.checkNullOrEmpty(args[INPUT_PATH_INDEX], "flinkOutputPath");
-        validateFlinkIOType(args[IO_TYPE_INDEX]);
+    private static void validateOptions(String jsonFile, String generatedDirectoryPath, String flinkInputPath, String flinkOutputPath, String[] dataSinkTypes) {
+        validateJsonFile(jsonFile);
+        validateDirectoryPath(generatedDirectoryPath);
+        CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
+        CheckerUtils.checkNullOrEmpty(flinkOutputPath, "flinkOutputPath");
+        validateFlinkIOType(dataSinkTypes);
     }
 
     private static void validateJsonFile(String jsonFilePath) {
@@ -182,4 +185,23 @@ class CodeGen {
             throw new RuntimeException("Only the following flink IO types are supported: " + Arrays.toString(IO_TYPES.toArray()));
         }
     }
+
+    private static void validateFlinkIOType(String[] dataSinkTypes) {
+        for (String sinkType : dataSinkTypes) {
+            validateFlinkIOType(sinkType);
+        }
+    }
+
+    @Override
+    public void run() {
+        System.out.println("\nCquirrel -- CodeGen\n");
+        validateOptions(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
+        try {
+            prepareEnvironment(generatedDirectoryPath);
+            CodeGenerator.generate(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
+
