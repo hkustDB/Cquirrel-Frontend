@@ -25,12 +25,12 @@ class MainClassWriter implements ClassWriter {
     private final Map<Relation, Relation> joinStructure;
     private final String flinkInputPath;
     private final String flinkOutputPath;
-    private Boolean isFileSink = false;
-    private Boolean isSocketSink = false;
-    private Boolean isKafkaSink = false;
     private final RelationSchema schema;
     private final Map<Relation, String> tagNames;
     private final Map<String, String> ACTIONS = ImmutableMap.of("Insert", "+", "Delete", "-");
+    private Boolean isFileSink = false;
+    private Boolean isSocketSink = false;
+    private Boolean isKafkaSink = false;
 
 
     MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath) {
@@ -58,7 +58,7 @@ class MainClassWriter implements ClassWriter {
                 this.isKafkaSink = true;
             }
             if (sinkType.equals("file")) {
-                this.isFileSink= true;
+                this.isFileSink = true;
             }
         }
     }
@@ -120,10 +120,10 @@ class MainClassWriter implements ClassWriter {
     }
 
     private void writeDataSink(final PicoWriter writer) {
-        if(this.isSocketSink) {
+        if (this.isSocketSink) {
             writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema()).setParallelism(1)");
         }
-        if(this.isFileSink) {
+        if (this.isFileSink) {
             writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE).setParallelism(1)");
         }
     }
