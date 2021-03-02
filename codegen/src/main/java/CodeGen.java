@@ -9,7 +9,7 @@ import java.util.Set;
 
 class CodeGen {
     private static int NUM_OF_ARGS = 5;
-    private static final Set<String> IO_TYPES = ImmutableSet.of("file", "kafka");
+    private static final Set<String> IO_TYPES = ImmutableSet.of("file", "socket", "kafka", "fs", "fk", "sk", "fsk");
     private static final int JSON_FILE_INDEX = 0;
     private static final int GENERATED_JAR_PATH_INDEX = 1;
     private static final int INPUT_PATH_INDEX = 2;
@@ -27,7 +27,7 @@ class CodeGen {
         System.out.println("\nCquirrel -- CodeGen\n");
         validateArgs(args);
         prepareEnvironment(args[GENERATED_JAR_PATH_INDEX]);
-        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_PATH_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX]);
+        CodeGenerator.generate(args[JSON_FILE_INDEX], args[GENERATED_JAR_PATH_INDEX], args[INPUT_PATH_INDEX], args[OUTPUT_PATH_INDEX], args[IO_TYPE_INDEX]);
     }
 
     private static void prepareEnvironment(String jarPath) throws IOException, URISyntaxException {
