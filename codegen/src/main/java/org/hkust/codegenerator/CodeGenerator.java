@@ -18,7 +18,7 @@ public class CodeGenerator {
     private static final RelationSchema schema = new RelationSchema();
 
 
-    public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath) throws Exception {
+    public static void generate(String jsonFilePath, String jarOutputPath, String flinkInputPath, String flinkOutputPath, String[] dataSinkTypes) throws Exception {
         CheckerUtils.checkNullOrEmpty(jsonFilePath, "jsonFilePath");
         CheckerUtils.checkNullOrEmpty(jarOutputPath, "jarOutputPath");
         CheckerUtils.checkNullOrEmpty(flinkInputPath, "flinkInputPath");
@@ -38,7 +38,7 @@ public class CodeGenerator {
             new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
         }
 
-        new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath).write(codeFilesPath);
+        new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath, dataSinkTypes).write(codeFilesPath);
 
         compile(jarOutputPath + File.separator + GENERATED_CODE + File.separator + "pom.xml");
 
