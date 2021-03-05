@@ -12,6 +12,8 @@ Python 3.8.2
 
 Flink 1.11.2
 
+Scala 2.12
+
 Flask 1.1.2
 
 React 17.0.1
