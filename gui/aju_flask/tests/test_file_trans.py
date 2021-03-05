@@ -1,9 +1,8 @@
-import unittest
+import io
 import json
 import os
-import io
+import unittest
 
-import config
 from aju_app import create_app
 
 

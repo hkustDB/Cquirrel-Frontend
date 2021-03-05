@@ -13,12 +13,8 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask import current_app
 
-from config import config_options
-from config import Q6_OUTPUT_DATA_FILE
-from config import Q3_OUTPUT_DATA_FILE
-from config import Q10_OUTPUT_DATA_FILE
-from config import Q18_OUTPUT_DATA_FILE
-from config import TopNValue
+
+from config import BaseConfig, config_options
 
 from aju_app import aju_utils
 
@@ -37,9 +33,6 @@ stop_send_data_thread_flag = False
 send_data_control = "send"
 top_n_value = 5
 queue = Queue()
-
-
-# SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.08
 
 
 def r_run_socket_server(queue):
@@ -70,7 +63,7 @@ def r_run_socket_server(queue):
                     line = t_data[:close_quotation_idx + 1]
                     t_data = t_data[close_quotation_idx + 1:]
                     queue.put(line)
-                    print("socket queue recv line: ", line)
+                    # print("socket queue recv line: ", line)
 
 
 def create_app(config_name):
@@ -699,8 +692,8 @@ def r_send_query_result_data_file_q18(filepath):
 
 
 def r_send_query_result_data_from_socket(queue):
-    print("r_send_query_result_data_from_socket: ")
-    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.1
+    # print("r_send_query_result_data_from_socket: ")
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.3
     socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
 
     total_data = {}
@@ -711,7 +704,7 @@ def r_send_query_result_data_from_socket(queue):
     global send_data_control
     stop_send_data_thread_flag = False
     while True:
-        print("send_data_control=", send_data_control, "stop_send_data_thread_flag=", stop_send_data_thread_flag)
+        # print("send_data_control=", send_data_control, "stop_send_data_thread_flag=", stop_send_data_thread_flag)
         if send_data_control == "pause":
             while True:
                 if send_data_control == "send":
@@ -723,7 +716,7 @@ def r_send_query_result_data_from_socket(queue):
             break
         socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
 
-        print("r_send_query_result_data_from_socket: sleep over")
+        # print("r_send_query_result_data_from_socket: sleep over")
         if queue.empty():
             print("r_send_query_result_data_from_socket: queue is empty")
         line = queue.get()
@@ -739,10 +732,9 @@ def r_send_query_result_data_from_socket(queue):
                 socketio.emit('r_figure_data', {"isTopN": 0, "data": line_list}, namespace='/ws')
             else:
                 # TopN
-                from config import TopNValue
-                from config import DefaultAggregateName
-                N = TopNValue
-                aggregate_name = DefaultAggregateName
+
+                N = BaseConfig.TopNValue
+                aggregate_name = BaseConfig.AggregateName
 
                 line_list_len = len(line_list)
                 x_timestamp_idx = line_list_len - 1

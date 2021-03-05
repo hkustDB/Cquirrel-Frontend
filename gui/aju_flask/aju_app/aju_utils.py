@@ -4,7 +4,7 @@ import subprocess
 import logging
 
 import aju_app
-import config
+from config import BaseConfig
 
 
 def is_json_file(the_file):
@@ -18,20 +18,18 @@ def is_json_file(the_file):
 
 
 def run_flink_task(filename, query_idx):
-    from config import REMOTE_FLINK
-    from config import REMOTE_FLINK_URL
 
     if filename == '':
         ret = subprocess.CompletedProcess(args='', returncode=1, stdout="filename is null.")
         return ret
 
-    generated_jar_file_path = os.path.join(config.GENERATED_JAR_PATH, filename)
+    generated_jar_file_path = os.path.join(BaseConfig.GENERATED_JAR_PATH, filename)
     if not os.path.exists(generated_jar_file_path):
         ret = subprocess.CompletedProcess(args='', returncode=1, stdout="generated jar does not exist.")
         return ret
 
     generated_jar_para = ""
-    flink_command_path = os.path.join(config.FLINK_HOME_PATH, "bin/flink")
+    flink_command_path = os.path.join(BaseConfig.FLINK_HOME_PATH, "bin/flink")
     if REMOTE_FLINK:
         cmd_str = flink_command_path + " run " + " -m " + REMOTE_FLINK_URL + " " + generated_jar_file_path + " " + generated_jar_para
     else:
@@ -50,35 +48,35 @@ def run_flink_task(filename, query_idx):
 def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
     if query_idx == 3:
         cmd_str = 'java -jar' + ' ' \
-                  + config.CODEGEN_FILE + ' ' \
+                  + BaseConfig.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
-                  + config.GENERATED_JAR_PATH + ' ' \
-                  + 'file://' + config.Q3_INPUT_DATA_FILE + ' ' \
-                  + 'file://' + config.Q3_OUTPUT_DATA_FILE + ' ' + 'file'
+                  + BaseConfig.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + BaseConfig.Q3_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + BaseConfig.Q3_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q3: ")
     elif query_idx == 6:
         cmd_str = 'java -jar' + ' ' \
-                  + config.CODEGEN_FILE + ' ' \
+                  + BaseConfig.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
-                  + config.GENERATED_JAR_PATH + ' ' \
-                  + 'file://' + config.Q6_INPUT_DATA_FILE + ' ' \
-                  + 'file://' + config.Q6_OUTPUT_DATA_FILE + ' ' + 'file'
+                  + BaseConfig.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + BaseConfig.Q6_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + BaseConfig.Q6_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q6: ")
     elif query_idx == 10:
         cmd_str = 'java -jar' + ' ' \
-                  + config.CODEGEN_FILE + ' ' \
+                  + BaseConfig.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
-                  + config.GENERATED_JAR_PATH + ' ' \
-                  + 'file://' + config.Q10_INPUT_DATA_FILE + ' ' \
-                  + 'file://' + config.Q10_OUTPUT_DATA_FILE + ' ' + 'file'
+                  + BaseConfig.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + BaseConfig.Q10_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + BaseConfig.Q10_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q10: ")
     elif query_idx == 18:
         cmd_str = 'java -jar' + ' ' \
-                  + config.CODEGEN_FILE + ' ' \
+                  + BaseConfig.CODEGEN_FILE + ' ' \
                   + uploaded_json_file_save_path + ' ' \
-                  + config.GENERATED_JAR_PATH + ' ' \
-                  + 'file://' + config.Q18_INPUT_DATA_FILE + ' ' \
-                  + 'file://' + config.Q18_OUTPUT_DATA_FILE + ' ' + 'file'
+                  + BaseConfig.GENERATED_JAR_PATH + ' ' \
+                  + 'file://' + BaseConfig.Q18_INPUT_DATA_FILE + ' ' \
+                  + 'file://' + BaseConfig.Q18_OUTPUT_DATA_FILE + ' ' + 'file'
         logging.info("Q18: ")
     else:
         logging.error("query index is not supported.")
@@ -103,9 +101,32 @@ def run_codegen_to_generate_jar(uploaded_json_file_save_path, query_idx):
     return codegen_log_result, ret.returncode
 
 
+def r_run_codegen_to_generate_jar(json_file_path, query_idx):
+    if query_idx == 3:
+        cmd_str = 'java -jar' + ' ' \
+                  + BaseConfig.CODEGEN_FILE + ' -j ' \
+                  + json_file_path + ' -g ' \
+                  + BaseConfig.GENERATED_JAR_PATH + ' -i ' \
+                  + 'file://' + BaseConfig.Q3_INPUT_DATA_FILE + ' -o ' \
+                  + 'file://' + BaseConfig.Q3_OUTPUT_DATA_FILE + ' -s ' + 'file socket'
+        logging.info("Q3: ")
+    else:
+        logging.error("query index is not supported.")
+        raise Exception("query index is not supported.")
+
+    logging.info("codegen command: " + cmd_str)
+    ret = subprocess.run(cmd_str, shell=True, capture_output=True)
+    codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
+    codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
+    codegen_log_result = codegen_log_stdout + codegen_log_stderr
+    with open("./log/codegen.log", "w") as f:
+        f.write(codegen_log_result)
+    logging.info('codegen_log_result: ' + codegen_log_result)
+    return codegen_log_result, ret.returncode
+
 def is_flink_cluster_running():
-    from config import REMOTE_FLINK
-    if REMOTE_FLINK:
+    from config import BaseConfig
+    if BaseConfig.REMOTE_FLINK:
         # TODO
         pass
     else:
@@ -147,19 +168,17 @@ def send_notify_of_start_to_run_flink_job():
 
 
 def clean_codegen_log_and_generated_jar():
-    if os.path.exists(config.CODEGEN_LOG_FILE):
-        os.remove(config.CODEGEN_LOG_FILE)
-    if os.path.exists(config.GENERATED_JAR_FILE):
-        os.remove(config.GENERATED_JAR_FILE)
+    if os.path.exists(BaseConfig.CODEGEN_LOG_FILE):
+        os.remove(BaseConfig.CODEGEN_LOG_FILE)
+    if os.path.exists(BaseConfig.GENERATED_JAR_FILE):
+        os.remove(BaseConfig.GENERATED_JAR_FILE)
 
 
 def clean_flink_output_files():
-    from config import Q6_OUTPUT_DATA_FILE
-    from config import Q3_OUTPUT_DATA_FILE
-    from config import Q10_OUTPUT_DATA_FILE
-    from config import Q18_OUTPUT_DATA_FILE
-
-    output_files = [Q3_OUTPUT_DATA_FILE, Q6_OUTPUT_DATA_FILE, Q10_OUTPUT_DATA_FILE, Q18_OUTPUT_DATA_FILE]
+    output_files = [BaseConfig.Q3_OUTPUT_DATA_FILE,
+                    BaseConfig.Q6_OUTPUT_DATA_FILE,
+                    BaseConfig.Q10_OUTPUT_DATA_FILE,
+                    BaseConfig.Q18_OUTPUT_DATA_FILE]
 
     for strfile in output_files:
         if os.path.exists(strfile):
@@ -170,23 +189,23 @@ def clean_flink_output_files():
             f.close()
 
 
-def r_run_flink_task(filename, query_idx, queue):
-    from config import REMOTE_FLINK
-    from config import REMOTE_FLINK_URL
+def r_run_flink_task(filename, queue):
+    from config import BaseConfig
 
     if filename == '':
         ret = subprocess.CompletedProcess(args='', returncode=1, stdout="filename is null.")
         return ret
 
-    generated_jar_file_path = os.path.join(config.GENERATED_JAR_PATH, filename)
+    generated_jar_file_path = os.path.join(BaseConfig.GENERATED_JAR_PATH, filename)
     if not os.path.exists(generated_jar_file_path):
         ret = subprocess.CompletedProcess(args='', returncode=1, stdout="generated jar does not exist.")
         return ret
 
     generated_jar_para = ""
-    flink_command_path = os.path.join(config.FLINK_HOME_PATH, "bin/flink")
-    if REMOTE_FLINK:
-        cmd_str = flink_command_path + " run " + " -m " + REMOTE_FLINK_URL + " " + generated_jar_file_path + " " + generated_jar_para
+    flink_command_path = os.path.join(BaseConfig.FLINK_HOME_PATH, "bin/flink")
+    if BaseConfig.REMOTE_FLINK:
+        cmd_str = flink_command_path + " run " + " -m " + BaseConfig.REMOTE_FLINK_URL + " " + generated_jar_file_path \
+                  + " " + generated_jar_para
     else:
         cmd_str = flink_command_path + " run " + generated_jar_file_path + " " + generated_jar_para
 
@@ -198,7 +217,5 @@ def r_run_flink_task(filename, query_idx, queue):
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
     logging.info('flink jobs return: ' + result)
 
-    aju_app.r_set_step_to(4)
     aju_app.r_send_query_result_data_from_socket(queue)
-    # aju_app.r_send_query_result_data_to_client(query_idx)
     return ret

@@ -1,10 +1,13 @@
-import unittest
 import json
 import os
+import sys
+import unittest
 
-import config
-from aju_app import create_app
 from aju_app import aju_utils
+from aju_app import create_app
+
+sys.path.append("..")
+import config
 
 
 class TestUtils(unittest.TestCase):
