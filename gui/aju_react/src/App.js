@@ -9,7 +9,10 @@ import QueryTable from "./components/QueryTable";
 // import QueryFig from "./components/QueryFig"
 import Settings from "./components/Settings";
 import About from "./components/About";
-import {Layout, Menu, Row, Col, message, Card, Button, InputNumber} from 'antd';
+import SqlEditor from "./components/SqlEditor";
+import RelationGraph from "./components/RelationGraph"
+import axios from 'axios';
+import {Layout, Menu, Row, Col, message, Card, Button, Input, InputNumber, Divider, Spin} from 'antd';
 import {PlayCircleOutlined, PauseCircleOutlined} from '@ant-design/icons';
 import './App.css';
 
@@ -39,6 +42,15 @@ class App extends Component {
             table_data: [],
             table_title: "Query Result Table: ",
             topN_input_disabled: false,
+            aggregate_name_input_disabled: false,
+            aggregate_name: 'revenue',
+            showRelationGraph: false,
+            showFlowDiag: false,
+            queryChartLoading: false,
+            queryTableLoading: false,
+            codegenLogLoading: false,
+            flowDiagLoading: false,
+            relationFigLoading: false,
 
             chart_option: {
                 animation: false,
@@ -49,8 +61,6 @@ class App extends Component {
                 legend: {
                     type: 'scroll',
                     orient: 'vertical',
-                    // left: '4%',
-                    // right: '0%',
                     top: '78%',
                     bottom: '0%',
                     textStyle: {
@@ -61,8 +71,6 @@ class App extends Component {
                 grid: {
                     left: "5%",
                     bottom: "32%",
-                    // x: "1%",
-                    // x2: "30%",
                     show: true
                 },
                 dataZoom: {
@@ -82,22 +90,9 @@ class App extends Component {
                     axisLabel: {
                         inside: true
                     },
-                    name: 'revenue'
+                    name: "aggregate"
                 },
                 series: []
-            },
-            chart_option1: {
-                title: {text: 'ECharts 入门示例'},
-                tooltip: {},
-                xAxis: {
-                    data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
-                },
-                yAxis: {},
-                series: [{
-                    name: '销量',
-                    type: 'bar',
-                    data: [5, 20, 36, 10, 10, 20]
-                }]
             },
         };
     }
@@ -105,10 +100,6 @@ class App extends Component {
     componentDidMount() {
         this.build();
         window.addEventListener('beforeunload', this.beforeUnload);
-
-        // this.setState({myChart: echarts.init(document.getElementById('queryChart')) })
-        // myChart = echarts.init(document.getElementById('queryChart'));
-        // this.state.myChart.setOption(this.state.chart_option);
     }
 
     componentWillUnmount() {
@@ -148,6 +139,9 @@ class App extends Component {
             this.setState({connected: false});
         });
         _socket.on('r_codegen_log', data => {
+            this.setState({
+                codegenLogLoading: false,
+            })
             this.setState({codegen_log: data.codegen_log}, () => {
                 console.log("r_codegen_log: ", this.state.codegen_log)
             });
@@ -187,10 +181,12 @@ class App extends Component {
 
         _socket.on('r_figure_data', res => {
 
-            this.setState({topN_input_disabled: true})
-            // this.setState({topN_input_disabled: true}, () => {
-            //     console.log("topN_input_disabled: ", this.state.topN_input_disabled)
-            // })
+            this.setState({
+                queryTableLoading:false,
+                queryChartLoading: false,
+                topN_input_disabled: true,
+                aggregate_name_input_disabled: true
+            })
 
             // console.log("r_figure_data: ", res)
             if (res.isTopN === 0) {
@@ -284,232 +280,7 @@ class App extends Component {
                 c_option.dataZoom.startValue = ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1;
                 myChart.setOption(c_option);
                 this.setState({chart_option: c_option});
-            }
-                // else if (res.queryNum === 3) {
-                //     let top_value_data = res.top_value_data;
-                //     console.log(res);
-                //     // refresh table
-                //     let t_cols = [
-                //         {
-                //             title: 'timestamp',
-                //             dataIndex: 'timestamp',
-                //         },
-                //         {
-                //             title: 'orderkey',
-                //             dataIndex: 'orderkey',
-                //         },
-                //         {
-                //             title: 'orderdate',
-                //             dataIndex: 'orderdate',
-                //         },
-                //         {
-                //             title: 'shippriority',
-                //             dataIndex: 'shippriority',
-                //         },
-                //         {
-                //             title: 'revenue',
-                //             dataIndex: 'revenue',
-                //         },
-                //     ]
-                //     // let t_data = [...this.state.table_data];
-                //     let t_data = [{
-                //         key: (this.state.table_data.length + 1).toString(),
-                //         timestamp: res.data[8],
-                //         orderkey: res.data[0],
-                //         orderdate: res.data[1],
-                //         shippriority: res.data[2],
-                //         revenue: res.data[3],
-                //     }, ...this.state.table_data];
-                //     let t_title = "TPC-H Query " + res.queryNum + " Result Table: "
-                //
-                //     this.setState({table_cols: t_cols, table_data: t_data, table_title: t_title});
-                //
-                //     // refresh chart
-                //     // let line_list = res.data
-                //     let c_option = {...this.state.chart_option};
-                //     x_timestamp = res.x_timestamp;
-                //
-                //
-                //     c_option.title.text = "AJU Result Chart - TPC-H Query " + res.queryNum + "  -- Top " + Object.keys(top_value_data).length;
-                //     legend_data = []
-                //     var series_data = []
-                //
-                //     for (var key_tag in top_value_data) {
-                //         legend_data.push(key_tag);
-                //         let aserie = {name: key_tag, type: "line", data: top_value_data[key_tag]};
-                //         series_data.push(aserie);
-                //     }
-                //     // option.series.push(aserie);
-                //     c_option.series = series_data;
-                //     c_option.legend.data = legend_data;
-                //     c_option.xAxis.data = x_timestamp;
-                //     c_option.dataZoom.startValue = ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1;
-                //     myChart.setOption(c_option);
-                //     this.setState({chart_option: c_option});
-                // }
-                // else if (res.queryNum === 10) {
-                //     console.log(res)
-                //
-                //     // refresh table
-                //     let t_cols = [
-                //         {
-                //             title: 'timestamp',
-                //             dataIndex: 'timestamp',
-                //         },
-                //         {
-                //             title: 'custkey',
-                //             dataIndex: 'custkey',
-                //         },
-                //         {
-                //             title: 'c_name',
-                //             dataIndex: 'c_name',
-                //         },
-                //         {
-                //             title: 'c_acctbal',
-                //             dataIndex: 'c_acctbal',
-                //         },
-                //         {
-                //             title: 'c_phone',
-                //             dataIndex: 'c_phone',
-                //         },
-                //         // {
-                //         //     title: 'c_address',
-                //         //     dataIndex: 'c_address',
-                //         // },
-                //         // {
-                //         //     title: 'c_comment',
-                //         //     dataIndex: 'c_comment',
-                //         // },
-                //         {
-                //             title: 'n_name',
-                //             dataIndex: 'n_name',
-                //         },
-                //         {
-                //             title: 'revenue',
-                //             dataIndex: 'revenue',
-                //         },
-                //     ]
-                //     // let t_data = [...this.state.table_data];
-                //     let t_data = [{
-                //         key: (this.state.table_data.length + 1).toString(),
-                //
-                //         custkey: res.data[0],
-                //         c_name: res.data[1],
-                //         c_acctbal: res.data[2],
-                //         c_phone: res.data[3],
-                //         // c_address: res.data[4],
-                //         // c_comment: res.data[5],
-                //         n_name: res.data[4],
-                //         // n_name: res.data[6],
-                //         revenue: res.data[5],
-                //         // revenue: res.data[7],
-                //         timestamp: res.data[12],
-                //     }, ...this.state.table_data];
-                //     let t_title = "TPC-H Query " + res.queryNum + " Result Table: "
-                //
-                //     this.setState({table_cols: t_cols, table_data: t_data, table_title: t_title});
-                //
-                //     // refresh chart
-                //     // let line_list = res.data
-                //     let top_value_data = res.top_value_data;
-                //     let c_option = {...this.state.chart_option};
-                //     x_timestamp = res.x_timestamp;
-                //
-                //
-                //     c_option.title.text = "AJU Result Chart - TPC-H Query " + res.queryNum + "  -- Top " + Object.keys(top_value_data).length;
-                //     legend_data = []
-                //     var series_data = []
-                //
-                //     for (var key_tag in top_value_data) {
-                //         legend_data.push(key_tag);
-                //         let aserie = {name: key_tag, type: "line", data: top_value_data[key_tag]};
-                //         series_data.push(aserie);
-                //     }
-                //     // option.series.push(aserie);
-                //     c_option.series = series_data;
-                //     c_option.legend.data = legend_data;
-                //     c_option.xAxis.data = x_timestamp;
-                //     c_option.dataZoom.startValue = ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1;
-                //     myChart.setOption(c_option);
-                //     this.setState({chart_option: c_option});
-                // }
-                // else if (res.queryNum === 18) {
-                //     console.log(res)
-                //     // refresh table
-                //     let t_cols = [
-                //         {
-                //             title: 'timestamp',
-                //             dataIndex: 'timestamp',
-                //         },
-                //         {
-                //             title: 'custkey',
-                //             dataIndex: 'custkey',
-                //         },
-                //         {
-                //             title: 'c_name',
-                //             dataIndex: 'c_name',
-                //         },
-                //         {
-                //             title: 'orderkey',
-                //             dataIndex: 'orderkey',
-                //         },
-                //         {
-                //             title: 'o_orderdate',
-                //             dataIndex: 'o_orderdate',
-                //         },
-                //         {
-                //             title: 'o_totalprice',
-                //             dataIndex: 'o_totalprice',
-                //         },
-                //         {
-                //             title: 'aggregate',
-                //             dataIndex: 'aggregate',
-                //         },
-                //     ]
-                //     // let t_data = [...this.state.table_data];
-                //     let t_data = [{
-                //         key: (this.state.table_data.length + 1).toString(),
-                //
-                //         custkey: res.data[1],
-                //         c_name: res.data[0],
-                //         orderkey: res.data[2],
-                //         o_orderdate: res.data[3],
-                //         o_totalprice: res.data[4],
-                //         aggregate: res.data[5],
-                //         timestamp: res.data[12],
-                //     }, ...this.state.table_data];
-                //     let t_title = "TPC-H Query " + res.queryNum + " Result Table: "
-                //
-                //     this.setState({table_cols: t_cols, table_data: t_data, table_title: t_title});
-                //
-                //
-                //     // refresh chart
-                //     // let line_list = res.data
-                //     let top_value_data = res.top_value_data;
-                //     let c_option = {...this.state.chart_option};
-                //     x_timestamp = res.x_timestamp;
-                //
-                //
-                //     // c_option.title.text = "AJU Result Chart - TPC-H Query " + res.queryNum + "  -- Top " + Object.keys(top_value_data).length;
-                //     c_option.title.text = "AJU Result Chart - TPC-H Query " + res.queryNum;
-                //     legend_data = []
-                //     var series_data = []
-                //
-                //     for (var key_tag in top_value_data) {
-                //         legend_data.push(key_tag);
-                //         let aserie = {name: key_tag, type: "line", data: top_value_data[key_tag]};
-                //         series_data.push(aserie);
-                //     }
-                //     // option.series.push(aserie);
-                //     c_option.series = series_data;
-                //     c_option.legend.data = legend_data;
-                //     c_option.xAxis.data = x_timestamp;
-                //     c_option.yAxis.name = "aggregate";
-                //     c_option.dataZoom.startValue = ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1;
-                //     myChart.setOption(c_option);
-                //     this.setState({chart_option: c_option});
-            // }
-            else {
+            } else {
                 console.log('query number is not supported yet.')
             }
         });
@@ -527,11 +298,6 @@ class App extends Component {
                 console.log("unknow message type", data)
             }
         });
-
-        // _socket.onAny((eventName, data) => {
-        //     console.log("listen on any: ", eventName)
-        //     console.log(data)
-        // });
 
         this.setState({socket: _socket}, () => {
             let {socket, connected} = this.state;
@@ -572,19 +338,116 @@ class App extends Component {
     pauseServerSendData = () => {
         let _socket = this.state.socket;
         _socket.emit("r_send_data_control", {"command": "pause"})
-        this.setState({topN_input_disabled: false})
+        this.setState({
+            topN_input_disabled: false,
+            aggregate_name_input_disabled: false
+        })
         console.log("pause server send data")
     }
 
     restartServerSendData = () => {
         let _socket = this.state.socket;
         _socket.emit("r_send_data_control", {"command": "restart"})
-        this.setState({topN_input_disabled: true})
+        this.setState({
+            topN_input_disabled: true,
+            aggregate_name_input_disabled: true
+        })
         console.log("restart server send data")
     }
 
     set_topN_value = () => {
 
+    }
+
+    set_aggregate_name = (e) => {
+        console.log("set_aggregate_name: ", e.target.value)
+        this.setState({
+            aggregate_name: e.target.value,
+            chart_option: {
+                animation: false,
+                title: {
+                    text: 'AJU Result Chart'
+                },
+                tooltip: {},
+                legend: {
+                    type: 'scroll',
+                    orient: 'vertical',
+                    top: '78%',
+                    bottom: '0%',
+                    textStyle: {
+                        fontSize: 10
+                    },
+                    data: []
+                },
+                grid: {
+                    left: "5%",
+                    bottom: "32%",
+                    show: true
+                },
+                dataZoom: {
+                    type: "slider",
+                    show: true,
+                    showDetail: true,
+                    realtime: true,
+                    bottom: '23%'
+                },
+                xAxis: {
+                    type: 'category',
+                    name: 'timestamp',
+                    data: []
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        inside: true
+                    },
+                    name: e.target.value,
+                },
+                series: []
+            },
+        })
+    }
+
+    handleSubmitSql = (v) => {
+
+        function wait(ms) {
+            var start = new Date().getTime();
+            var end = start;
+            while (end < start + ms) {
+                end = new Date().getTime();
+            }
+        }
+
+        console.log(v)
+        this.setState({
+            relationGraphLoading: true,
+            flowDiagLoading: true,
+        }, ()=>{
+            wait(1000);
+        })
+
+        wait(1000);
+        this.setState({
+            relationGraphLoading: false,
+            flowDiagLoading: false,
+        },()=>{
+            wait(1000);
+        })
+        wait(500);
+
+        this.setState({
+            showRelationGraph: true,
+            showFlowDiag: true,
+
+
+            codegenLogLoading: true,
+            queryTableLoading: true,
+            queryChartLoading: true,
+        })
+
+        axios.post('http://localhost:5000/r/submit_sql', {sql: v}).then(res => {
+            console.log(res);
+        })
     }
 
 
@@ -596,64 +459,126 @@ class App extends Component {
                     <Header style={{position: 'fixed', zIndex: 1, width: '100%'}}>
                         <div className="logo"/>
                         <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-                            <Menu.Item key="1"><a href="/" onClick={this.stopServerSendDataThread.bind(this)}>Acyclic
-                                Join under Updates Demo</a> </Menu.Item>
-                            <Menu.Item key="2"><Settings/></Menu.Item>
-                            <Menu.Item key="3"><About/></Menu.Item>
+                            <Menu.Item key="1"><a href="/"
+                                                  onClick={this.stopServerSendDataThread.bind(this)}>Cquirrel </a>
+                            </Menu.Item>
+                            <Menu.Item key="2" style={{float: 'right'}}><Settings/></Menu.Item>
+                            <Menu.Item key="3" style={{float: 'right'}}><About/></Menu.Item>
                         </Menu>
                     </Header>
-                    <Content className="site-layout" style={{padding: '0 50px', marginTop: 64}}>
-                        <div className="site-layout-background" style={{padding: 24, minHeight: 640}}>
-                            <Row>
-                                <InstructSteps cur_step={this.state.cur_step}/>
-                            </Row>
-                            <hr/>
-                            <Row>
-                                <Col span={12}><SqlEntry/> </Col>
-                                <Col span={12}><span>Or you can upload the json file:</span> <JsonFileUploader/> </Col>
-                            </Row>
-                            <hr/>
-                            <Row>
-                                <Col span={12}> <CodegenResult logContent={this.state.codegen_log}/> </Col>
-                                {/*<Col span={12}> <CodegenResult/> </Col>*/}
-                                <Col span={12}> <FlowDiag/> </Col>
 
-                            </Row>
+                    {/*<Layout>*/}
+                    {/*    <Sider width={200} style={{backgroundColor:'white'}}>*/}
 
-                            <hr/>
-                            <Row>
-                                <Col span={12}>
-                                    <QueryTable table_cols={this.state.table_cols} table_data={this.state.table_data}
-                                                table_title={this.state.table_title}/>
-                                </Col>
-                                <Col span={12}>
-                                    {/*<QueryFig/>*/}
-                                    <div className="queryfig-card">
-                                        <Card title="Query Result Figure: " extra={
-                                            <div>
-                                                <span>TopN:</span>
-                                                <InputNumber defaultValue={10} size="small"
-                                                             disabled={this.state.topN_input_disabled}
-                                                             onPressEnter={this.set_topN_value.bind(this)}/>
-                                                &nbsp;&nbsp;
-                                                <Button type="primary" size="small" icon={<PlayCircleOutlined/>}
-                                                        title="start to send data"
-                                                        onClick={this.restartServerSendData.bind(this)}/>
-                                                &nbsp;
-                                                <Button type="primary" size="small" icon={<PauseCircleOutlined/>}
-                                                        title="stop to send data"
-                                                        onClick={this.pauseServerSendData.bind(this)}/>
-                                            </div>}>
-                                            <div id="queryChart" style={{width: "100%", height: 650}}></div>
-                                        </Card>
-                                    </div>
-                                </Col>
-                            </Row>
-                        </div>
-                    </Content>
-                    {/*<Footer style={{textAlign: 'center'}}>Aclyclic Join under Updates Demo</Footer>*/}
-                    <Footer style={{textAlign: 'center'}}></Footer>
+                    {/*    </Sider>*/}
+                    <Layout>
+                        <Content className="site-layout" style={{padding: '0 50px', marginTop: 64}}>
+                            <div className="site-layout-background" style={{padding: 24, minHeight: 640}}>
+                                <Row>
+                                    <InstructSteps cur_step={this.state.cur_step}/>
+                                </Row>
+
+                                {/*<Row>*/}
+                                {/*    <Col span={24}><SqlEditor/></Col>*/}
+                                {/*</Row>*/}
+
+                                <Divider/>
+                                <Row>
+                                    <Col span={6}>
+                                        <Row>
+                                            <Col span={24}>
+                                                <SqlEntry onSubmitSql={this.handleSubmitSql}/>
+                                            </Col>
+                                        </Row>
+                                        <Row>
+                                            <Col span={24}>
+                                                <Spin tip={"loading"} spinning={this.state.relationFigLoading}>
+                                                    <RelationGraph showRelationGraph={this.state.showRelationGraph}/>
+                                                </Spin>
+                                            </Col>
+                                        </Row>
+                                        <Divider/>
+                                        <Row>
+                                            <Col span={24}><span>Or you can upload the json file:</span>
+                                                <JsonFileUploader/></Col>
+                                        </Row>
+                                    </Col>
+
+                                    <Col span={18}>
+                                        <Row>
+                                            <Col span={12}>
+                                                <Spin tip={"loading"} spinning={this.state.flowDiagLoading}>
+                                                    <FlowDiag showFlowDiag={this.state.showFlowDiag}/>
+                                                </Spin>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Spin tip={"loading"} spinning={this.state.codegenLogLoading}>
+                                                    <CodegenResult logContent={this.state.codegen_log}/>
+                                                </Spin>
+                                            </Col>
+                                        </Row>
+                                        <Divider/>
+                                        <Row>
+                                            <Col span={24}>
+                                                <Spin tip={"loading"} spinning={this.state.queryTableLoading}>
+                                                    <QueryTable table_cols={this.state.table_cols}
+                                                                table_data={this.state.table_data}
+                                                                table_title={this.state.table_title}/>
+                                                </Spin>
+                                            </Col>
+                                        </Row>
+                                        <Divider/>
+                                        <Row>
+                                            <Col span={24}>
+                                                {/*<QueryFig/>*/}
+                                                <Spin tip={"Loading"} spinning={this.state.queryChartLoading}>
+                                                    <div className="queryfig-card">
+
+                                                        <Card title="Query Result Figure: " extra={
+                                                            <div>
+                                                                <Input.Group size="small" compact>
+                                                                    Aggregate Name:&nbsp;
+                                                                    <Input defaultValue="revenue" size="small"
+                                                                           style={{width: 'min-content'}}
+                                                                           disabled={this.state.aggregate_name_input_disabled}
+                                                                           onPressEnter={this.set_aggregate_name.bind(this)}/>
+                                                                    &nbsp;&nbsp;
+                                                                    TopN:&nbsp;
+                                                                    <InputNumber defaultValue={10} size="small"
+                                                                                 disabled={this.state.topN_input_disabled}
+                                                                                 onPressEnter={this.set_topN_value.bind(this)}/>
+                                                                    &nbsp;&nbsp;&nbsp;
+                                                                    <Button type="primary" size="small"
+                                                                            icon={<PlayCircleOutlined/>}
+                                                                            title="start to send data"
+                                                                            onClick={this.restartServerSendData.bind(this)}/>
+                                                                    &nbsp;&nbsp;
+                                                                    <Button type="primary" size="small"
+                                                                            icon={<PauseCircleOutlined/>}
+                                                                            title="stop to send data"
+                                                                            onClick={this.pauseServerSendData.bind(this)}/>
+                                                                </Input.Group>
+                                                            </div>}>
+
+                                                            <div id="queryChart"
+                                                                 style={{width: "100%", height: 650}}></div>
+
+                                                        </Card>
+
+                                                    </div>
+                                                </Spin>
+                                            </Col>
+                                        </Row>
+                                    </Col>
+                                </Row>
+
+                            </div>
+                        </Content>
+                        <Footer style={{textAlign: 'center'}}>HKUST & Alibaba</Footer>
+                    </Layout>
                 </Layout>
+                {/*</Layout>*/}
+
             </div>
         );
     }
