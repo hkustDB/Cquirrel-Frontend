@@ -1,47 +1,62 @@
-# AJU-GUI
+# Cquirrel-GUI
 
-This is the gui part of the AJU project. 
+This is the gui part of the Cquirrel project. 
 
-The project only supports Chrome now.
+For now, the project only supports Chrome.
 
 
-# Environment
-Ubuntu 20.04.1 LTS
+# Environments
+macOS BigSur 11.2.2
 
 Python 3.8.2
 
+Flink 1.11.2
+
 Flask 1.1.2
 
-Werkzeug 1.0.1
+React 17.0.1
 
-# Flask Installation
+In this project, we use python3 by default.
 
-## Virtual Environment
-### Create an environment
-Create a project folder and a venv folder within:
-
-```
-$ cd gui/aju_flask
-$ python3 -m venv venv
-```
-
-### Activate the environment
-Before you work on your project, activate the corresponding environment:
-```
-$ . venv/bin/activate
-```
+# Installation
 
 ## Install Flask
-Within the activated environment, use the following command to install Flask:
+First, we go to the backend folder `aju_flask` to install Flask and other relevant python3 packages:
 ```
+$ cd gui/aju_flask
 $ pip install -r requirements.txt
 ```
 
-# Flask Server Run
-`FLASK_APP` is the main python file to run.
-`FLASK_ENV` can set the debug mode when it is assigned `development`. Then in this mode, we can change the server code without restart the flask service.
+## Install React 
+Then, we go to the frontend folder `aju_react` to install React, Antd and other relevant javascript packages:
+```
+$ cd gui/aju_react
+$ yarn install
+```
 
-So the `gui/aju_flask/boot.sh` file sets the above two variables and runs the flask.
+## Install Flink
+We should download Apache Flink (version 1.11.2) to our environment. And we should set the `FLINK_HOME_PATH` value as our flink home path in `gui/aju_flask/config.py`. For example, we can set as the following `FLINK_HOME_PATH='/Users/xxx/Programs/flink-1.11.2'`.
 
-# Test
-In `gui/aju_flask/` directory, we run the command `flask test` to start unit test with coverage. If we do not want to start unit test without coverage, we can run the command `flask test --no-coverage`.
+# Resources
+For TPC-H Q3, we should put the input data file to `gui/aju_flask/aju_app/resources` folder, and rename the input data file as `input_data_q3_0.1_sliding_window.csv`.
+
+# Config
+For the backend flask project, we can edit the `config.py` to self adapt our environment.
+Some important settings are `FLINK_HOME_PATH`, and `INPUT_DATA_FILE`. Please edit this before launch the GUI.
+
+# Boot
+
+## boot frontend 
+First, we go to the frontend folder `aju_react` to boot frontend:
+```
+$ cd gui/aju_react
+$ yarn start
+```
+
+## boot backend
+Then, we go to the backend folder `aju_flask` to boot the backend:
+```
+$ cd gui/aju_flask
+$ python3 aju_gui.py
+```
+
