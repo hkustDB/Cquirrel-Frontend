@@ -6,7 +6,7 @@ function AboutContent() {
         <a href="https://www.cse.ust.hk/~yike/sigmod20.pdf"> "Maintaining Acyclic Foreign-Key Joins under Updates"</a>.
         <br/>
         <br/>
-        If you have any problems, please contact with <a href="mailto:czhangci@connect.ust.hk">czhangci@connect.ust.hk</a>.
+        If you have any problems, please contact with <a href="mailto:qwangbp@cse.ust.hk">qwangbp@cse.ust.hk</a> or <a href="mailto:czhangci@connect.ust.hk">czhangci@connect.ust.hk</a>.
     </div>)
 }
 
