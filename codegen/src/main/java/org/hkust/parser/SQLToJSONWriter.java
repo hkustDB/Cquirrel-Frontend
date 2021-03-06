@@ -506,7 +506,7 @@ public class SQLToJSONWriter {
             temp.put(i, tempArray);
             Unary.add(temp);
         }
-        information.put("Unary", Unary);
+        information.put("unary", Unary);
         return information;
     }
 
