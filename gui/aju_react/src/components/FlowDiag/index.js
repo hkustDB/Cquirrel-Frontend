@@ -330,8 +330,10 @@ export default class Flowdiag extends Component {
                                 onClick={this.download_flow_diagram}>Download Flow Diagram</Button>
                     </div>
                 }>
+<div className="flowdiag-content">
+    <div  ref={this.containerRef}/>
+</div>
 
-                    <div ref={this.containerRef}/>
                 </Card>
             </div>
         )

@@ -63,7 +63,10 @@ export default class Settings extends Component {
         const {TabPane} = Tabs;
         const {Option} = Select;
         const plainOptions = ['File', 'Socket', 'Kafka'];
-        const CheckboxGroup = Checkbox.Group;
+
+        function onChange(checkedValues) {
+            console.log('checked = ', checkedValues);
+        }
 
         return (
             <div>
@@ -145,7 +148,10 @@ export default class Settings extends Component {
                                     name="streams_types"
                                     initialValue = "sliding_windows"
                                 >
-                                    <Input></Input>
+                                    <Select defaultValue="sliding_windows">
+                                        <Option value="sliding_windows">sliding windows</Option>
+                                        <Option value="insert_only">insert only</Option>
+                                    </Select>
                                 </Form.Item>
 
                                 <Button type="primary" htmlType="submit">Save</Button> <span> </span>
@@ -154,7 +160,7 @@ export default class Settings extends Component {
                             </Form>
                         </TabPane>
 
-                        <TabPane tab="Data Inputs" key="3">
+                        <TabPane tab="Data Source" key="3">
                             <Form
                                 {...layout}
                                 name="basic"
@@ -165,9 +171,10 @@ export default class Settings extends Component {
                                 <Form.Item
                                     label="Input Methods"
                                     name="input_methods"
-                                    initialValue = "file"
                                 >
-                                    <CheckboxGroup options={plainOptions} value={plainOptions} />
+                                    <Checkbox defaultChecked>File</Checkbox>
+                                    <Checkbox >Socket</Checkbox>
+                                    <Checkbox >Kafka</Checkbox>
                                 </Form.Item>
 
                                 <Form.Item
@@ -207,7 +214,7 @@ export default class Settings extends Component {
                             </Form>
                         </TabPane>
 
-                        <TabPane tab="Data Outputs" key="4">
+                        <TabPane tab="Data Sink" key="4">
                             <Form
                                 {...layout}
                                 name="basic"
@@ -218,9 +225,10 @@ export default class Settings extends Component {
                                 <Form.Item
                                     label="Output Methods"
                                     name="output_methods"
-                                    initialValue = "file"
                                 >
-                                    <CheckboxGroup options={plainOptions} value={plainOptions} />
+                                    <Checkbox defaultChecked>File</Checkbox>
+                                    <Checkbox defaultChecked>Socket</Checkbox>
+                                    <Checkbox >Kafka</Checkbox>
                                 </Form.Item>
 
                                 <Form.Item
