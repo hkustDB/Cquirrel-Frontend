@@ -15,8 +15,16 @@ import java.util.List;
  * Created by tom on 3/3/2021.
  * Copyright (c) 2021 tom
  */
-public class parser {
-    public static void parse(String sql, String output_file_path) throws Exception {
+public class Parser {
+    private static String sql;
+    private static String output_file_path;
+
+    Parser(String sql, String output_file_path) {
+        this.sql = sql;
+        this.output_file_path = output_file_path;
+    }
+
+    public static void parse() throws Exception {
         String q3 = "select\n" +
                 "l_orderkey, \n" +
                 "sum(l_extendedprice*(1-l_discount)) as revenue,\n" +

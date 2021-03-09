@@ -20,9 +20,11 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * Created by tom on 24/2/2021.
- * Copyright (c) 2021 tom
+ The json-simple library is compiled with an old bytecode version: 46.0, which causes multiple "unchecked" warning.
+ The following command will suppress all such warning as a temporal fixed.  A better solution is to use a library like
+ org.json to support generics type.
  */
+@SuppressWarnings("unchecked")
 public class SQLToJSONWriter {
     private String outputFileName = "";
     private final JSONObject outputJsonObject = new JSONObject();
@@ -34,9 +36,9 @@ public class SQLToJSONWriter {
     private final Map<String, Integer> childCount = new HashMap<>();
     private String root = "";
 
-    private JSONArray aggregationFunctions = new JSONArray();
-    private JSONObject aggregationFunction = new JSONObject();
-    private JSONArray aggregateValues = new JSONArray();
+    private final JSONArray aggregationFunctions = new JSONArray();
+    private final JSONObject aggregationFunction = new JSONObject();
+    private final JSONArray aggregateValues = new JSONArray();
 
     public HashSet<SQLExpr> BinaryPredicates = new HashSet<>();
     public HashMap<String, List<SQLExpr>> UnaryPredicates = new HashMap<>();
@@ -277,6 +279,7 @@ public class SQLToJSONWriter {
 
         if (((SQLSelectItem) expr.getParent()).getAlias() != null) {
             aggregate.put("name", ((SQLSelectItem) expr.getParent()).getAlias());
+            aggregateValues.add(((SQLSelectItem) expr.getParent()).getAlias());
         }
 
         aggregate.put("value", writeValueObject(expr.getArguments().get(0)));
@@ -506,7 +509,8 @@ public class SQLToJSONWriter {
             temp.put(i, tempArray);
             Unary.add(temp);
         }
-        information.put("Unary", Unary);
+        information.put("unary", Unary);
+        information.put("aggregation", aggregateValues);
         return information;
     }
 
