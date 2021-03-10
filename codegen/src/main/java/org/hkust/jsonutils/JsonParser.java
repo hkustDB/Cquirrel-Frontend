@@ -114,9 +114,11 @@ public class JsonParser {
     private static List<AggregateValue> makeAggregateValues(List<Map<String, Object>> aggregateValues) {
         List<AggregateValue> result = new ArrayList<>();
         for (Map<String, Object> aggValue : aggregateValues) {
-            String type = (String) aggValue.get("type");
+            //String type = (String) aggValue.get("type");
             Value agv;
-            if (type.equals("expression")) {
+            //agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
+            agv = makeExpression((Map<String, Object>) aggValue.get("value"));
+            /*if (type.equals("expression")) {
                 agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
             } else if (type.equals("attribute")) {
                 agv = new AttributeValue(Relation.getRelation((String) aggValue.get("relation")), (String) aggValue.get("value"));
@@ -124,7 +126,7 @@ public class JsonParser {
                 agv = new ConstantValue( (String) aggValue.get("value"), (String) aggValue.get("var_type"));
             } else {
                 throw new IllegalArgumentException("Unsupported type of aggregate value");
-            }
+            }*/
             result.add(makeAggregateValue(aggValue, agv));
         }
 
@@ -202,7 +204,8 @@ public class JsonParser {
         } else if (type.equals("constant")) {
             value = new ConstantValue(field.get("value").toString(), (String) field.get("var_type"));
         } else if (type.equals("expression")) {
-            return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
+            return makeExpression(field);
+            //return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else if (type.equals("aggregate_attribute")) {
             return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")), Type.getClass((String) field.get("store_type")));
         } else {

@@ -283,7 +283,7 @@ public class SQLToJSONWriter {
         }
 
         aggregate.put("value", writeValueObject(expr.getArguments().get(0)));
-
+        aggregate.put("value_type", expr.computeDataType());
         return aggregate;
     }
 
