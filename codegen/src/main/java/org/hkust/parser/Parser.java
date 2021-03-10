@@ -19,7 +19,7 @@ public class Parser {
     private static String sql;
     private static String output_file_path;
 
-    Parser(String sql, String output_file_path) {
+    public Parser(String sql, String output_file_path) {
         this.sql = sql;
         this.output_file_path = output_file_path;
     }

@@ -5,7 +5,7 @@ public enum Operator {
     LESS_THAN("<"),
     EQUALS("=="),
     GREATER_THAN_EQUAL(">="),
-    LESS_THAN_EQUAL("=<"),
+    LESS_THAN_EQUAL("<="),
     SUM("+"),
     SUBTRACT("-"),
     SUMMATION("++"),
