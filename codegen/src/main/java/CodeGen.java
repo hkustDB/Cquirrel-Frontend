@@ -1,6 +1,7 @@
 import com.google.common.collect.ImmutableSet;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.codegenerator.CodeGenerator;
+import org.hkust.sqlparser.SqlParser;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -17,25 +18,35 @@ import java.util.Set;
 class CodeGen implements Runnable {
     private static final Set<String> IO_TYPES = ImmutableSet.of("file", "socket", "kafka");
 
-    @Option(names = {"--SQL"}, required = false, description = "Given SQL query, optional")
-    String sql = "select l_orderkey from lineitem";
+    @Option(names = {"-q", "--sql"}, required = false, description = "Given SQL query, optional")
+    String sql = "";
 
-    @Option(names = {"-j", "--json-file"}, required = true, description = "Input json file path, if SQL query is given, " +
-            "then generate the json in the given path")
-    String jsonFile = "./input_json_file.json";
+    @Option(names = {"-f", "--generated-json"}, required = false, description = "According to the SQL query, generates the json file")
+    String generatedJsonFile = "./generated.json";
 
-    @Option(names = {"-g", "--generated-jar"}, required = true, description = "Generated code directory path")
-    String generatedDirectoryPath = ".";
 
-    @Option(names = {"-i", "--flink-input"}, required = true, description = "Flink data input file path")
-    String flinkInputPath = "file:///input.csv";
+    @CommandLine.ArgGroup(exclusive = false)
+    CodeGenPara codeGenPara;
 
-    @Option(names = {"-o", "--flink-output"}, required = true, description = "Flink data output file path")
-    String flinkOutputPath = "file:///output.csv";
+    static class CodeGenPara {
+        @Option(names = {"-j", "--json-file"}, required = true, description = "Input json file path, if SQL query is given, " +
+                "then generate the json in the given path")
+        String jsonFile = "./input_json_file.json";
 
-    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, " +
-            "including file, socket, kafka")
-    String[] dataSinkTypes = {"file", "socket"};
+        @Option(names = {"-g", "--generated-jar"}, required = true, description = "Generated code directory path")
+        String generatedDirectoryPath = ".";
+
+        @Option(names = {"-i", "--flink-input"}, required = true, description = "Flink data input file path")
+        String flinkInputPath = "file:///input.csv";
+
+        @Option(names = {"-o", "--flink-output"}, required = true, description = "Flink data output file path")
+        String flinkOutputPath = "file:///output.csv";
+
+        @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, " +
+                "including file, socket, kafka")
+        String[] dataSinkTypes = {"file", "socket"};
+    }
+
 
     public static void main(String[] args) throws Exception {
         int exitCode = new CommandLine(new CodeGen()).execute(args);
@@ -200,14 +211,26 @@ class CodeGen implements Runnable {
     @Override
     public void run() {
         System.out.println("\nCquirrel -- CodeGen\n");
-        System.out.println(sql);
-        validateOptions(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
-        try {
-            prepareEnvironment(generatedDirectoryPath);
-            CodeGenerator.generate(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        if(sql.equals("")) {
+            validateOptions(codeGenPara.jsonFile, codeGenPara.generatedDirectoryPath, codeGenPara.flinkInputPath, codeGenPara.flinkOutputPath, codeGenPara.dataSinkTypes);
+            try {
+                prepareEnvironment(codeGenPara.generatedDirectoryPath);
+                CodeGenerator.generate(codeGenPara.jsonFile, codeGenPara.generatedDirectoryPath, codeGenPara.flinkInputPath, codeGenPara.flinkOutputPath, codeGenPara.dataSinkTypes);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println(sql);
+            SqlParser sparser = new SqlParser(sql, generatedJsonFile);
+            try {
+                sparser.parse();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
+
     }
 }
 

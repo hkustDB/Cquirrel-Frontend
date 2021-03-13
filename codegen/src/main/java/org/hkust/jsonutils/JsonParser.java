@@ -138,7 +138,6 @@ public class JsonParser {
         //String type = (String) avMap.get("type");
         /*if (!("expression".equals(type) || "attribute".equals(type) || "constant".equals(type))) {
             throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression, attribute and constant type. Got: " + type);
-
         }*/
         Operator aggregation = Operator.getOperator((String) avMap.get("aggregation"));
         Class<?> value_type = Type.getClass((String) avMap.get("value_type"));
