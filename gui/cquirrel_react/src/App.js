@@ -51,12 +51,12 @@ class App extends Component {
             queryTableLoading: false,
             codegenLogLoading: false,
             flowDiagLoading: false,
-            relationFigLoading: false,
+            relationGraphLoading: false,
 
             chart_option: {
                 animation: false,
                 title: {
-                    text: 'AJU Result Chart'
+                    text: 'Result Chart'
                 },
                 tooltip: {},
                 legend: {
@@ -229,7 +229,7 @@ class App extends Component {
                 // refresh chart
                 let line_list = res.data
                 let c_option = {...this.state.chart_option};
-                c_option.title.text = "AJU Result Chart - TPC-H Query";
+                c_option.title.text = "Result Chart - TPC-H Query";
                 q6_serie.data.push(line_list[0]);
                 c_option.xAxis.data.push(line_list[2]);
                 c_option.series[0] = q6_serie;
@@ -279,7 +279,7 @@ class App extends Component {
                 x_timestamp = res.x_timestamp;
 
 
-                c_option.title.text = "AJU Result Chart - TPC-H Query  -- Top " + Object.keys(top_value_data).length;
+                c_option.title.text = "Result Chart - TPC-H Query  -- Top " + Object.keys(top_value_data).length;
                 legend_data = []
                 var series_data = []
 
@@ -381,7 +381,7 @@ class App extends Component {
             chart_option: {
                 animation: false,
                 title: {
-                    text: 'AJU Result Chart'
+                    text: 'Result Chart'
                 },
                 tooltip: {},
                 legend: {
@@ -507,7 +507,7 @@ class App extends Component {
                                         </Row>
                                         <Row>
                                             <Col span={24}>
-                                                <Spin tip={"loading"} spinning={this.state.relationFigLoading}>
+                                                <Spin tip={"loading"} spinning={this.state.relationGraphLoading}>
                                                     <RelationGraph showRelationGraph={this.state.showRelationGraph}
                                                                    relationsData={this.state.relationsData}/>
                                                 </Spin>
@@ -554,7 +554,7 @@ class App extends Component {
                                                             <div>
                                                                 <Input.Group size="small" compact>
                                                                     Aggregate Name:&nbsp;
-                                                                    <Input defaultValue="revenue" size="small"
+                                                                    <Input defaultValue="" size="small"
                                                                            style={{width: 'min-content'}}
                                                                            disabled={this.state.aggregate_name_input_disabled}
                                                                            onPressEnter={this.set_aggregate_name.bind(this)}/>
