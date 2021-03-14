@@ -25,16 +25,16 @@ class CodeGen implements Runnable {
             "then generate the json in the given path")
     String jsonFile = "./input_json_file.json";
 
-    @Option(names = {"-g", "--generated-jar"}, required = false, description = "Generated code directory path")
+    @Option(names = {"-g", "--generated-jar"}, required = true, description = "Generated code directory path")
     String generatedDirectoryPath = ".";
 
-    @Option(names = {"-i", "--flink-input"}, required = false, description = "Flink data input file path")
+    @Option(names = {"-i", "--flink-input"}, required = true, description = "Flink data input file path")
     String flinkInputPath = "file:///input.csv";
 
-    @Option(names = {"-o", "--flink-output"}, required = false, description = "Flink data output file path")
+    @Option(names = {"-o", "--flink-output"}, required = true, description = "Flink data output file path")
     String flinkOutputPath = "file:///output.csv";
 
-    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = false, description = "Flink data sink types, " +
+    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, " +
             "including file, socket, kafka")
     String[] dataSinkTypes = {"file", "socket"};
 
