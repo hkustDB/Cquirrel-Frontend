@@ -1,2 +1,2 @@
 # gui-codegen
-The GUI and CodeGen for AJU.
+The GUI and CodeGen for Cquirrel.
