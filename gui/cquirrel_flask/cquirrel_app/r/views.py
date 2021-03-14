@@ -117,9 +117,8 @@ def r_submit_sql():
     sql_content = json.loads(data_str)['sql']
     print(sql_content)
 
-    generated_json_path = "generated.json"
-    information_data = cquirrel_utils.r_run_codegen_to_generate_json(sql_content, generated_json_path)
-    cquirrel_app.r_send_information_data(information_data)
+    # information_data = cquirrel_utils.r_run_codegen_to_generate_json(sql_content, BaseConfig.GENERATED_JSON_PATH)
+    # cquirrel_app.r_send_information_data(information_data)
 
     from multiprocessing import Process
     p = Process(target=cquirrel_app.r_run_socket_server, args=(cquirrel_app.queue,))
@@ -130,10 +129,10 @@ def r_submit_sql():
         shutil.rmtree(BaseConfig.GENERATED_CODE_DIR)
         logging.info('remove the generated-code directory.')
 
-    input_data_pattern = cquirrel_utils.r_get_input_data_pattern(information_data)
+    # input_data_pattern = cquirrel_utils.r_get_input_data_pattern(information_data)
     # call the codegen to generate a jar file
-    codegen_log_result, retcode = cquirrel_utils.r_run_codegen_to_generate_jar2(generated_json_path, input_data_pattern)
-
+    information_data, codegen_log_result, retcode = cquirrel_utils.r_run_codegen_to_generate_jar2(sql_content)
+    cquirrel_app.r_send_information_data(information_data)
     cquirrel_app.r_send_codgen_log_and_retcode(codegen_log_result, retcode)
     print('retcode: ', retcode)
     if retcode != 0:

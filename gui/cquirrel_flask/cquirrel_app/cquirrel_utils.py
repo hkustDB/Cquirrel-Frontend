@@ -114,29 +114,36 @@ def r_get_input_data_pattern(information_data):
 
 
 def input_data_pattern_to_file(input_data_pattern):
-    # TODO fix here
     return BaseConfig.Q3_INPUT_DATA_FILE
 
 
-def r_run_codegen_to_generate_jar2(json_file_path, input_data_pattern):
-    input_data_file = input_data_pattern_to_file(input_data_pattern)
-    # TODO fix outputfile
+def r_run_codegen_to_generate_jar2(sql_content):
     cmd_str = 'java -jar' + ' ' \
               + BaseConfig.CODEGEN_FILE + ' -j ' \
-              + json_file_path + ' -g ' \
+              + BaseConfig.GENERATED_JSON_FILE + ' -g ' \
               + BaseConfig.GENERATED_JAR_PATH + ' -i ' \
-              + 'file://' + input_data_file + ' -o ' \
-              + 'file://' + BaseConfig.Q3_OUTPUT_DATA_FILE + ' -s ' + 'file socket'
+              + 'file://' + BaseConfig.INPUT_DATA_FILE + ' -o ' \
+              + 'file://' + BaseConfig.OUTPUT_DATA_FILE + ' -s ' + 'file socket' + ' -q ' \
+              + ' " ' + sql_content + ' " '
 
     logging.info("codegen command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     codegen_log_stdout = str(ret.stdout, encoding="utf-8") + "\n"
     codegen_log_stderr = str(ret.stderr, encoding="utf-8") + "\n"
     codegen_log_result = codegen_log_stdout + codegen_log_stderr
+
     with open(BaseConfig.CODEGEN_LOG_FILE, "w") as f:
         f.write(codegen_log_result)
     logging.info('codegen_log_result: ' + codegen_log_result)
-    return codegen_log_result, ret.returncode
+
+    information_data = ""
+    with open(BaseConfig.INFORMATION_JSON_FILE, 'r') as f:
+        data = f.readlines()
+    for line in data:
+        information_data = information_data + line
+    logging.info("information data: " + information_data)
+
+    return information_data, codegen_log_result, ret.returncode
 
 
 def r_run_codegen_to_generate_jar(json_file_path, query_idx):
@@ -260,18 +267,18 @@ def r_run_flink_task(filename, queue):
     return ret
 
 
-def r_run_codegen_to_generate_json(sql, generated_json_path):
+def r_run_codegen_to_generate_json(sql, generated_json):
     cmd_str = 'java -jar' + ' ' \
-              + BaseConfig.CODEGEN_FILE + ' -q ' \
-              + '"' + sql + '"' + ' -f ' \
-              + generated_json_path
+              + BaseConfig.CODEGEN_FILE + ' --SQL ' \
+              + '"' + sql + '"' + ' -j ' \
+              + generated_json
 
     logging.info("codegen generate json command: " + cmd_str)
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
-    # print("run codegen to generate json:")
-    # print(ret)
-    # result = str(ret.stdout, encoding='utf-8') + str('\n') + str(ret.stderr, encoding='utf-8')
-    # print(result)
+    print("run codegen to generate json:")
+    print(ret)
+    result = str(ret.stdout, encoding='utf-8') + str('\n') + str(ret.stderr, encoding='utf-8')
+    print(result)
     information_data = ""
     with open('information.json', 'r') as f:
         data = f.readlines()
