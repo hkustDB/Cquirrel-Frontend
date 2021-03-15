@@ -19,12 +19,13 @@ public class AggregateProcessFunction extends ProcessFunction {
     private final List<String> outputKey;
 
     private final List<org.hkust.objects.AggregateValue> aggregateValues;
-    private final Operator aggregation;
-    private final Class<?> valueType;
+    //private final Operator aggregation;
+    //private final Class<?> valueType;
     private final List<SelectCondition> aggregateSelectCondition;
 
     public AggregateProcessFunction(String name, List<String> thisKey, List<String> outputKey, List<AggregateValue> aggregateValues,
-                                    Operator aggregation, Class valueType, List<SelectCondition> aggregateSelectCondition) {
+                                    //Operator aggregation, Class valueType,
+                                    List<SelectCondition> aggregateSelectCondition) {
         super(name, thisKey, outputKey);
         this.name = name;
         this.thisKey = thisKey;
@@ -33,10 +34,10 @@ public class AggregateProcessFunction extends ProcessFunction {
 
         requireNonNull(aggregateValues);
         this.aggregateValues = aggregateValues;
-        requireNonNull(aggregation);
-        this.aggregation = aggregation;
-        requireNonNull(valueType);
-        this.valueType = valueType;
+//        requireNonNull(aggregation);
+//        this.aggregation = aggregation;
+//        requireNonNull(valueType);
+//        this.valueType = valueType;
     }
 
     @Override
@@ -84,13 +85,13 @@ public class AggregateProcessFunction extends ProcessFunction {
         return aggregateValues;
     }
 
-    public Operator getAggregation() {
+    /*public Operator getAggregation() {
         return aggregation;
     }
 
     public Class getValueType() {
         return valueType;
-    }
+    }*/
 
     @Nullable
     public List<SelectCondition> getAggregateSelectCondition() {
@@ -104,8 +105,8 @@ public class AggregateProcessFunction extends ProcessFunction {
                 ", thisKey=" + thisKey +
                 ", nextKey=" + outputKey +
                 ", computation=" + aggregateValues +
-                ", aggregation=" + aggregation +
-                ", valueType=" + valueType +
+                //", aggregation=" + aggregation +
+                //", valueType=" + valueType +
                 '}';
     }
 }

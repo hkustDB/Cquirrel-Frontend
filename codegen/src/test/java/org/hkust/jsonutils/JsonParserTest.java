@@ -60,8 +60,7 @@ public class JsonParserTest {
         Mockito.when(mockMap.get("value_type")).thenReturn("Double");
         List<AggregateValue> aggregateValues = Collections.singletonList(
                 new AggregateValue("AggregateValue",
-                        "expression",
-                        new AttributeValue(Relation.LINEITEM, "attributeValue"))
+                        new AttributeValue(Relation.LINEITEM, "attributeValue"), Operator.SUM, Double.class)
         );
         requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap, aggregateValues));
     }

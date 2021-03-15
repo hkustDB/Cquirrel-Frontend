@@ -1,6 +1,7 @@
 import com.google.common.collect.ImmutableSet;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.codegenerator.CodeGenerator;
+import org.hkust.parser.Parser;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -17,7 +18,11 @@ import java.util.Set;
 class CodeGen implements Runnable {
     private static final Set<String> IO_TYPES = ImmutableSet.of("file", "socket", "kafka");
 
-    @Option(names = {"-j", "--json-file"}, required = true, description = "Input json file path")
+    @Option(names = {"-q", "--SQL"}, required = false, description = "Given SQL query, optional")
+    String sql;
+
+    @Option(names = {"-j", "--json-file"}, required = true, description = "Input json file path, if SQL query is given, " +
+            "then generate the json in the given path")
     String jsonFile = "./input_json_file.json";
 
     @Option(names = {"-g", "--generated-jar"}, required = true, description = "Generated code directory path")
@@ -29,7 +34,8 @@ class CodeGen implements Runnable {
     @Option(names = {"-o", "--flink-output"}, required = true, description = "Flink data output file path")
     String flinkOutputPath = "file:///output.csv";
 
-    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, including file, socket, kafka")
+    @Option(names = {"-s", "--data-sink"}, arity = "1..3", required = true, description = "Flink data sink types, " +
+            "including file, socket, kafka")
     String[] dataSinkTypes = {"file", "socket"};
 
     public static void main(String[] args) throws Exception {
@@ -195,6 +201,15 @@ class CodeGen implements Runnable {
     @Override
     public void run() {
         System.out.println("\nCquirrel -- CodeGen\n");
+        if (sql != null) {
+            System.out.println(sql);
+            try {
+                Parser parser = new Parser(sql, jsonFile);
+                parser.parse();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         validateOptions(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
         try {
             prepareEnvironment(generatedDirectoryPath);

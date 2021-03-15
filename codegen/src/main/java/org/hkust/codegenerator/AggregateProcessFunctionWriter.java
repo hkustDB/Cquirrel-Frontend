@@ -18,8 +18,14 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         super(schema);
         this.relationSchema = schema;
         this.aggregateProcessFunction = aggregateProcessFunction;
-        Class<?> type = aggregateProcessFunction.getValueType();
-        aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
+        // If only one aggregation exists
+        if (aggregateProcessFunction.getAggregateValues().size() == 1) {
+            Class<?> type = aggregateProcessFunction.getAggregateValues().get(0).getValueType();
+            aggregateType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
+        } else {
+            aggregateType = "Unknown!";
+            System.err.println("Unsupport multiple aggregations");
+        }
         className = getProcessFunctionClassName(aggregateProcessFunction.getName());
     }
 
@@ -77,16 +83,16 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         List<AggregateValue> aggregateValues = aggregateProcessFunction.getAggregateValues();
         for (AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
-            String type = aggregateValue.getType();
-            if (type.equals("expression")) {
+            Value type = aggregateValue.getValue();
+            if (type.getClass() == Expression.class) { //type.equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
                 expressionToCode(expression, code);
                 writer.writeln(code.toString());
-            } else if (type.equals("attribute")) {
+            } else if (type.getClass() == AttributeValue.class) {//equals("attribute")) {
                 AttributeValue attributeValue = (AttributeValue) aggregateValue.getValue();
                 attributeValueToCode(attributeValue, code);
                 writer.writeln(code.toString());
-            } else if (type.equals("constant")) {
+            } else if (type.getClass() == ConstantValue.class) {//type.equals("constant")) {
                 constantValueToCode((ConstantValue) aggregateValue.getValue(), code);
                 writer.writeln(code.toString());
             } else {

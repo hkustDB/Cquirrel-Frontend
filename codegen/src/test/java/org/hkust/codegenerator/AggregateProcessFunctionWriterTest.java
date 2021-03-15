@@ -4,6 +4,7 @@ import org.ainslec.picocog.PicoWriter;
 import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AggregateValue;
 import org.hkust.objects.AttributeValue;
+import org.hkust.objects.Operator;
 import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
 import org.junit.Before;
@@ -87,8 +88,9 @@ public class AggregateProcessFunctionWriterTest {
 
     private AggregateProcessFunctionWriter getAggregateProcessFunctionWriter(Class<?> aggregateType) {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
-        when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
-        AggregateValue aggregateValue = new AggregateValue("aggregateName", "expression", new AttributeValue(Relation.LINEITEM, "attributeValue"));
+        //when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
+        AggregateValue aggregateValue = new AggregateValue("AggregateValue",
+                new AttributeValue(Relation.LINEITEM, "attributeValue"), Operator.SUM, Double.class);
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
         return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }
