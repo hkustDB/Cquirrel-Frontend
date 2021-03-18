@@ -142,6 +142,9 @@ public class JsonParser {
         }*/
         Operator aggregation = Operator.getOperator((String) avMap.get("aggregation"));
         Class<?> value_type = Type.getClass((String) avMap.get("value_type"));
+        if (value_type == null) {
+            throw new IllegalArgumentException("Non supported value type!");
+        }
         String aggregateName = (String) avMap.get("name");
         return new AggregateValue(aggregateName, value, aggregation, value_type);
     }
@@ -193,7 +196,7 @@ public class JsonParser {
         return new Expression(values, Operator.getOperator(operator.toLowerCase()));
     }
 
-
+    @VisibleForTesting
     private static Value makeValue(Map<String, Object> field) {
         String type = (String) field.get("type");
         Value value;
