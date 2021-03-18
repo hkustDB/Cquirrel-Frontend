@@ -76,16 +76,16 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         //TODO: if a next key is the PK of a relation, then do not include any other column names of that relation or its children
         boolean isLeaf = relationProcessFunction.isLeaf();
-        String code = "class " +
-                className +
-                " extends " + RELATION_PROCESS_FUNCTION_IMPORT + "[Any](\"" +
-                relationProcessFunction.getRelation().getValue() + "\"," +
-                (isLeaf ? "" : relationProcessFunction.getChildNodes() + ",") +
-                keyListToCode(relationProcessFunction.getThisKey()) +
-                "," +
-                keyListToCode(optimizeKey(relationProcessFunction.getNextKey())) +
-                "," + relationProcessFunction.isRoot()
-                + (isLeaf ? ") {" : ", " + relationProcessFunction.isLast() + ") {");
+        String code = "class " + className + " extends "
+                + RELATION_PROCESS_FUNCTION_IMPORT + "[Any](\""
+                + relationProcessFunction.getRelation().getValue() + "\","
+                + (isLeaf ? "" : relationProcessFunction.getChildNodes() + ",")
+                + keyListToCode(relationProcessFunction.getThisKey()) + ","
+                + keyListToCode(optimizeKey(relationProcessFunction.getNextKey())) + ","
+                + relationProcessFunction.isRoot()
+                + (isLeaf ?
+                    ") {" :
+                    ", " + relationProcessFunction.isLast() + ") {");
         writer.writeln(code);
     }
 }
