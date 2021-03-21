@@ -42,7 +42,10 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addConstructorAndOpenClass(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("classClassNameProcessFunctionextendsAggregateProcessFunction[Any,Integer](\"ClassNameProcessFunction\",Array(),Array(),aggregateName=\"aggregateName\",deltaOutput=true) {").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("classClassNameProcessFunctionextendsAggregateProcessFunction[Any,Integer](\"ClassNameProcessFunction\",Array(),Array(),aggregateName=\"aggregateName\",deltaOutput=true) {"),
+                removeAllSpaces(picoWriter.toString())
+        );
     }
 
     @Test
@@ -51,7 +54,10 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addAdditionFunction(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("override def addition(value1: Integer, value2: Integer): Integer = value1 + value2").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("override def addition(value1: Integer, value2: Integer): Integer = value1 + value2"),
+                removeAllSpaces(picoWriter.toString())
+        );
     }
 
     @Test
@@ -60,7 +66,10 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addAdditionFunction(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("override def addition(value1: Integer, value2: Integer): Integer = value1 + value2").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("override def addition(value1: Integer, value2: Integer): Integer = value1 + value2"),
+                removeAllSpaces(picoWriter.toString())
+        );
     }
 
     @Test
@@ -69,7 +78,10 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addSubtractionFunction(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("override def subtraction(value1: Integer, value2: Integer): Integer = value1 - value2").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("override def subtraction(value1: Integer, value2: Integer): Integer = value1 - value2"),
+                removeAllSpaces(picoWriter.toString())
+        );
     }
 
     @Test
@@ -78,19 +90,26 @@ public class AggregateProcessFunctionWriterTest {
         getAggregateProcessFunctionWriter(Integer.class)
                 .addInitStateFunction(picoWriter);
 
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), ("override def initstate(): Unit = {\n" +
+        assertEquals(
+                removeAllSpaces("override def initstate(): Unit = {\n" +
                 "   val valueDescriptor = TypeInformation.of(new TypeHint[Integer](){})\n" +
                 "   val aliveDescriptor : ValueStateDescriptor[Integer] = new ValueStateDescriptor[Integer](\"ClassNameProcessFunction\"+\"Alive\", valueDescriptor)\n" +
                 "   alive = getRuntimeContext.getState(aliveDescriptor)\n" +
                 "   }\n" +
-                "      override val init_value: Integer = 0.0").replaceAll("\\s+", ""));
+                "      override val init_value: Integer = 0"),
+                removeAllSpaces(picoWriter.toString())
+        );
+    }
+
+    public String removeAllSpaces(String str) {
+        return str.replaceAll("\\s+", "");
     }
 
     private AggregateProcessFunctionWriter getAggregateProcessFunctionWriter(Class<?> aggregateType) {
         when(aggregateProcessFunction.getName()).thenReturn("ClassName");
         //when(aggregateProcessFunction.getValueType()).thenReturn(aggregateType);
-        AggregateValue aggregateValue = new AggregateValue("AggregateValue",
-                new AttributeValue(Relation.LINEITEM, "attributeValue"), Operator.SUM, Double.class);
+        AggregateValue aggregateValue = new AggregateValue("aggregateName",
+                new AttributeValue(Relation.LINEITEM, "attributeValue"), Operator.SUM, Integer.class);
         when(aggregateProcessFunction.getAggregateValues()).thenReturn(Collections.singletonList(aggregateValue));
         return new AggregateProcessFunctionWriter(aggregateProcessFunction, schema);
     }

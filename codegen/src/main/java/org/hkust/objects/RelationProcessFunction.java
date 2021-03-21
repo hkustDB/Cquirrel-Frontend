@@ -102,7 +102,7 @@ public class RelationProcessFunction extends ProcessFunction {
     }
 
     public boolean isLeaf() {
-        return childNodes == 0;
+        return getChildNodes() == 0;
     }
 
     public Relation getRelation() {

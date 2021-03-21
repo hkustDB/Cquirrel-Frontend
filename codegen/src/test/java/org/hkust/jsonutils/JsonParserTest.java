@@ -8,7 +8,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
@@ -65,25 +67,36 @@ public class JsonParserTest {
         requireNonNull(JsonParser.makeAggregateProcessFunction(mockMap, aggregateValues));
     }
 
+
     @Test
     public void makeAggregateValueTest() {
-        Mockito.when(mockMap.get("type")).thenReturn("expression");
-        Mockito.when(mockMap.get("name")).thenReturn("AggregateValue");
+        Mockito.when(mockMap.get("aggregation")).thenReturn("+");
+        Mockito.when(mockMap.get("value_type")).thenReturn("double");
+        Mockito.when(mockMap.get("name")).thenReturn("revenue");
 
         AggregateValue aggregateValue = JsonParser.makeAggregateValue(mockMap,
-                new Expression(Collections.singletonList(new AttributeValue(Relation.LINEITEM, "attributeValue")), Operator.NOT));
+                new Expression(
+                        Arrays.asList(
+                                new AttributeValue(Relation.LINEITEM, "l_discount"),
+                                new ConstantValue("1", "int")),
+                        Operator.SUM));
         Value value = aggregateValue.getValue();
         assertTrue(value instanceof Expression);
         Expression expression = (Expression) value;
-        assertEquals(expression.getValues().size(), 1);
+        assertEquals(expression.getValues().size(), 2);
     }
 
     @Test
     public void makeAggregateValueExceptionsTest() {
-        Mockito.when(mockMap.get("type")).thenReturn("wrongType");
-        thrownException.expect(RuntimeException.class);
-        thrownException.expectMessage("Unknown AggregateValue type. Currently only supporting expression type.");
+        Mockito.when(mockMap.get("aggregation")).thenReturn("#");
+        thrownException.expect(IllegalArgumentException.class);
+        thrownException.expectMessage("Got #");
         JsonParser.makeAggregateValue(mockMap, null);
+
+        Mockito.when(mockMap.get("aggregation")).thenReturn("!");
+        Mockito.when(mockMap.get("value_type")).thenReturn("symbol");
+        thrownException.expect(IllegalArgumentException.class);
+        thrownException.expectMessage("Non supported value type!");
     }
 
     /*@Test
