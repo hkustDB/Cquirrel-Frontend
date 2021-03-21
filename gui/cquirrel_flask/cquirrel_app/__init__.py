@@ -30,7 +30,6 @@ cors = CORS(resources={r"/*": {"origins": "*"}})
 
 stop_send_data_thread_flag = False
 send_data_control = "send"
-top_n_value = 5
 queue = Queue()
 
 
@@ -45,7 +44,6 @@ def r_run_socket_server(queue):
 
     sk.bind((host, port))
     sk.listen(5)
-
     conn, addr = sk.accept()
     t_data = ""
 
@@ -62,7 +60,7 @@ def r_run_socket_server(queue):
                     line = t_data[:close_quotation_idx + 1]
                     t_data = t_data[close_quotation_idx + 1:]
                     queue.put(line)
-                    # print("socket queue recv line: ", line)
+                    print("socket queue recv line: ", line)
 
 
 def create_app(config_name):
@@ -77,9 +75,6 @@ def create_app(config_name):
     bootstrap.init_app(app)
     socketio.init_app(app)
     cors.init_app(app)
-
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
 
     from .r import r as r_blueprint
     app.register_blueprint(r_blueprint)
@@ -260,7 +255,7 @@ def stop_send_data_thread():
     global stop_send_data_thread_flag
     stop_send_data_thread_flag = True
     while not queue.empty():
-        queue.get()
+        queue.get(block=True)
 
 
 def background_send_kafka_data_thread(query_idx):

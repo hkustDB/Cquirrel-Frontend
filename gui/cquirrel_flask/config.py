@@ -36,7 +36,7 @@ class BaseConfig:
     Q18_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q18.csv')
     Q18_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q18.csv')
 
-    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q3_0.1_sliding_window.csv')
+    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q10_0.1_sliding_window.csv')
     OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data.csv')
 
     # Top N Value Setting
