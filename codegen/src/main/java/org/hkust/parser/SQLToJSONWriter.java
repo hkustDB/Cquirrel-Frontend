@@ -6,6 +6,7 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
+import com.alibaba.druid.sql.ast.statement.SQLSubqueryTableSource;
 import com.alibaba.druid.sql.dialect.postgresql.ast.stmt.PGSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.postgresql.ast.stmt.PGSelectStatement;
 import com.alibaba.druid.util.JdbcConstants;
@@ -203,6 +204,31 @@ public class SQLToJSONWriter {
     }
 
     /***
+     * Detected if the query is recursive query, if true, then the query must be like
+     * "
+     * select * from ([SELECT_QUERY]) as ... where [CONDITION];
+     * "
+     * @param Visitor
+     * @return [SELECT_QUERY] in String
+     */
+    public String checkIfRecursive(ExportTableAliasVisitor Visitor) {
+        if (((PGSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery())
+                .getSelectList().iterator().next().getExpr().toString().equals("*")) {
+            if (!Visitor.aggregation.isEmpty()) {
+                SQLExpr filters = ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getWhere();
+                if (filters.getClass() == SQLBinaryOpExpr.class) {
+                    processFilter((SQLBinaryOpExpr) filters, "aggregation");
+                }
+            } else {
+                System.err.println("No Aggregation in Recursive queries!");
+            }
+            return ((SQLSubqueryTableSource) ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getFrom()).getSelect().getQuery().toString();
+        } else {
+            return null;
+        }
+    }
+
+    /***
      * The function adds the RelationProcessFunction section in the final json file.
      * @param Visitor The visitor of the parser.
      * @return
@@ -218,10 +244,12 @@ public class SQLToJSONWriter {
             processFilter((SQLBinaryOpExpr) filters);
         }
         SelectCondition.forEach((key, value) -> {
-            JSONObject condition = new JSONObject();
-            condition.put("operator", "&&");
-            condition.put("values", value);
-            writeRelationJsonObject(key, "select_conditions", condition);
+            if (!key.equals("aggregation")) {
+                JSONObject condition = new JSONObject();
+                condition.put("operator", "&&");
+                condition.put("values", value);
+                writeRelationJsonObject(key, "select_conditions", condition);
+            }
         });
 
         if (Visitor.groupByAttributes != null && Visitor.groupByAttributes.size() > 0) {
@@ -262,8 +290,12 @@ public class SQLToJSONWriter {
             }
             aggregationFunction.put("AggregateValue", aggregateValueList);
             //TODO modify to handle multiple aggregates
+            if (SelectCondition.containsKey("aggregation")) {
+                aggregationFunction.put("OutputSelectCondition", SelectCondition.get("aggregation"));
+            }
             aggregationFunctions.add(aggregationFunction);
             outputJsonObject.put("AggregateProcessFunction", aggregationFunctions);
+
         }
 
         return true;
@@ -275,6 +307,13 @@ public class SQLToJSONWriter {
             case "sum":
                 aggregate.put("aggregation", "+");
                 break;
+            case "count":
+                if (expr.getOption().name().equals("DISTINCT")) {
+                    aggregate.put("aggregation", "COUNT_DISTINCT");
+                } else {
+                    aggregate.put("aggregation", "COUNT");
+                }
+                break;
             default:
         }
 
@@ -284,7 +323,17 @@ public class SQLToJSONWriter {
         }
 
         aggregate.put("value", writeValueObject(expr.getArguments().get(0)));
-        aggregate.put("value_type", expr.computeDataType());
+        switch (expr.computeDataType().getName()) {
+            case "bigint":
+                aggregate.put("value_type", "int");
+                break;
+            case "double":
+            case "":
+                aggregate.put("value_type", "Double");
+                break;
+            default:
+                aggregate.put("value_type", expr.computeDataType());
+        }
         return aggregate;
     }
 
@@ -305,7 +354,13 @@ public class SQLToJSONWriter {
      *
      * @param expr
      */
+
     private void processFilter(SQLBinaryOpExpr expr) {
+        processFilter(expr, "");
+    }
+
+    private void processFilter(SQLBinaryOpExpr expr,
+                               String relationNameInit) {
         if (expr.getOperator().name == "OR") {
             JSONArray temp = SelectCondition.getOrDefault(lastObject, new JSONArray());
             temp.add(writeValueObject(expr));
@@ -318,7 +373,9 @@ public class SQLToJSONWriter {
                 if (expr.getLeft().getClass() == SQLIdentifierExpr.class && expr.getRight().getClass() == SQLIdentifierExpr.class) {
                     BinaryPredicates.add(expr);
                     if (getIdentifierRelation((SQLIdentifierExpr) expr.getLeft()).equals(getIdentifierRelation((SQLIdentifierExpr) expr.getRight()))) {
-                        String relationName = getIdentifierRelation((SQLIdentifierExpr) expr.getLeft());
+                        String relationName = relationNameInit;
+                        if (relationName.equals(""))
+                            relationName = getIdentifierRelation((SQLIdentifierExpr) expr.getLeft());
                         JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
                         temp.add(writeValueObject(expr));
                         SelectCondition.put(relationName, temp);
@@ -332,7 +389,8 @@ public class SQLToJSONWriter {
                         identifierExpr = (SQLIdentifierExpr) expr.getRight();
                     }
                     OP = expr.getOperator();
-                    String relationName = getIdentifierRelation(identifierExpr);
+                    String relationName = relationNameInit;
+                    if (relationName == "") relationName = getIdentifierRelation(identifierExpr);
                     //writeSelectConditionJSONObject(expr.getLeft(), expr.getRight(), OP, relationName);
                     JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
                     temp.add(writeValueObject(expr));
@@ -405,7 +463,7 @@ public class SQLToJSONWriter {
             case "p":
                 return "part";
             default:
-                return ("Unknown Prefix! " + prefix);
+                return ("Unknown");
         }
     }
 
@@ -472,10 +530,18 @@ public class SQLToJSONWriter {
         }
 
         if (expr.getClass() == SQLIdentifierExpr.class) {
-            value.put("type", "attribute");
-            value.put("relation", getIdentifierRelation((SQLIdentifierExpr) expr));
-            value.put("name", ((SQLIdentifierExpr) expr).getLowerName());
-            return value;
+            if (getIdentifierRelation((SQLIdentifierExpr) expr) != "Unknown") {
+                value.put("type", "attribute");
+                value.put("relation", getIdentifierRelation((SQLIdentifierExpr) expr));
+                value.put("name", truncateKey(((SQLIdentifierExpr) expr).getLowerName()));
+                return value;
+            } else {
+                value.put("type", "aggregate_attribute");
+                value.put("name", truncateKey(((SQLIdentifierExpr) expr).getLowerName()));
+                // Currently, for any attributes created during execution, we fix the value type to be Double.
+                value.put("var_type", "Double");
+                value.put("store_type", "String");
+            }
         }
 
         if (expr.getClass() == SQLDateExpr.class) {
