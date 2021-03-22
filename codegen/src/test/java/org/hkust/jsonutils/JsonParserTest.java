@@ -11,6 +11,9 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -105,6 +108,13 @@ public class JsonParserTest {
         assertEquals(result.get(0).getValues().size(), 2);
         assertEquals(result.get(1).getValues().size(), 2);
         assertEquals(result.get(0).getValues(), result.get(1).getValues());
+    }
+
+    @Test
+    public void informatinJsonFilePathTest() {
+        Path p = Paths.get("./input.json");
+        Path q = Paths.get("output.json");
+        assertEquals("./output.json", p.getParent().resolve(q).toString());
     }
 
     @NotNull
