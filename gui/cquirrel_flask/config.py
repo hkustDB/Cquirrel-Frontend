@@ -17,7 +17,7 @@ class BaseConfig:
     GENERATED_JAR_PATH = os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/jar')
     GENERATED_JSON_PATH = os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/jar/')
     GENERATED_JSON_FILE = os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/jar/generated.json')
-    INFORMATION_JSON_FILE = os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/information.json')
+    INFORMATION_JSON_FILE = os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/jar/information.json')
 
     GENERATED_CODE_DIR = os.path.join(GENERATED_JAR_PATH, 'generated-code')
     GENERATED_JAR_FILE = os.path.join(GUI_FLASK_PATH,
@@ -36,7 +36,7 @@ class BaseConfig:
     Q18_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q18.csv')
     Q18_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q18.csv')
 
-    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q6_0.1_sliding_window.csv')
+    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q3_0.1_sliding_window.csv')
     OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data.csv')
 
     # Top N Value Setting
