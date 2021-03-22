@@ -116,10 +116,13 @@ def clean_codegen_log_and_generated_jar():
 
 
 def clean_flink_output_files():
-    output_files = [BaseConfig.Q3_OUTPUT_DATA_FILE,
-                    BaseConfig.Q6_OUTPUT_DATA_FILE,
-                    BaseConfig.Q10_OUTPUT_DATA_FILE,
-                    BaseConfig.Q18_OUTPUT_DATA_FILE]
+    output_files = [
+        BaseConfig.OUTPUT_DATA_FILE,
+        BaseConfig.Q3_OUTPUT_DATA_FILE,
+        BaseConfig.Q6_OUTPUT_DATA_FILE,
+        BaseConfig.Q10_OUTPUT_DATA_FILE,
+        BaseConfig.Q18_OUTPUT_DATA_FILE
+    ]
 
     for strfile in output_files:
         if os.path.exists(strfile):
