@@ -135,6 +135,13 @@ public class Parser {
             System.out.println(ASTvisitor.groupByAttributes);
             System.out.println(ASTvisitor.aggregation);
             System.out.println(ASTvisitor.table);
+            String subqueryString = writer.checkIfRecursive(ASTvisitor);
+            if (subqueryString != null) {
+                ASTvisitor = new ExportTableAliasVisitor(){};
+                List<SQLStatement> subList = SQLUtils.parseStatements(subqueryString, dbType);
+                SQLStatement subquery = subList.iterator().next();
+                subquery.accept(ASTvisitor);
+            }
             SQLSelectQueryBlock j = (SQLSelectQueryBlock) ASTvisitor.selectStatement.iterator().next().getSelect().getQuery();
             System.out.println(j.getWhere());
             //System.out.println(ASTvisitor.selectItem);

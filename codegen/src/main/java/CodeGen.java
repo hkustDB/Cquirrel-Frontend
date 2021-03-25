@@ -201,7 +201,6 @@ class CodeGen implements Runnable {
     @Override
     public void run() {
         System.out.println("\nCquirrel -- CodeGen\n");
-        validateOptions(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
         if (sql != null) {
             System.out.println(sql);
             try {
@@ -211,6 +210,7 @@ class CodeGen implements Runnable {
                 e.printStackTrace();
             }
         }
+        validateOptions(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);
         try {
             prepareEnvironment(generatedDirectoryPath);
             CodeGenerator.generate(jsonFile, generatedDirectoryPath, flinkInputPath, flinkOutputPath, dataSinkTypes);

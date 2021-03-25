@@ -35,10 +35,12 @@ public class JsonParser {
         List<RelationProcessFunction> result = new ArrayList<>();
         rpfList.forEach(rpf -> {
             Map<String, Object> scMap = (Map<String, Object>) rpf.get("select_conditions");
-            List<Expression> scExpressions = makeSelectConditionsExpressions((List<Map<String, Object>>) scMap.get("values"));
-            String operator = (String) scMap.get("operator");
-            List<SelectCondition> selectConditions = makeSelectConditions(operator == null ? null : Operator.getOperator(operator), scExpressions);
-            result.add(makeRelationProcessFunction(rpf, selectConditions));
+            if (scMap != null) {
+                List<Expression> scExpressions = makeSelectConditionsExpressions((List<Map<String, Object>>) scMap.get("values"));
+                String operator = (String) scMap.get("operator");
+                List<SelectCondition> selectConditions = makeSelectConditions(operator == null ? null : Operator.getOperator(operator), scExpressions);
+                result.add(makeRelationProcessFunction(rpf, selectConditions));
+            } else result.add(makeRelationProcessFunction(rpf, null));
         });
 
         return result;
