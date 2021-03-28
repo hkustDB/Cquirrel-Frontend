@@ -10,48 +10,13 @@ export default class RelationGraph extends Component {
         super(props);
     }
 
-
-    // data = {
-    //     "binary": [
-    //         "c_custkey = o_custkey",
-    //         "l_orderkey = o_orderkey",
-    //         "l_receiptdate > l_commitdate"
-    //     ],
-    //     "relations": [
-    //         "lineitem",
-    //         "orders",
-    //         "customer"
-    //     ],
-    //     "unary": [
-    //         {
-    //             "lineitem": [
-    //                 "l_shipdate > DATE '1995-03-15'"
-    //             ]
-    //         },
-    //         {
-    //             "orders": [
-    //                 "o_orderdate < DATE '1995-03-15'"
-    //             ]
-    //         },
-    //         {
-    //             "customer": [
-    //                 "c_mktsegment = 'BUILDING'"
-    //             ]
-    //         }
-    //     ]
-    // }
-    //
-    // shouldComponentUpdate() {
-    //     this.data = this.props.relationsData;
-    // }
-
     render() {
         return (
             <div className="relationgraph-card">
                 <Card title="Relations Graph: ">
                     {
                         this.props.showRelationGraph ? (
-                            <div style={{textAlign:"left"}}>
+                            <div style={{textAlign: "left"}}>
                                 Base Relations:<br/>
                                 <div>
                                     {this.props.relationsData.relations.map((rel) => {
@@ -66,15 +31,25 @@ export default class RelationGraph extends Component {
                                 </div>
                                 Unary Predicates:<br/>
                                 <div>
-                                    {this.props.relationsData.unary.map((rel) => {
-                                        for (var key in rel) {
-                                            return <Button shape="round" size="small">{rel[key]}</Button>
-                                        }
-                                    })}
+                                    {
+                                        this.props.relationsData.unary.map(
+                                            (rel) => {
+                                                var tmpUnary = [];
+                                                for (var key in rel) {
+                                                    if (rel[key] instanceof Array) {
+                                                        var len = rel[key].length
+                                                        for (var i = 0; i < len; i++) {
+                                                            tmpUnary.push(<Button shape="round" size="small">{rel[key][i]}</Button>)
+                                                        }
+                                                    }
+                                                }
+                                                return tmpUnary
+                                            })
+                                    }
                                 </div>
 
                             </div>
-                        ):null
+                        ) : null
                     }
                 </Card>
             </div>
