@@ -81,7 +81,7 @@ export default class SqlEntry extends Component {
                 "where \n" +
                 "    o_orderdate >= date '1993-07-01'\n" +
                 "    and o_orderdate < date '1993-10-01'\n" +
-                "    and l_commitdate < l_recriptdate\n" +
+                "    and l_commitdate < l_receiptdate\n" +
                 "    and l_orderkey = o_orderkey\n" +
                 "group by \n" +
                 "    o_orderpriority"
