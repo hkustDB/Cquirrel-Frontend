@@ -103,10 +103,10 @@ public class JsonParser {
 
     @Nullable
     private static List<SelectCondition> getOutputSelectConditions(Map<String, Object> apfMap) {
-        Map<String, Object> outputSelectConditionMap = (Map<String, Object>) apfMap.get("OutputSelectCondition");
+//        Map<String, Object> outputSelectConditionMap = (Map<String, Object>) apfMap.get("OutputSelectCondition");
+        List<Map<String, Object>> values = (List<Map<String, Object>>) apfMap.get("OutputSelectCondition");
         List<SelectCondition> outputSelectConditions = null;
-        if (outputSelectConditionMap != null) {
-            List<Map<String, Object>> values = (List<Map<String, Object>>) outputSelectConditionMap.get("values");
+        if (values != null && !values.isEmpty()) {
             List<Expression> expressions = makeSelectConditionsExpressions(values);
             outputSelectConditions = makeSelectConditions(null, expressions);
         }
@@ -119,7 +119,7 @@ public class JsonParser {
             //String type = (String) aggValue.get("type");
             Value agv;
             //agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
-            agv = makeExpression((Map<String, Object>) aggValue.get("value"));
+            agv = makeValue((Map<String, Object>) aggValue.get("value"));
             /*if (type.equals("expression")) {
                 agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
             } else if (type.equals("attribute")) {
