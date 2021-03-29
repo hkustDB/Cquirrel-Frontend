@@ -202,7 +202,7 @@ def r_send_query_result_data_from_file():
                     # TopN
 
                     N = BaseConfig.TopNValue
-                    aggregate_name = BaseConfig.AggregateName
+                    aggregate_name = cquirrel_utils.get_aggregate_name_from_information_json()
 
                     line_list_len = len(line_list)
                     x_timestamp_idx = line_list_len - 1
@@ -302,7 +302,7 @@ def r_send_query_result_data_from_socket(q):
                 # TopN
 
                 N = BaseConfig.TopNValue
-                aggregate_name = BaseConfig.AggregateName
+                aggregate_name = cquirrel_utils.get_aggregate_name_from_information_json()
 
                 line_list_len = len(line_list)
                 x_timestamp_idx = line_list_len - 1
