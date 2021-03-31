@@ -110,7 +110,7 @@ public final class RelationSchema {
                     put("p_mfgr", new Attribute(Type.getClass("string"), 2, "p_mfgr"));
                     put("p_brand", new Attribute(Type.getClass("string"), 3, "p_brand"));
                     put("p_type", new Attribute(Type.getClass("string"), 4, "p_type"));
-                    put("p_size", new Attribute(Type.getClass("string"), 5, "p_size"));
+                    put("p_size", new Attribute(Type.getClass("int"), 5, "p_size"));
                     put("p_container", new Attribute(Type.getClass("string"), 6, "p_container"));
                     put("p_retailprice", new Attribute(Type.getClass("string"), 7, "p_retailprice"));
                     put("p_comment", new Attribute(Type.getClass("string"), 8, "p_comment"));
@@ -120,7 +120,7 @@ public final class RelationSchema {
                 .withColumnPrefix("p_")
                 .build();
 
-        SCHEMAS = ImmutableMap.of(LINEITEM, lineitem, ORDERS, orders, CUSTOMER, customer, NATION, nation);
+        SCHEMAS = ImmutableMap.of(LINEITEM, lineitem, ORDERS, orders, CUSTOMER, customer, NATION, nation, PART, part);
     }
 
     public Map<Relation, Schema> getAllSchemas() {
