@@ -407,16 +407,10 @@ public class SQLToJSONWriter {
         }
     }
 
-    private void processInList(SQLInListExpr expr) {
-
+    private SQLBinaryOpExpr inToBinaryOr(SQLInListExpr expr) {
         SQLIdentifierExpr identifierExpr;
         identifierExpr = (SQLIdentifierExpr) expr.getExpr();
-        String relationName = getIdentifierRelation(identifierExpr);
-        List<SQLExpr> tempList = UnaryPredicates.getOrDefault(relationName, new ArrayList<>());
-        tempList.add(expr);
-        UnaryPredicates.put(relationName, tempList);
         List<SQLExpr> targetList = expr.getTargetList();
-        JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
         StringBuilder inToOrClause = new StringBuilder();
         inToOrClause.append("select * where ");
         int cnt = 0;
@@ -426,7 +420,34 @@ public class SQLToJSONWriter {
             if (cnt < targetList.size()) inToOrClause.append(" or ");
         }
         List<SQLStatement> stmtList = SQLUtils.parseStatements(inToOrClause.toString(), JdbcConstants.POSTGRESQL);
-        SQLBinaryOpExpr inToOrWhere = (SQLBinaryOpExpr) ((PGSelectQueryBlock) ((PGSelectStatement) stmtList.get(0)).getSelect().getQuery()).getWhere();
+        return (SQLBinaryOpExpr) ((PGSelectQueryBlock) ((PGSelectStatement) stmtList.get(0)).getSelect().getQuery()).getWhere();
+    }
+
+    private void processInList(SQLInListExpr expr) {
+
+        SQLIdentifierExpr identifierExpr;
+        identifierExpr = (SQLIdentifierExpr) expr.getExpr();
+        String relationName = getIdentifierRelation(identifierExpr);
+        List<SQLExpr> tempList = UnaryPredicates.getOrDefault(relationName, new ArrayList<>());
+        tempList.add(expr);
+        UnaryPredicates.put(relationName, tempList);
+//        List<SQLExpr> tempList = UnaryPredicates.getOrDefault(relationName, new ArrayList<>());
+//        tempList.add(expr);
+//        UnaryPredicates.put(relationName, tempList);
+//        List<SQLExpr> targetList = expr.getTargetList();
+//        JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
+//        StringBuilder inToOrClause = new StringBuilder();
+//        inToOrClause.append("select * where ");
+//        int cnt = 0;
+//        for (SQLExpr value : targetList) {
+//            cnt +=1;
+//            inToOrClause.append(" ").append(identifierExpr.toString()).append(" = ").append(value.toString());
+//            if (cnt < targetList.size()) inToOrClause.append(" or ");
+//        }
+//        List<SQLStatement> stmtList = SQLUtils.parseStatements(inToOrClause.toString(), JdbcConstants.POSTGRESQL);
+        //SQLBinaryOpExpr inToOrWhere = (SQLBinaryOpExpr) ((PGSelectQueryBlock) ((PGSelectStatement) stmtList.get(0)).getSelect().getQuery()).getWhere();
+        JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
+        SQLBinaryOpExpr inToOrWhere = inToBinaryOr(expr);
         temp.add(writeValueObject(inToOrWhere));
         SelectCondition.put(relationName, temp);
     }
@@ -546,6 +567,10 @@ public class SQLToJSONWriter {
             value.put("type", "constant");
             value.put("var_type", "Double");
             value.put("value", ((SQLNumberExpr) expr).getValue());
+        }
+
+        if (expr.getClass() == SQLInListExpr.class) {
+            return writeValueObject(inToBinaryOr((SQLInListExpr) expr));
         }
 
         return value;
