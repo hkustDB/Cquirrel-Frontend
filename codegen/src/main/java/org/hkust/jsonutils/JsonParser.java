@@ -40,7 +40,9 @@ public class JsonParser {
                 String operator = (String) scMap.get("operator");
                 List<SelectCondition> selectConditions = makeSelectConditions(operator == null ? null : Operator.getOperator(operator), scExpressions);
                 result.add(makeRelationProcessFunction(rpf, selectConditions));
-            } else result.add(makeRelationProcessFunction(rpf, null));
+            } else {
+                result.add(makeRelationProcessFunction(rpf, null));
+            }
         });
 
         return result;

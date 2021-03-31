@@ -168,7 +168,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
-        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
+        writer.writeln("val result = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
         String className = getProcessFunctionClassName(root.getName());
         writer.writeln(".process(new " + className + "())");
         writer.writeln(".keyBy(i => i._3)");
