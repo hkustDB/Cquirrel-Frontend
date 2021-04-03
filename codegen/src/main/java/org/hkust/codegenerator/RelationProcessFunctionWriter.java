@@ -29,7 +29,9 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports(writer);
         addConstructorAndOpenClass(writer);
-        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
+//        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
+        addIsValidSelf(relationProcessFunction, writer);
+        addIsValidOther(relationProcessFunction, writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
 
@@ -63,6 +65,64 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         }
         writer.writeln_l("}");
     }
+
+    public void addIsValidSelf(RelationProcessFunction rpf, final PicoWriter writer) throws Exception{
+        writer.writeln_r("override def isValidSelf(value: Payload): Boolean = {");
+        List<SelectCondition> selectConditions = rpf.getSelectConditions();
+        String relationName = rpf.getRelation().getValue();
+        if (selectConditions == null) {
+            writer.writeln_r("true");
+        } else {
+            StringBuilder ifCondition = new StringBuilder();
+            ifCondition.append("if(");
+            SelectCondition condition;
+            for (int i = 0; i < selectConditions.size(); i++) {
+                condition = selectConditions.get(i);
+                expressionToCodeWithRelation(condition.getExpression(), ifCondition, relationName, true);
+                if (i < selectConditions.size() - 1) {
+                    //operator that binds each select condition
+                    ifCondition.append(condition.getOperator().getValue());
+                }
+            }
+
+            writer.write(ifCondition.toString());
+            writer.writeln_r("){");
+            writer.write("true");
+            writer.writeln_lr("}else{");
+            writer.write("false");
+            writer.writeln_l("}");
+        }
+        writer.writeln_l("}");
+    }
+    public void addIsValidOther(RelationProcessFunction rpf, final PicoWriter writer) throws Exception{
+        writer.writeln_r("override def isValidOther(value: Payload): Boolean = {");
+        List<SelectCondition> selectConditions = rpf.getSelectConditions();
+        String relationName = rpf.getRelation().getValue();
+        if (selectConditions == null) {
+            writer.writeln_r("true");
+        } else {
+            StringBuilder ifCondition = new StringBuilder();
+            ifCondition.append("if(");
+            SelectCondition condition;
+            for (int i = 0; i < selectConditions.size(); i++) {
+                condition = selectConditions.get(i);
+                expressionToCodeWithRelation(condition.getExpression(), ifCondition, relationName, false);
+                if (i < selectConditions.size() - 1) {
+                    //operator that binds each select condition
+                    ifCondition.append(condition.getOperator().getValue());
+                }
+            }
+
+            writer.write(ifCondition.toString());
+            writer.writeln_r("){");
+            writer.write("true");
+            writer.writeln_lr("}else{");
+            writer.write("false");
+            writer.writeln_l("}");
+        }
+        writer.writeln_l("}");
+    }
+
 
     @Override
     public void addImports(final PicoWriter writer) {

@@ -38,6 +38,16 @@ public class Expression implements Value {
         }
     }
 
+    public boolean isAtomic() {
+        List<Value> vs = this.getValues();
+        for (Value v : vs) {
+            if (v instanceof Expression) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         return "Expression{" +

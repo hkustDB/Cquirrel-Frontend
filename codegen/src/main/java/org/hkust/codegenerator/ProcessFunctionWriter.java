@@ -78,6 +78,63 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         }
     }
 
+    protected void expressionToCodeWithRelation(final Expression expression, StringBuilder code, String relationName, boolean belongToThisRelation) {
+        List<Value> values = expression.getValues();
+        int size = values.size();
+        if (expression.getOperator().equals(Operator.CASE)) {
+            caseIfCode(expression, code);
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            Value value = values.get(i);
+            if (value instanceof Expression) {
+                Expression exp = (Expression) value;
+                if (exp.isAtomic()) {
+                    if (belongToThisRelation) {
+                        if (isExpressionContainRelationAttributes(exp, relationName)) {
+                            code.append("(");
+                            expressionToCodeWithRelation((Expression) value, code, relationName, belongToThisRelation);
+                            code.append(")");
+                        } else {
+                            continue;
+                        }
+                    }
+                    else {
+                        if (isExpressionContainRelationAttributes(exp, relationName)) {
+                            continue;
+                        } else {
+                            code.append("(");
+                            expressionToCodeWithRelation((Expression) value, code, relationName, belongToThisRelation);
+                            code.append(")");
+                        }
+                    }
+                } else {
+                    code.append("(");
+                    expressionToCodeWithRelation((Expression) value, code, relationName, belongToThisRelation);
+                    code.append(")");
+                }
+
+            } else {
+                valueToCode(value, code);
+            }
+            if (i != size - 1) {
+                code.append(expression.getOperator().getValue());
+            }
+        }
+    }
+
+    protected boolean isExpressionContainRelationAttributes(Expression exp, String relationName) {
+        List<Value> values = exp.getValues();
+        for (Value v : values) {
+            if (v instanceof AttributeValue) {
+                if (((AttributeValue) v).getRelation().getValue().equals(relationName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected void constantValueToCode(ConstantValue value, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(value);
