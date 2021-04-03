@@ -17,32 +17,31 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 /**
- The json-simple library is compiled with an old bytecode version: 46.0, which causes multiple "unchecked" warning.
- The following command will suppress all such warning as a temporal fixed.  A better solution is to use a library like
- org.json to support generics type.
+ * The json-simple library is compiled with an old bytecode version: 46.0, which causes multiple "unchecked" warning.
+ * The following command will suppress all such warning as a temporal fixed.  A better solution is to use a library like
+ * org.json to support generics type.
  */
 @SuppressWarnings("unchecked")
 public class SQLToJSONWriter {
-    private String outputFileName = "";
     private final JSONObject outputJsonObject = new JSONObject();
     private final HashMap<String, JSONObject> relationJsonObject = new HashMap<>();
-
-    private boolean lineitemSetThisKey = false;
-    private String lastObject;
     private final HashMap<String, JSONArray> SelectCondition = new HashMap<>();
     private final Map<String, Integer> childCount = new HashMap<>();
-    private String root = "";
-
     private final JSONArray aggregationFunctions = new JSONArray();
     private final JSONObject aggregationFunction = new JSONObject();
     private final JSONArray aggregateValues = new JSONArray();
-
     public HashSet<SQLExpr> BinaryPredicates = new HashSet<>();
     public HashMap<String, List<SQLExpr>> UnaryPredicates = new HashMap<>();
+    private String outputFileName = "";
+    private boolean lineitemSetThisKey = false;
+    private String lastObject;
+    private String root = "";
+
     SQLToJSONWriter(String Filename) {
         outputFileName = Filename;
     }
@@ -64,7 +63,7 @@ public class SQLToJSONWriter {
                 l_o.put("foreign", "lineitem");
                 messages.add(l_o);
                 int count = childCount.getOrDefault("lineitem", 0);
-                childCount.put("lineitem",count+1);
+                childCount.put("lineitem", count + 1);
                 keyList.add("orderkey");
                 writeRelationJsonObject("lineitem", "this_key", keyList);
                 lineitemSetThisKey = true;
@@ -75,9 +74,28 @@ public class SQLToJSONWriter {
                 l_ps.put("foreign", "lineitem");
                 messages.add(l_ps);
                 int count = childCount.getOrDefault("lineitem", 0);
-                childCount.put("lineitem",count+1);
+                childCount.put("lineitem", count + 1);
             }
             //TODO Handling Part and Supplier if PS table not exists.
+            if (table.contains("part")) {
+                JSONObject l_p = new JSONObject();
+                l_p.put("primary", "part");
+                l_p.put("foreign", "lineitem");
+                messages.add(l_p);
+                int count = childCount.getOrDefault("lineitem", 0);
+                childCount.put("lineitem", count + 1);
+                keyList.add("partkey");
+                writeRelationJsonObject("lineitem", "this_key", keyList);
+                lineitemSetThisKey = true;
+            }
+            if (table.contains("supplier")) {
+                JSONObject l_s = new JSONObject();
+                l_s.put("primary", "supplier");
+                l_s.put("foreign", "lineitem");
+                messages.add(l_s);
+                int count = childCount.getOrDefault("lineitem", 0);
+                childCount.put("lineitem", count + 1);
+            }
 
             writeRelationDefinition("lineitem");
             if (!lineitemSetThisKey) {
@@ -102,14 +120,14 @@ public class SQLToJSONWriter {
                 o_c.put("foreign", "orders");
                 messages.add(o_c);
                 int count = childCount.getOrDefault("orders", 0);
-                childCount.put("orders",count+1);
+                childCount.put("orders", count + 1);
                 keyList.add("custkey");
             } else {
                 keyList.add("orderkey");
             }
             writeRelationJsonObject("orders", "this_key", keyList);
             writeRelationDefinition("orders");
-            if (!table.contains("lineitem"))  {
+            if (!table.contains("lineitem")) {
                 writeRelationJsonObject("orders", "is_Root", true);
                 lastObject = "orders";
             } else {
@@ -223,7 +241,7 @@ public class SQLToJSONWriter {
             } else {
                 System.err.println("No Aggregation in Recursive queries!");
             }
-            return  ((SQLSubqueryTableSource) ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getFrom()).getSelect().getQuery().toString();
+            return ((SQLSubqueryTableSource) ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getFrom()).getSelect().getQuery().toString();
         } else {
             return null;
         }
@@ -283,7 +301,7 @@ public class SQLToJSONWriter {
 
         if (!Visitor.aggregation.isEmpty()) {
             int count = 0;
-            aggregationFunction.put("name", "QAggregate"+count);
+            aggregationFunction.put("name", "QAggregate" + count);
             aggregationFunction.put("delta_output", true);
             JSONArray aggregateValueList = new JSONArray();
             for (SQLAggregateExpr i : Visitor.aggregation) {
@@ -305,15 +323,17 @@ public class SQLToJSONWriter {
     private JSONObject getAggregateValue(SQLAggregateExpr expr) {
         JSONObject aggregate = new JSONObject();
         switch (expr.getMethodName()) {
-            case "sum" : aggregate.put("aggregation", "+"); break;
-            case "count" :
+            case "sum":
+                aggregate.put("aggregation", "+");
+                break;
+            case "count":
                 if (expr.getOption().name().equals("DISTINCT")) {
                     aggregate.put("aggregation", "COUNT_DISTINCT");
                 } else {
                     aggregate.put("aggregation", "COUNT");
                 }
                 break;
-            default :
+            default:
         }
 
         if (((SQLSelectItem) expr.getParent()).getAlias() != null) {
@@ -323,10 +343,15 @@ public class SQLToJSONWriter {
 
         aggregate.put("value", writeValueObject(expr.getArguments().get(0)));
         switch (expr.computeDataType().getName()) {
-            case "bigint" : aggregate.put("value_type", "int"); break;
-            case "double" :
-            case "" : aggregate.put("value_type", "Double"); break;
-            default : aggregate.put("value_type", expr.computeDataType());
+            case "bigint":
+                aggregate.put("value_type", "int");
+                break;
+            case "double":
+            case "":
+                aggregate.put("value_type", "Double");
+                break;
+            default:
+                aggregate.put("value_type", expr.computeDataType());
         }
         return aggregate;
     }
@@ -368,7 +393,8 @@ public class SQLToJSONWriter {
                     BinaryPredicates.add(expr);
                     if (getIdentifierRelation((SQLIdentifierExpr) expr.getLeft()).equals(getIdentifierRelation((SQLIdentifierExpr) expr.getRight()))) {
                         String relationName = relationNameInit;
-                        if (relationName.equals("")) relationName = getIdentifierRelation((SQLIdentifierExpr) expr.getLeft());
+                        if (relationName.equals(""))
+                            relationName = getIdentifierRelation((SQLIdentifierExpr) expr.getLeft());
                         JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
                         temp.add(writeValueObject(expr));
                         SelectCondition.put(relationName, temp);
@@ -415,7 +441,7 @@ public class SQLToJSONWriter {
         inToOrClause.append("select * where ");
         int cnt = 0;
         for (SQLExpr value : targetList) {
-            cnt +=1;
+            cnt += 1;
             inToOrClause.append(" ").append(identifierExpr.toString()).append(" = ").append(value.toString());
             if (cnt < targetList.size()) inToOrClause.append(" or ");
         }
@@ -460,15 +486,24 @@ public class SQLToJSONWriter {
     private String getIdentifierRelation(SQLIdentifierExpr expr) {
         String prefix = expr.getLowerName().split("_")[0];
         switch (prefix) {
-            case "l" : return "lineitem";
-            case "o" : return "orders";
-            case "ps" : return "partsupp";
-            case "s" : return "supplier";
-            case "n" : return "nation";
-            case "r" : return "region";
-            case "c" : return "customer";
-            case "p" : return "part";
-            default : return ("Unknown");
+            case "l":
+                return "lineitem";
+            case "o":
+                return "orders";
+            case "ps":
+                return "partsupp";
+            case "s":
+                return "supplier";
+            case "n":
+                return "nation";
+            case "r":
+                return "region";
+            case "c":
+                return "customer";
+            case "p":
+                return "part";
+            default:
+                return ("Unknown");
         }
     }
 
@@ -496,10 +531,17 @@ public class SQLToJSONWriter {
 
     private void writeOP(SQLBinaryOperator OP, JSONObject object) {
         switch (OP.name) {
-            case "=" : object.put("operator", "=="); break;
-            case "OR" : object.put("operator", "||"); break;
-            case "AND" : object.put("operator", "&&"); break;
-            default : object.put("operator", OP.name);
+            case "=":
+                object.put("operator", "==");
+                break;
+            case "OR":
+                object.put("operator", "||");
+                break;
+            case "AND":
+                object.put("operator", "&&");
+                break;
+            default:
+                object.put("operator", OP.name);
         }
     }
 
@@ -549,7 +591,7 @@ public class SQLToJSONWriter {
             return value;
         }
 
-        if (expr.getClass() == SQLCharExpr.class){
+        if (expr.getClass() == SQLCharExpr.class) {
             value.put("type", "constant");
             value.put("var_type", "varchar");
             value.put("value", ((SQLCharExpr) expr).getValue());
@@ -560,6 +602,13 @@ public class SQLToJSONWriter {
             value.put("type", "constant");
             value.put("var_type", "int");
             value.put("value", ((SQLIntegerExpr) expr).getValue());
+            return value;
+        }
+
+        if (expr.getClass() == SQLBigIntExpr.class) {
+            value.put("type", "constant");
+            value.put("var_type", "Long");
+            value.put("value", ((SQLBigIntExpr) expr).getValue());
             return value;
         }
 
@@ -603,14 +652,16 @@ public class SQLToJSONWriter {
      *
      * @throws Exception
      */
-    public void printJson() throws Exception{
+    public void printJson() throws Exception {
+        Path p = Paths.get(outputFileName);
+        Path q = Paths.get("information.json");
         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         String json = gson.toJson(JsonParser.parseString(outputJsonObject.toJSONString()));
-        Files.write(Paths.get(outputFileName), json.getBytes());
+        Files.write(p, json.getBytes());
         Gson gson2 = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
         JSONObject information = createInformation();
         String json2 = gson2.toJson(JsonParser.parseString(information.toJSONString()));
-        Files.write(Paths.get("information.json"), json2.getBytes());
+        Files.write(p.getParent().resolve(q).toAbsolutePath().normalize(), json2.getBytes());
     }
 
     /***
@@ -619,7 +670,7 @@ public class SQLToJSONWriter {
      */
     private void writeRelationDefinition(String name) {
         JSONObject object = relationJsonObject.getOrDefault(name, new JSONObject());
-        object.put("name", "Q"+name);
+        object.put("name", "Q" + name);
         object.put("relation", name);
         object.put("child_nodes", childCount.getOrDefault(name, 0));
         object.put("rename_attribute", null);
