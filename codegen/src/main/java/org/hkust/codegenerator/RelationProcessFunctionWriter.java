@@ -3,6 +3,7 @@ package org.hkust.codegenerator;
 import com.google.common.annotations.VisibleForTesting;
 import org.ainslec.picocog.PicoWriter;
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.objects.Expression;
 import org.hkust.objects.RelationProcessFunction;
 import org.hkust.objects.SelectCondition;
 import org.hkust.schema.RelationSchema;
@@ -29,7 +30,9 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports(writer);
         addConstructorAndOpenClass(writer);
-        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
+//        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
+        addIsValidSelfFunction(relationProcessFunction, writer);
+        addIsValidOtherFunction(relationProcessFunction, writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
 
@@ -64,6 +67,70 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln_l("}");
     }
 
+    @VisibleForTesting
+    void addIsValidSelfFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
+        writer.writeln_r("override def isValidSelf(value: Payload): Boolean = {");
+        List<SelectCondition> selectConditions = rpf.getSelectConditions();
+        if (selectConditions == null) {
+            writer.writeln_r("true");
+        } else {
+            StringBuilder ifCondition = new StringBuilder();
+            ifCondition.append("if(");
+            SelectCondition condition;
+            for (int i = 0; i < selectConditions.size(); i++) {
+                condition = selectConditions.get(i);
+                Expression exp = condition.getExpression();
+                if (exp.hasOtherRelationAttributes(rpf.getRelation())) {
+                    continue;
+                }
+                ifCondition.append(" (");
+                expressionToCode(condition.getExpression(), ifCondition);
+                ifCondition.append(") &&");
+            }
+            ifCondition.delete(ifCondition.length() - 2, ifCondition.length());
+
+            writer.write(ifCondition.toString());
+            writer.writeln_r("){");
+            writer.write("true");
+            writer.writeln_lr("}else{");
+            writer.write("false");
+            writer.writeln_l("}");
+        }
+        writer.writeln_l("}");
+    }
+
+    @VisibleForTesting
+    void addIsValidOtherFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
+        writer.writeln_r("override def isValidOther(value: Payload): Boolean = {");
+        List<SelectCondition> selectConditions = rpf.getSelectConditions();
+        if (selectConditions == null) {
+            writer.writeln_r("true");
+        } else {
+            StringBuilder ifCondition = new StringBuilder();
+            ifCondition.append("if(");
+            SelectCondition condition;
+            for (int i = 0; i < selectConditions.size(); i++) {
+                condition = selectConditions.get(i);
+                Expression exp = condition.getExpression();
+                if (!exp.hasOtherRelationAttributes(rpf.getRelation())) {
+                    continue;
+                }
+                ifCondition.append(" (");
+                expressionToCode(condition.getExpression(), ifCondition);
+                ifCondition.append(") &&");
+            }
+            ifCondition.delete(ifCondition.length() - 2, ifCondition.length());
+
+            writer.write(ifCondition.toString());
+            writer.writeln_r("){");
+            writer.write("true");
+            writer.writeln_lr("}else{");
+            writer.write("false");
+            writer.writeln_l("}");
+        }
+        writer.writeln_l("}");
+    }
+
     @Override
     public void addImports(final PicoWriter writer) {
         writer.writeln("import scala.math.Ordered.orderingToOrdered");
@@ -84,8 +151,8 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
                 + keyListToCode(optimizeKey(relationProcessFunction.getNextKey())) + ","
                 + relationProcessFunction.isRoot()
                 + (isLeaf ?
-                    ") {" :
-                    ", " + relationProcessFunction.isLast() + ") {");
+                ") {" :
+                ", " + relationProcessFunction.isLast() + ") {");
         writer.writeln(code);
     }
 }
