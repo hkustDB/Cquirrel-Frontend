@@ -30,15 +30,16 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         CheckerUtils.checkNullOrEmpty(filePath, "filePath");
         addImports(writer);
         addConstructorAndOpenClass(writer);
-//        addIsValidFunction(relationProcessFunction.getSelectConditions(), writer);
-        addIsValidSelfFunction(relationProcessFunction, writer);
-        addIsValidOtherFunction(relationProcessFunction, writer);
+        addIsValidFunction(relationProcessFunction, writer);
+//        addIsValidSelfFunction(relationProcessFunction, writer);
+//        addIsValidOtherFunction(relationProcessFunction, writer);
         closeClass(writer);
         writeClassFile(className, filePath, writer.toString());
 
         return className;
     }
 
+    @Deprecated
     @VisibleForTesting
     void addIsValidFunction(List<SelectCondition> selectConditions, final PicoWriter writer) throws Exception {
         writer.writeln_r("override def isValid(value: Payload): Boolean = {");
@@ -68,9 +69,10 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
     }
 
     @VisibleForTesting
-    void addIsValidSelfFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
-        writer.writeln_r("override def isValidSelf(value: Payload): Boolean = {");
+    void addIsValidFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
+        writer.writeln_r("override def isValid(value: Payload): Boolean = {");
         List<SelectCondition> selectConditions = rpf.getSelectConditions();
+        boolean expHasOtherRelationAttributes = false;
         if (selectConditions == null) {
             writer.writeln_r("true");
         } else {
@@ -81,6 +83,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
                 condition = selectConditions.get(i);
                 Expression exp = condition.getExpression();
                 if (exp.hasOtherRelationAttributes(rpf.getRelation())) {
+                    expHasOtherRelationAttributes = true;
                     continue;
                 }
                 ifCondition.append(" (");
@@ -97,11 +100,15 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
             writer.writeln_l("}");
         }
         writer.writeln_l("}");
+
+        if (expHasOtherRelationAttributes) {
+            addIsOutputValidFunction(rpf, writer);
+        }
     }
 
     @VisibleForTesting
-    void addIsValidOtherFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
-        writer.writeln_r("override def isValidOther(value: Payload): Boolean = {");
+    void addIsOutputValidFunction(RelationProcessFunction rpf, final PicoWriter writer) throws Exception {
+        writer.writeln_r("override def isOutputValid(value: Payload): Boolean = {");
         List<SelectCondition> selectConditions = rpf.getSelectConditions();
         if (selectConditions == null) {
             writer.writeln_r("true");
