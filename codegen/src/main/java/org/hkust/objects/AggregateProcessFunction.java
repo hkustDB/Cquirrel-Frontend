@@ -19,8 +19,6 @@ public class AggregateProcessFunction extends ProcessFunction {
     private final List<String> outputKey;
 
     private final List<org.hkust.objects.AggregateValue> aggregateValues;
-    //private final Operator aggregation;
-    //private final Class<?> valueType;
     private final List<SelectCondition> aggregateSelectCondition;
 
     public AggregateProcessFunction(String name, List<String> thisKey, List<String> outputKey, List<AggregateValue> aggregateValues,
@@ -34,10 +32,6 @@ public class AggregateProcessFunction extends ProcessFunction {
 
         requireNonNull(aggregateValues);
         this.aggregateValues = aggregateValues;
-//        requireNonNull(aggregation);
-//        this.aggregation = aggregation;
-//        requireNonNull(valueType);
-//        this.valueType = valueType;
     }
 
     @Override
@@ -85,14 +79,6 @@ public class AggregateProcessFunction extends ProcessFunction {
         return aggregateValues;
     }
 
-    /*public Operator getAggregation() {
-        return aggregation;
-    }
-
-    public Class getValueType() {
-        return valueType;
-    }*/
-
     @Nullable
     public List<SelectCondition> getAggregateSelectCondition() {
         return aggregateSelectCondition;
@@ -105,8 +91,6 @@ public class AggregateProcessFunction extends ProcessFunction {
                 ", thisKey=" + thisKey +
                 ", nextKey=" + outputKey +
                 ", computation=" + aggregateValues +
-                //", aggregation=" + aggregation +
-                //", valueType=" + valueType +
                 '}';
     }
 }
