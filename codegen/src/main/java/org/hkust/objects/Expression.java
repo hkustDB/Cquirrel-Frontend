@@ -1,6 +1,7 @@
 package org.hkust.objects;
 
 import org.hkust.checkerutils.CheckerUtils;
+import org.hkust.schema.Relation;
 
 import java.util.List;
 
@@ -36,6 +37,21 @@ public class Expression implements Value {
                 throw new IllegalArgumentException("Expression with more than 2 values can only have && or || as the operator");
             }
         }
+    }
+
+    public boolean hasOtherRelationAttributes(Relation relation) {
+        List<Value> values = this.getValues();
+        for (Value v : values) {
+            if (v instanceof  Expression) {
+                return ((Expression) v).hasOtherRelationAttributes(relation);
+            }
+            if (v instanceof AttributeValue) {
+                if (! ((AttributeValue) v).getRelation().equals(relation)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

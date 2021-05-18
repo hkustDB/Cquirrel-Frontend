@@ -17,6 +17,9 @@ public final class RelationSchema {
     public final Schema customer;
     public final Schema nation;
     public final Schema part;
+    public final Schema supplier;
+    public final Schema partsupp;
+    public final Schema region;
 
     private final Map<Relation, Schema> SCHEMAS;
 
@@ -81,13 +84,14 @@ public final class RelationSchema {
                     put("c_mktsegment", new Attribute(Type.getClass("string"), 6, "c_mktsegment"));
                     put("c_comment", new Attribute(Type.getClass("string"), 7, "c_comment"));
                 }})
-                .withParent(ORDERS)
                 .withPrimaryKey(singletonList(customerPrimaryKey))
                 .withChildren(singletonList(NATION))
+                .withParent(ORDERS)
                 .withRelationName(CUSTOMER)
                 .withColumnPrefix("c_")
                 .build();
 
+        // TODO: parent contains two relation: customer and supplier. need to change this method.
         Attribute nationPrimaryKey = new Attribute(Type.getClass("long"), 0, "nationkey");
         nation = Schema.builder()
                 .withAttributes(new HashMap<String, Attribute>() {{
@@ -96,8 +100,9 @@ public final class RelationSchema {
                     put("n_regionkey", new Attribute(Type.getClass("string"), 2, "n_address"));
                     put("n_comment", new Attribute(Type.getClass("string"), 3, "n_comment"));
                 }})
-                .withParent(CUSTOMER)
                 .withPrimaryKey(singletonList(nationPrimaryKey))
+                .withChildren(singletonList(REGION))
+                .withParent(CUSTOMER)
                 .withRelationName(NATION)
                 .withColumnPrefix("n_")
                 .build();
@@ -110,17 +115,78 @@ public final class RelationSchema {
                     put("p_mfgr", new Attribute(Type.getClass("string"), 2, "p_mfgr"));
                     put("p_brand", new Attribute(Type.getClass("string"), 3, "p_brand"));
                     put("p_type", new Attribute(Type.getClass("string"), 4, "p_type"));
-                    put("p_size", new Attribute(Type.getClass("string"), 5, "p_size"));
+                    put("p_size", new Attribute(Type.getClass("int"), 5, "p_size"));
                     put("p_container", new Attribute(Type.getClass("string"), 6, "p_container"));
                     put("p_retailprice", new Attribute(Type.getClass("string"), 7, "p_retailprice"));
                     put("p_comment", new Attribute(Type.getClass("string"), 8, "p_comment"));
                 }})
                 .withPrimaryKey(singletonList(partPrimaryKey))
+                .withChildren(null)
+                .withParent(PARTSUPP)
                 .withRelationName(PART)
                 .withColumnPrefix("p_")
                 .build();
 
-        SCHEMAS = ImmutableMap.of(LINEITEM, lineitem, ORDERS, orders, CUSTOMER, customer, NATION, nation);
+        Attribute supplierPrimaryKey = new Attribute(Type.getClass("long"), 0, "suppkey");
+        supplier = Schema.builder().
+                withAttributes(new HashMap<String, Attribute>() {{
+                    put("suppkey", supplierPrimaryKey);
+                    put("s_name", new Attribute(Type.getClass("string"), 1, "s_name"));
+                    put("s_address", new Attribute(Type.getClass("string"), 2, "s_address"));
+                    put("nationkey", new Attribute(Type.getClass("long"), 3, "nationkey"));
+                    put("s_phone", new Attribute(Type.getClass("string"), 4, "s_phone"));
+                    put("s_acctbal", new Attribute(Type.getClass("double"), 5, "s_acctbal"));
+                    put("s_comment", new Attribute(Type.getClass("string"), 6, "s_comment"));
+                }})
+                .withPrimaryKey(singletonList(supplierPrimaryKey))
+                .withChildren(singletonList(NATION))
+                .withParent(PARTSUPP)
+                .withRelationName(SUPPLIER)
+                .withColumnPrefix("s_")
+                .build();
+
+        // TODO: partsupp have two children relation: part and supplier
+        Attribute partsuppPrimaryKey1 = new Attribute(Type.getClass("long"), 0, "partkey");
+        Attribute partsuppPrimaryKey2 = new Attribute(Type.getClass("long"), 1, "suppkey");
+        partsupp = Schema.builder().
+                withAttributes(new HashMap<String, Attribute>() {{
+                    put("partkey", partsuppPrimaryKey1);
+                    put("suppkey", partsuppPrimaryKey2);
+                    put("ps_availqty", new Attribute(Type.getClass("int"), 2, "ps_availqty"));
+                    put("ps_supplycost", new Attribute(Type.getClass("double"), 3, "ps_supplycost"));
+                    put("ps_comment", new Attribute(Type.getClass("string"), 4, "ps_comment"));
+                }})
+                .withPrimaryKey(Arrays.asList(partsuppPrimaryKey1, partsuppPrimaryKey2))
+                .withChildren(singletonList(PART))
+                .withParent(LINEITEM)
+                .withRelationName(PARTSUPP)
+                .withColumnPrefix("ps_")
+                .build();
+
+        Attribute regionPrimaryKey = new Attribute(Type.getClass("long"), 0, "regionkey");
+        region = Schema.builder().
+                withAttributes(new HashMap<String, Attribute>() {{
+                    put("regionkey", regionPrimaryKey);
+                    put("r_name", new Attribute(Type.getClass("string"), 1, "r_name"));
+                    put("r_comment", new Attribute(Type.getClass("string"), 2, "r_comment"));
+                }})
+                .withPrimaryKey(singletonList(regionPrimaryKey))
+                .withChildren(null)
+                .withParent(NATION)
+                .withRelationName(REGION)
+                .withColumnPrefix("r_")
+                .build();
+
+        SCHEMAS = new ImmutableMap.Builder<Relation, Schema>()
+                .put(LINEITEM, lineitem)
+                .put(ORDERS, orders)
+                .put(CUSTOMER, customer)
+                .put(NATION, nation)
+                .put(PART, part)
+                .put(SUPPLIER, supplier)
+                .put(PARTSUPP, partsupp)
+                .put(REGION, region)
+                .build();
     }
 
     public Map<Relation, Schema> getAllSchemas() {

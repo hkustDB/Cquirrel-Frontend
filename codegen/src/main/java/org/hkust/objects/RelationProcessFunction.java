@@ -50,9 +50,10 @@ public class RelationProcessFunction extends ProcessFunction {
         Set<Attribute> result = new HashSet<>(schema.getSchema(relation).getPrimaryKey());
         if (selectConditions != null) {
             selectConditions.forEach(selectCondition -> {
-                selectCondition.getExpression().getValues().forEach(value -> {
-                    addIfAttributeValue(result, value, schema);
-                });
+                selectCondition.getExpression().getValues().forEach(
+                        value -> {
+                            addIfAttributeValue(result, value, schema);
+                        });
             });
         }
 
