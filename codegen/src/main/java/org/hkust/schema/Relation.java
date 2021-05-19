@@ -5,7 +5,10 @@ public enum Relation {
     ORDERS("orders"),
     CUSTOMER("customer"),
     NATION("nation"),
-    PART("part");
+    PART("part"),
+    SUPPLIER("supplier"),
+    PARTSUPP("partsupp"),
+    REGION("region");
 
     private String relation;
 

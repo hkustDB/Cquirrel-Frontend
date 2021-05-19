@@ -54,7 +54,10 @@ public class ProcessFunctionWriterTest {
         ProcessFunctionWriter processFunctionWriter = getProcessFunctionWriter();
         StringBuilder code = new StringBuilder();
         testExpressionToCode(processFunctionWriter, expression, code);
-        assertEquals(code.toString().replaceAll("\\s+", ""), ("format.parse(\"constant1\")&&constant2&&value(\"ATTRIBUTENAME\").asInstanceOf[Integer]").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("format.parse(\"constant1\")&&constant2&&value(\"ATTRIBUTENAME\").asInstanceOf[Integer]"),
+                removeAllSpaces(code.toString())
+        );
 
         //must get a new reference, do not clear the existing values list and reuse the same reference, will result in stack overflow
         values = new ArrayList<>();
@@ -64,7 +67,10 @@ public class ProcessFunctionWriterTest {
         code = new StringBuilder();
         testExpressionToCode(processFunctionWriter, expression2, code);
 
-        assertEquals(code.toString().replaceAll("\\s+", ""), ("constant2||format.parse(\"constant1\")&&constant2&&value(\"ATTRIBUTENAME\").asInstanceOf[Integer]").replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("constant2||(format.parse(\"constant1\")&&constant2&&value(\"ATTRIBUTENAME\").asInstanceOf[Integer])"),
+                removeAllSpaces(code.toString())
+        );
     }
 
     @Test
@@ -97,4 +103,7 @@ public class ProcessFunctionWriterTest {
         return new RelationProcessFunctionWriter(relationProcessFunction, schema);
     }
 
+    public String removeAllSpaces(String str) {
+        return str.replaceAll("\\s+", "");
+    }
 }
