@@ -119,13 +119,28 @@ class MainClassWriter implements ClassWriter {
         writer.writeln_l("}");
     }
 
-    private void writeDataSink(final PicoWriter writer) {
-        if (this.isSocketSink) {
-            writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema()).setParallelism(1)");
+
+    @NotNull
+    private RelationProcessFunction getLeafOrParent(boolean leaf) {
+        RelationProcessFunction relationProcessFunction = null;
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if ((leaf ? rpf.isLeaf() : rpf.isRoot())) {
+                relationProcessFunction = rpf;
+            }
         }
-        if (this.isFileSink) {
-            writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE).setParallelism(1)");
+        if (relationProcessFunction == null) {
+            throw new RuntimeException("No relation process function found in " + relationProcessFunctions);
         }
+        return relationProcessFunction;
+    }
+
+    private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
+        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
+        String className = getProcessFunctionClassName(root.getName());
+        writer.writeln(".process(new " + className + "())");
+        writer.writeln(".keyBy(i => i._3)");
+        linkAggregateProcessFunctions(writer);
+        writeDataSink(writer);
     }
 
     private void writeMultipleRelationStream(RelationProcessFunction rpf, final PicoWriter writer, String prevStreamName, String streamSuffix) {
@@ -153,42 +168,28 @@ class MainClassWriter implements ClassWriter {
         );
     }
 
-    @NotNull
-    private RelationProcessFunction getLeafOrParent(boolean leaf) {
-        RelationProcessFunction relationProcessFunction = null;
-        for (RelationProcessFunction rpf : relationProcessFunctions) {
-            if ((leaf ? rpf.isLeaf() : rpf.isRoot())) {
-                relationProcessFunction = rpf;
-            }
-        }
-        if (relationProcessFunction == null) {
-            throw new RuntimeException("No relation process function found in " + relationProcessFunctions);
-        }
-        return relationProcessFunction;
-    }
-
-    private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
-        writer.writeln("val result = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
-        String className = getProcessFunctionClassName(root.getName());
-        writer.writeln(".process(new " + className + "())");
-        writer.writeln(".keyBy(i => i._3)");
-        linkAggregateProcessFunctions(writer);
-        writeDataSink(writer);
-    }
-
     private void linkAggregateProcessFunctions(final PicoWriter writer) {
         int size = aggregateProcessFunctions.size();
         if (size == 1) {
             writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
-            writer.writeln(".map(x => x._4.mkString(\"|\") + \"|\" + x._5.mkString(\"|\")+ \"|\" + x._6)");
+            writer.writeln(".map(x => ( \"(\" + x._4.mkString(\"|\") + \"|\" + x._5.mkString(\"|\")+ \"|\" + x._6 + \")\" ))");
         } else if (size == 2) {
             writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(0).getName()) + "())");
             writer.writeln(".map(x => Payload(\"Aggregate\", \"Addition\", x._3, x._4, x._5, x._6))");
             writer.writeln(".keyBy(i => i._3)");
             writer.writeln(".process(new " + getProcessFunctionClassName(aggregateProcessFunctions.get(1).getName()) + "())");
-            writer.writeln(".map(x => x._4.mkString(\"|\") + \"|\" + x._5.mkString(\"|\")+ \"|\" + x._6)");
+            writer.writeln(".map(x => ( \"(\" + x._4.mkString(\"|\") + \"|\" + x._5.mkString(\"|\")+ \"|\" + x._6 + \")\" ))");
         } else {
             throw new RuntimeException("Currently only 1 or 2 aggregate process functions are supported");
+        }
+    }
+
+    private void writeDataSink(final PicoWriter writer) {
+        if (this.isSocketSink) {
+            writer.writeln("result.map(x => x.toString()).writeToSocket(\"localhost\",5001,new SimpleStringSchema()).setParallelism(1)");
+        }
+        if (this.isFileSink) {
+            writer.writeln("result.writeAsText(outputpath,FileSystem.WriteMode.OVERWRITE).setParallelism(1)");
         }
     }
 

@@ -117,21 +117,7 @@ public class JsonParser {
         List<AggregateValue> result = new ArrayList<>();
         for (Map<String, Object> aggValue : aggregateValues) {
             Value agv;
-<<<<<<< HEAD
-            //agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
-            agv = makeValue((Map<String, Object>) aggValue.get("value"));
-            /*if (type.equals("expression")) {
-                agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
-            } else if (type.equals("attribute")) {
-                agv = new AttributeValue(Relation.getRelation((String) aggValue.get("relation")), (String) aggValue.get("value"));
-            } else if (type.equals("constant")) {
-                agv = new ConstantValue( (String) aggValue.get("value"), (String) aggValue.get("var_type"));
-            } else {
-                throw new IllegalArgumentException("Unsupported type of aggregate value");
-            }*/
-=======
             agv = makeExpression((Map<String, Object>) aggValue.get("value"));
->>>>>>> master
             result.add(makeAggregateValue(aggValue, agv));
         }
 
