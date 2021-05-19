@@ -16,7 +16,9 @@ public enum Operator {
     OR("||"),
     NOT("!"),
     IF("if"),
-    CASE("case");
+    CASE("case"),
+    COUNT("COUNT"),
+    COUNT_DISTINCT("COUNT_DISTINCT");
 
     private String operator;
 

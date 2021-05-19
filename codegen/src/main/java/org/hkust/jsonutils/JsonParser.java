@@ -40,7 +40,9 @@ public class JsonParser {
                 String operator = (String) scMap.get("operator");
                 List<SelectCondition> selectConditions = makeSelectConditions(operator == null ? null : Operator.getOperator(operator), scExpressions);
                 result.add(makeRelationProcessFunction(rpf, selectConditions));
-            } else result.add(makeRelationProcessFunction(rpf, null));
+            } else {
+                result.add(makeRelationProcessFunction(rpf, null));
+            }
         });
 
         return result;
@@ -96,17 +98,15 @@ public class JsonParser {
                 (List<String>) apfMap.get("output_key"),
                 //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
                 aggregateValues,
-                //Operator.getOperator((String) apfMap.get("aggregation")),
-                //Type.getClass((String) apfMap.get("value_type")),
                 outputSelectConditions);
     }
 
     @Nullable
     private static List<SelectCondition> getOutputSelectConditions(Map<String, Object> apfMap) {
-        Map<String, Object> outputSelectConditionMap = (Map<String, Object>) apfMap.get("OutputSelectCondition");
+//        Map<String, Object> outputSelectConditionMap = (Map<String, Object>) apfMap.get("OutputSelectCondition");
+        List<Map<String, Object>> values = (List<Map<String, Object>>) apfMap.get("OutputSelectCondition");
         List<SelectCondition> outputSelectConditions = null;
-        if (outputSelectConditionMap != null) {
-            List<Map<String, Object>> values = (List<Map<String, Object>>) outputSelectConditionMap.get("values");
+        if (values != null && !values.isEmpty()) {
             List<Expression> expressions = makeSelectConditionsExpressions(values);
             outputSelectConditions = makeSelectConditions(null, expressions);
         }
@@ -116,19 +116,8 @@ public class JsonParser {
     private static List<AggregateValue> makeAggregateValues(List<Map<String, Object>> aggregateValues) {
         List<AggregateValue> result = new ArrayList<>();
         for (Map<String, Object> aggValue : aggregateValues) {
-            //String type = (String) aggValue.get("type");
             Value agv;
-            //agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
             agv = makeExpression((Map<String, Object>) aggValue.get("value"));
-            /*if (type.equals("expression")) {
-                agv = makeAggregateValueExpression((List<Map<String, Object>>) aggValue.get("values"), (String) aggValue.get("operator"));
-            } else if (type.equals("attribute")) {
-                agv = new AttributeValue(Relation.getRelation((String) aggValue.get("relation")), (String) aggValue.get("value"));
-            } else if (type.equals("constant")) {
-                agv = new ConstantValue( (String) aggValue.get("value"), (String) aggValue.get("var_type"));
-            } else {
-                throw new IllegalArgumentException("Unsupported type of aggregate value");
-            }*/
             result.add(makeAggregateValue(aggValue, agv));
         }
 
@@ -137,13 +126,11 @@ public class JsonParser {
 
     @VisibleForTesting
     static AggregateValue makeAggregateValue(Map<String, Object> avMap, Value value) {
-        //String type = (String) avMap.get("type");
-        /*if (!("expression".equals(type) || "attribute".equals(type) || "constant".equals(type))) {
-            throw new RuntimeException("Unknown AggregateValue type. Currently only supporting expression, attribute and constant type. Got: " + type);
-
-        }*/
         Operator aggregation = Operator.getOperator((String) avMap.get("aggregation"));
         Class<?> value_type = Type.getClass((String) avMap.get("value_type"));
+        if (value_type == null) {
+            throw new IllegalArgumentException("Non supported value type!");
+        }
         String aggregateName = (String) avMap.get("name");
         return new AggregateValue(aggregateName, value, aggregation, value_type);
     }
@@ -176,9 +163,6 @@ public class JsonParser {
 
         List<Expression> expressions = new ArrayList<>();
         for (Map<String, Object> value : values) {
-            /*Operator operator = Operator.getOperator((String) value.get("operator"));
-            Value left = makeValue((Map<String, Object>) value.get("left_field"));
-            Value right = makeValue((Map<String, Object>) value.get("right_field"));*/
             expressions.add(makeExpression(value));
         }
 
@@ -195,7 +179,7 @@ public class JsonParser {
         return new Expression(values, Operator.getOperator(operator.toLowerCase()));
     }
 
-
+    @VisibleForTesting
     private static Value makeValue(Map<String, Object> field) {
         String type = (String) field.get("type");
         Value value;
@@ -207,7 +191,6 @@ public class JsonParser {
             value = new ConstantValue(field.get("value").toString(), (String) field.get("var_type"));
         } else if (type.equals("expression")) {
             return makeExpression(field);
-            //return makeAggregateValueExpression((List<Map<String, Object>>) field.get("values"), (String) field.get("operator"));
         } else if (type.equals("aggregate_attribute")) {
             return new AggregateAttributeValue(type, (String) field.get("name"), Type.getClass((String) field.get("var_type")), Type.getClass((String) field.get("store_type")));
         } else {

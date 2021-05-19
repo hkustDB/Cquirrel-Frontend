@@ -43,10 +43,14 @@ public class RelationProcessFunctionWriterTest {
         when(relation.getValue()).thenReturn("RelationName");
         when(relationProcessFunction.getThisKey()).thenReturn(Arrays.asList("thisKey1", "thisKey2"));
         when(relationProcessFunction.getNextKey()).thenReturn(Arrays.asList("nextKey1", "nextKey2"));
+        when(relationProcessFunction.isLeaf()).thenReturn(true);
+        when(relationProcessFunction.isRoot()).thenReturn(true);
         PicoWriter picoWriter = new PicoWriter();
         getRelationProcessFunctionWriter().addConstructorAndOpenClass(picoWriter);
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""),
-                "class ClassNameProcessFunction extends RelationFKProcessFunction[Any](\"RelationName\",Array(\"thisKey1\",\"thisKey2\"),Array(\"nextKey1\",\"nextKey2\"),true){".replaceAll("\\s+", ""));
+        assertEquals(
+                removeAllSpaces("class ClassNameProcessFunction extends RelationFKProcessFunction[Any](\"RelationName\",Array(\"THISKEY1\",\"THISKEY2\"),Array(\"NEXTKEY1\",\"NEXTKEY2\"),true){"),
+                removeAllSpaces(picoWriter.toString())
+        );
     }
 
     @Test
@@ -86,7 +90,7 @@ public class RelationProcessFunctionWriterTest {
         SelectCondition condition2 = new SelectCondition(new Expression(values, Operator.EQUALS), Operator.AND);
         Attribute mockAttribute = new Attribute(Integer.class, 0, attributeName);
         isValidFunctionTest(Arrays.asList(condition1, condition2),
-                "overridedefisValid(value:Payload):Boolean={if(1<value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]&&1=value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]){true}else{false}}",
+                "overridedefisValid(value:Payload):Boolean={if(1<value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]&&1==value(\"ATTRIBUTEVALUE\").asInstanceOf[Integer]){true}else{false}}",
                 mockAttribute);
     }
 
@@ -94,11 +98,15 @@ public class RelationProcessFunctionWriterTest {
         PicoWriter picoWriter = new PicoWriter();
         when(schema.getColumnAttributeByRawName(any(), any())).thenReturn(mockAttribute);
         getRelationProcessFunctionWriter().addIsValidFunction(selectConditions, picoWriter);
-        assertEquals(picoWriter.toString().replaceAll("\\s+", ""), expectedCode);
+        assertEquals(expectedCode, removeAllSpaces(picoWriter.toString()));
     }
 
     private RelationProcessFunctionWriter getRelationProcessFunctionWriter() {
         when(relationProcessFunction.getName()).thenReturn("ClassName");
         return new RelationProcessFunctionWriter(relationProcessFunction, schema);
+    }
+
+    public String removeAllSpaces(String str) {
+        return str.replaceAll("\\s+", "");
     }
 }

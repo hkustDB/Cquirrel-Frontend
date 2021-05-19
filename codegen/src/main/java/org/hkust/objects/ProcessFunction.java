@@ -29,6 +29,11 @@ public abstract class ProcessFunction {
     }
 
     protected void addIfAttributeValue(Set<Attribute> result, Value value, RelationSchema schema) {
+        if (value instanceof Expression) {
+            for (Value v : ((Expression) value).getValues()) {
+                addIfAttributeValue(result, v, schema);
+            }
+        }
         if (value instanceof AttributeValue) {
             AttributeValue attributeValue = (AttributeValue) value;
             Attribute attribute = schema.getColumnAttributeByRawName(attributeValue.getRelation(), attributeValue.getColumnName());
