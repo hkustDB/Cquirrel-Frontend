@@ -163,7 +163,6 @@ def stop_send_data_thread():
     while not queue.empty():
         queue.get(block=True)
 
-
 def r_send_query_result_data_from_file():
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.3
     socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
