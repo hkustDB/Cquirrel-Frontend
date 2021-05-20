@@ -40,7 +40,8 @@ def r_run_codegen_to_generate_jar2(sql_content):
               + BaseConfig.GENERATED_JSON_FILE + ' -g ' \
               + BaseConfig.GENERATED_JAR_PATH + ' -i ' \
               + 'file://' + BaseConfig.INPUT_DATA_FILE + ' -o ' \
-              + 'file://' + BaseConfig.OUTPUT_DATA_FILE + ' -s ' + 'file socket' + ' -q ' \
+              + 'file://' + BaseConfig.OUTPUT_DATA_FILE + ' -s ' \
+              + 'file ' + ' -q ' \
               + ' " ' + sql_content + ' " '
 
     logging.info("codegen command: " + cmd_str)
@@ -70,7 +71,9 @@ def r_run_codegen_to_generate_jar(json_file_path, query_idx):
                   + json_file_path + ' -g ' \
                   + BaseConfig.GENERATED_JAR_PATH + ' -i ' \
                   + 'file://' + BaseConfig.Q3_INPUT_DATA_FILE + ' -o ' \
-                  + 'file://' + BaseConfig.Q3_OUTPUT_DATA_FILE + ' -s ' + 'file socket'
+                  + 'file://' + BaseConfig.Q3_OUTPUT_DATA_FILE + ' -s ' \
+                  + 'file socket'
+
         logging.info("Q3: ")
     else:
         logging.error("query index is not supported.")
@@ -161,7 +164,8 @@ def r_run_flink_task(filename, queue):
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
     logging.info('flink jobs return: ' + result)
 
-    cquirrel_app.r_send_query_result_data_from_socket(queue)
+    # cquirrel_app.r_send_query_result_data_from_socket(queue)
+    cquirrel_app.r_send_query_result_data_from_file()
     return ret
 
 
@@ -184,3 +188,18 @@ def r_run_codegen_to_generate_json(sql, generated_json):
         information_data = information_data + line
     logging.info("information: " + information_data)
     return information_data
+
+
+def get_aggregate_name_from_information_json():
+    with open(BaseConfig.INFORMATION_JSON_FILE, 'r') as f:
+        data = f.readlines()
+    content = ""
+    for line in data:
+        content = content + line
+    info = json.loads(content)
+    print(info['aggregation'][0])
+    if BaseConfig.AggregateName == info['aggregation'][0]:
+        return BaseConfig.AggregateName
+    return info['aggregation'][0]
+
+
