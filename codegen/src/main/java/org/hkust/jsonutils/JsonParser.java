@@ -117,7 +117,7 @@ public class JsonParser {
         List<AggregateValue> result = new ArrayList<>();
         for (Map<String, Object> aggValue : aggregateValues) {
             Value agv;
-            agv = makeExpression((Map<String, Object>) aggValue.get("value"));
+            agv = makeValue((Map<String, Object>) aggValue.get("value"));
             result.add(makeAggregateValue(aggValue, agv));
         }
 
