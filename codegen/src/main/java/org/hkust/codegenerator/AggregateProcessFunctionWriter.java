@@ -84,7 +84,10 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         for (AggregateValue aggregateValue : aggregateValues) {
             StringBuilder code = new StringBuilder();
             Value type = aggregateValue.getValue();
-            if (type.getClass() == Expression.class) { //type.equals("expression")) {
+            if (aggregateValue.getAggregation() == Operator.COUNT && type == null) {
+                // TODO fix the COUNT(*) condition.
+            }
+            else if (type.getClass() == Expression.class) { //type.equals("expression")) {
                 Expression expression = (Expression) aggregateValue.getValue();
                 expressionToCode(expression, code);
                 writer.writeln(code.toString());
