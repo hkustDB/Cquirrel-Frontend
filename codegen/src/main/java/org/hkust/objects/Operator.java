@@ -11,7 +11,7 @@ public enum Operator {
     SUMMATION("++"),
     MULTIPLY("*"),
     PRODUCT("**"),
-    AVG("~"),
+    AVG("avg"),
     AND("&&"),
     OR("||"),
     NOT("!"),
