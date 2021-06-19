@@ -128,7 +128,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
             code.append("val ").append(aggregateValue.getName()).append(" = ");
             multipleAggregateName.append(aggregateValue.getName()).append(", ");
             Value type = aggregateValue.getValue();
-            if(type == null) {  // when the operator is COUNT, then type is null.
+            if (type == null) {  // when the operator is COUNT, then type is null.
                 if (aggregateValue.getAggregation().equals(Operator.COUNT)) {
                     // TODO fix the COUNT(*) condition.
                     code.append("1");
@@ -209,7 +209,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         Class<?> type = Type.getClass(aggregateType);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("override val init_value: " ).append(aggregateType).append(" = ").append(aggregateType).append("(");
+        sb.append("override val init_value: ").append(aggregateType).append(" = ").append(aggregateType).append("(");
         for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             if (aggregateValue.getValueType().getSimpleName().equals("Double")) {
                 sb.append("0.0, ");

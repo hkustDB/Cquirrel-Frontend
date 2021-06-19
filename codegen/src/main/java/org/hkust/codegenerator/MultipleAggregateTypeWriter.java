@@ -5,21 +5,18 @@ import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AggregateValue;
 import org.hkust.objects.Operator;
 
-import java.io.IOException;
-
 
 public class MultipleAggregateTypeWriter implements ClassWriter {
     private final String className;
     private final PicoWriter writer = new PicoWriter();
-    private boolean hasCountOrder;
     private final AggregateProcessFunction aggregateProcessFunction;
+    private boolean hasCountOrder;
 
-    MultipleAggregateTypeWriter(AggregateProcessFunction apf){
+    MultipleAggregateTypeWriter(AggregateProcessFunction apf) {
         this.className = "QMultipleAggregateType";
         this.aggregateProcessFunction = apf;
 
     }
-
 
 
     public String write(String filePath) throws Exception {
@@ -27,6 +24,7 @@ public class MultipleAggregateTypeWriter implements ClassWriter {
         addOpenBrace(writer);
         addAdditionMethod(writer);
         addSubtractionMethod(writer);
+        addToStringMethod(writer);
         addCloseBrace(writer);
         writeClassFile(this.className, filePath, writer.toString());
         return this.className;
@@ -44,92 +42,67 @@ public class MultipleAggregateTypeWriter implements ClassWriter {
 
 
     void addCaseClassParameters(final PicoWriter writer) throws Exception {
-        writer.writeln("case class " + this.className + "(");
-        for(AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+        writer.writeln_r("case class " + this.className + "(");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             String aggregateValueName = aggregateValue.getName().toUpperCase();
             String aggregateValueType = aggregateValue.getValueType().getSimpleName();
             if (aggregateValueType.equals("Integer")) {
                 aggregateValueType = "Int";
             }
-            writer.writeln("  " + aggregateValueName + " : " + aggregateValueType + ", ");
+            writer.writeln(aggregateValueName + " : " + aggregateValueType + ", ");
         }
-        writer.write("  cnt : Int");
-        writer.writeln(")");
+        writer.writeln("cnt : Int)");
     }
 
 
     void addAdditionMethod(final PicoWriter writer) throws Exception {
-        writer.writeln("  def +(that : " + this.className + ") : " + this.className + " = {");
-        writer.writeln("    " + this.className + "(");
-        for(AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+        writer.writeln_r("def +(that : " + this.className + ") : " + this.className + " = {");
+        writer.writeln_r(this.className + "(");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             String aggregateValueName = aggregateValue.getName().toUpperCase();
             if (aggregateValue.getAggregation() == Operator.AVG) {
-                writer.writeln("      " + aggregateValuesAverageOperations(aggregateValueName, "+"));
+                writer.writeln(aggregateValuesAverageOperations(aggregateValueName, "+"));
             } else {
-                writer.writeln("      " + aggregateValuesFirstLevelOperations(aggregateValueName, "+"));
+                writer.writeln(aggregateValuesFirstLevelOperations(aggregateValueName, "+"));
             }
         }
-        writer.writeln("      this.cnt + that.cnt");
-        writer.writeln("    )");
-        writer.writeln("  }");
+        writer.writeln("this.cnt + that.cnt");
+        writer.writeln_l(")");
+        writer.writeln_l("}");
     }
 
     void addSubtractionMethod(final PicoWriter writer) throws Exception {
-        writer.writeln("  def -(that : " + this.className + ") : " + this.className + " = {");
-        writer.writeln("    " + this.className + "(");
-        for(AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+        writer.writeln_r("def -(that : " + this.className + ") : " + this.className + " = {");
+        writer.writeln_r(this.className + "(");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             String aggregateValueName = aggregateValue.getName().toUpperCase();
             if (aggregateValue.getAggregation() == Operator.AVG) {
-                writer.writeln("      " + aggregateValuesAverageOperations(aggregateValueName, "-"));
+                writer.writeln(aggregateValuesAverageOperations(aggregateValueName, "-"));
             } else {
-                writer.writeln("      " + aggregateValuesFirstLevelOperations(aggregateValueName, "-"));
+                writer.writeln(aggregateValuesFirstLevelOperations(aggregateValueName, "-"));
             }
         }
-        writer.writeln("      this.cnt - that.cnt");
-        writer.writeln("    )");
-        writer.writeln("  }");
+        writer.writeln("this.cnt - that.cnt");
+        writer.writeln_l(")");
+        writer.writeln_l("}");
     }
 
     void addToStringMethod(final PicoWriter writer) throws Exception {
-
+        writer.writeln_r("override def toString : String = {");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+            String aggregateValueName = aggregateValue.getName().toUpperCase();
+            writer.writeln("\"" + aggregateValueName + ": \" + " + aggregateValueName + " + \"|\" + ");
+        }
+        writer.writeln("\"cnt: \" + cnt");
+        writer.writeln_l("}");
     }
 
     void addOpenBrace(final PicoWriter writer) throws Exception {
-        writer.writeln("{");
+        writer.writeln_lr("{");
     }
 
     void addCloseBrace(final PicoWriter writer) throws Exception {
-        writer.writeln("}");
-    }
-
-    String addAggregationValueBinaryOperation(AggregateValue aggregateValue, String op) throws Exception{
-        String aggregateValueName = aggregateValue.getName().toUpperCase();
-
-        StringBuilder sb = new StringBuilder();
-        if (op.equals("+")) {
-            return aggregateValuesFirstLevelOperations(aggregateValueName, "+");
-
-        }
-        else if (op.equals("-")) {
-            sb.append("this.")
-                    .append(aggregateValueName)
-                    .append(" - ")
-                    .append("that.")
-                    .append(aggregateValueName)
-                    .append(", ");
-        } else {
-            throw new Exception("Unsupported Aggregation Value Binary Operation " + op.toString() +" !");
-        }
-
-        sb.append("(this.")
-                .append(aggregateValueName)
-                .append(" * this.cnt ")
-                .append("+")
-                .append(" that.")
-                .append(aggregateValueName)
-                .append(" * that.cnt) / (this.cnt + that.cnt),");
-
-        return sb.toString();
+        writer.writeln_l("}");
     }
 
     String aggregateValuesFirstLevelOperations(String aggregateValueName, String op) {
