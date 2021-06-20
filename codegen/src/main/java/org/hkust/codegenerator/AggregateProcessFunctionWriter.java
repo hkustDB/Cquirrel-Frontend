@@ -49,6 +49,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         }
         if (hasMultipleAggregation) {
             addMultipleInitStateFunction(writer);
+            addGetAggregateMethod(writer);
         } else {
             addInitStateFunction(writer);
         }
@@ -224,6 +225,29 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         }
         sb.append("0)");
         writer.writeln(sb.toString());
+    }
+
+    @VisibleForTesting
+    void addGetAggregateMethod(final PicoWriter writer) {
+        writer.writeln_r("override def getAggregate(value : " + aggregateType + ") : (Array[Any], Array[String]) = {");
+        StringBuilder sb = new StringBuilder();
+        sb.append("(Array(");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+            sb.append("value.").append(aggregateValue.getName().toUpperCase()).append(", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
+        sb.append("),");
+        writer.writeln(sb.toString());
+        sb.setLength(0);
+
+        sb.append("(Array(");
+        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
+            sb.append("\"").append(aggregateValue.getName().toUpperCase()).append("\", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
+        sb.append("))");
+        writer.writeln(sb.toString());
+        writer.writeln_l("}");
     }
 
 }
