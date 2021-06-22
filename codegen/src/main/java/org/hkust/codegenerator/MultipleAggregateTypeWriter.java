@@ -5,6 +5,7 @@ import org.hkust.objects.AggregateProcessFunction;
 import org.hkust.objects.AggregateValue;
 import org.hkust.objects.Operator;
 
+import java.util.stream.Collectors;
 
 public class MultipleAggregateTypeWriter implements ClassWriter {
     private final String className;
@@ -89,11 +90,10 @@ public class MultipleAggregateTypeWriter implements ClassWriter {
 
     void addToStringMethod(final PicoWriter writer) throws Exception {
         writer.writeln_r("override def toString : String = {");
-        for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
-            String aggregateValueName = aggregateValue.getName().toUpperCase();
-            writer.writeln("\"" + aggregateValueName + ": \" + " + aggregateValueName + " + \"|\" + ");
-        }
-        writer.writeln("\"cnt: \" + cnt");
+        String joinedStr = aggregateProcessFunction.getAggregateValues()
+                .stream().map(aggregateValue -> aggregateValue.getName().toUpperCase())
+                .collect(Collectors.joining(" + \"|\" + "));
+        writer.writeln(joinedStr);
         writer.writeln_l("}");
     }
 
