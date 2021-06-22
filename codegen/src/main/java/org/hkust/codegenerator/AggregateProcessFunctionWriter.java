@@ -218,10 +218,6 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
             if (aggregateValue.getValueType().getSimpleName().equals("Integer")) {
                 sb.append("0, ");
             }
-            // TODO init count should be 0 or 1?
-//            if (aggregateValue.getAggregation().equals(Operator.COUNT)) {
-//                sb.append("1, ");
-//            }
         }
         sb.append("0)");
         writer.writeln(sb.toString());
@@ -240,7 +236,7 @@ class AggregateProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln(sb.toString());
         sb.setLength(0);
 
-        sb.append("(Array(");
+        sb.append("Array(");
         for (AggregateValue aggregateValue : aggregateProcessFunction.getAggregateValues()) {
             sb.append("\"").append(aggregateValue.getName().toUpperCase()).append("\", ");
         }
