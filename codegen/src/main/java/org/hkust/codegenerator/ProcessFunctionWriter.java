@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -46,6 +48,10 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         int size = values.size();
         if (expression.getOperator().equals(Operator.CASE)) {
             caseIfCode(expression, code);
+            return;
+        }
+        if (expression.getOperator().equals(Operator.LIKE)) {
+            likeToCode(expression, code);
             return;
         }
         for (int i = 0; i < size; i++) {
@@ -116,6 +122,49 @@ abstract class ProcessFunctionWriter implements ClassWriter {
                 .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
                 .append("].")
                 .append(getStringConversionMethod(aggregateAttributeValue.getVarType()));
+    }
+
+    private int getSubstringCountFromString(String str, String c) {
+        Pattern pattern = Pattern.compile(c);
+        Matcher matcher = pattern.matcher(str);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
+    private void likeToCode(Expression expression, StringBuilder code) {
+        if (expression.getValues().size() != 2) {
+            throw new RuntimeException("Expecting 2 values with LIKE as operator for express, got: " + expression.getValues().size());
+        }
+        if (!expression.getOperator().equals(Operator.LIKE)) {
+            throw new RuntimeException("The operator of like expression should be LIKE!");
+        }
+        if (!(expression.getValues().get(0) instanceof AttributeValue)) {
+            throw new RuntimeException("The first value in like expression should be attribute value!");
+        }
+        if (!(expression.getValues().get(1) instanceof ConstantValue)) {
+            throw new RuntimeException("The second value in like expression should be constant value!");
+        }
+        AttributeValue attributeValue = (AttributeValue) expression.getValues().get(0);
+        ConstantValue constantValue = (ConstantValue) expression.getValues().get(1);
+        attributeValueToCode(attributeValue, code);
+        String pattern = constantValue.getValue();
+
+        if (getSubstringCountFromString(pattern, "%") > 2) {
+            throw new RuntimeException("More than two % in like expression is not supported now!");
+        }
+        if (pattern.startsWith("%") && pattern.endsWith("%")) {
+            code.append(".contains(\"").append(pattern, 1, pattern.length() - 1).append("\")");
+        } else if (pattern.startsWith("%")) {
+            code.append(".endsWith(\"").append(pattern, 1, pattern.length()).append("\")");
+        } else if (pattern.endsWith("%")) {
+            code.append(".startsWith(\"").append(pattern, 0, pattern.length() - 1).append("\")");
+        } else {
+            code.append(".equals(\"").append(pattern).append("\")");
+        }
+
     }
 
     private void caseIfCode(Expression expression, StringBuilder code) {

@@ -17,6 +17,7 @@ public enum Operator {
     NOT("!"),
     IF("if"),
     CASE("case"),
+    LIKE("LIKE"),
     COUNT("COUNT"),
     COUNT_DISTINCT("COUNT_DISTINCT");
 
@@ -26,10 +27,6 @@ public enum Operator {
         this.operator = operator;
     }
 
-    public String getValue() {
-        return operator;
-    }
-
     public static Operator getOperator(String op) {
         for (Operator operator : values()) {
             if (operator.getValue().equals(op)) {
@@ -37,6 +34,10 @@ public enum Operator {
             }
         }
         throw new IllegalArgumentException("Got " + op);
+    }
+
+    public String getValue() {
+        return operator;
     }
 
     @Override
