@@ -183,7 +183,10 @@ public class JsonParser {
     private static Value makeValue(Map<String, Object> field) {
         String type = (String) field.get("type");
         Value value;
-        if (type.equals("attribute")) {
+        if (type == null) {
+            return null;
+        }
+        else if (type.equals("attribute")) {
             String name = (String) field.get("name");
             Relation relation = Relation.getRelation((String) field.get("relation"));
             value = new AttributeValue(relation, name);

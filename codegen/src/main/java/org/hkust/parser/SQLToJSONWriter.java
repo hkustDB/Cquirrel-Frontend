@@ -48,8 +48,8 @@ public class SQLToJSONWriter {
 
     /***
      *
-     * @param Visitor
-     * @return
+     * @param Visitor The visitor of the parser.
+     * @return boolean true.
      */
     public boolean addJoinStructure(ExportTableAliasVisitor Visitor) {
         JSONArray messages = new JSONArray();
@@ -227,7 +227,7 @@ public class SQLToJSONWriter {
      * "
      * select * from ([SELECT_QUERY]) as ... where [CONDITION];
      * "
-     * @param Visitor
+     * @param Visitor The visitor of the parser.
      * @return [SELECT_QUERY] in String
      */
     public String checkIfRecursive(ExportTableAliasVisitor Visitor) {
@@ -250,7 +250,7 @@ public class SQLToJSONWriter {
     /***
      * The function adds the RelationProcessFunction section in the final json file.
      * @param Visitor The visitor of the parser.
-     * @return
+     * @return boolean true.
      */
     public boolean addRelationProcessFunction(ExportTableAliasVisitor Visitor) {
 
@@ -327,11 +327,14 @@ public class SQLToJSONWriter {
                 aggregate.put("aggregation", "+");
                 break;
             case "count":
-                if (expr.getOption().name().equals("DISTINCT")) {
+                if (expr.getOption() != null && expr.getOption().name().equals("DISTINCT")) {
                     aggregate.put("aggregation", "COUNT_DISTINCT");
                 } else {
                     aggregate.put("aggregation", "COUNT");
                 }
+                break;
+            case "avg":
+                aggregate.put("aggregation", "avg");
                 break;
             default:
         }
@@ -342,17 +345,22 @@ public class SQLToJSONWriter {
         }
 
         aggregate.put("value", writeValueObject(expr.getArguments().get(0)));
-        switch (expr.computeDataType().getName()) {
-            case "bigint":
-                aggregate.put("value_type", "int");
-                break;
-            case "double":
-            case "":
-                aggregate.put("value_type", "Double");
-                break;
-            default:
-                aggregate.put("value_type", expr.computeDataType());
+        if (expr.computeDataType() != null) {
+            switch (expr.computeDataType().getName()) {
+                case "bigint":
+                    aggregate.put("value_type", "int");
+                    break;
+                case "double":
+                case "":
+                    aggregate.put("value_type", "Double");
+                    break;
+                default:
+                    aggregate.put("value_type", expr.computeDataType());
+            }
+        } else {
+            aggregate.put("value_type", "Double");
         }
+
         return aggregate;
     }
 
@@ -380,7 +388,7 @@ public class SQLToJSONWriter {
 
     private void processFilter(SQLBinaryOpExpr expr,
                                String relationNameInit) {
-        if (expr.getOperator().name == "OR") {
+        if (expr.getOperator().name.equals("OR")) {
             JSONArray temp = SelectCondition.getOrDefault(lastObject, new JSONArray());
             temp.add(writeValueObject(expr));
             SelectCondition.put(lastObject, temp);
@@ -409,7 +417,7 @@ public class SQLToJSONWriter {
                     }
                     OP = expr.getOperator();
                     String relationName = relationNameInit;
-                    if (relationName == "") relationName = getIdentifierRelation(identifierExpr);
+                    if (relationName.equals("")) relationName = getIdentifierRelation(identifierExpr);
                     //writeSelectConditionJSONObject(expr.getLeft(), expr.getRight(), OP, relationName);
                     JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
                     temp.add(writeValueObject(expr));
@@ -570,7 +578,7 @@ public class SQLToJSONWriter {
         }
 
         if (expr.getClass() == SQLIdentifierExpr.class) {
-            if (getIdentifierRelation((SQLIdentifierExpr) expr) != "Unknown") {
+            if (!getIdentifierRelation((SQLIdentifierExpr) expr).equals("Unknown")) {
                 value.put("type", "attribute");
                 value.put("relation", getIdentifierRelation((SQLIdentifierExpr) expr));
                 value.put("name", truncateKey(((SQLIdentifierExpr) expr).getLowerName()));

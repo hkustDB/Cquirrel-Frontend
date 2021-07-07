@@ -13,7 +13,7 @@ public class AggregateValue implements Value {
     public AggregateValue(String name, final Value value, Operator aggregation, Class<?> valueType) {
         CheckerUtils.checkNullOrEmpty(name, "name");
         this.name = name;
-        requireNonNull(value);
+//        requireNonNull(value);
         this.value = value;
         requireNonNull(aggregation);
         this.aggregation = aggregation;

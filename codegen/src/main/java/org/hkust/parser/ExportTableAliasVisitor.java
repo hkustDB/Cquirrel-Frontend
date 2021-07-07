@@ -5,10 +5,7 @@ import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.postgresql.visitor.PGASTVisitorAdapter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by tom on 20/2/2021.
@@ -18,7 +15,7 @@ public class ExportTableAliasVisitor extends PGASTVisitorAdapter {
     private Map<String, SQLTableSource> aliasMap = new HashMap<String, SQLTableSource>();
     public List<SQLExpr> groupByAttributes;
     public HashSet<SQLSelectItem> selectItem = new HashSet<SQLSelectItem>();
-    public HashSet<SQLAggregateExpr> aggregation = new HashSet<>();
+    public LinkedHashSet<SQLAggregateExpr> aggregation = new LinkedHashSet<>();
     public HashSet<SQLSelectStatement> selectStatement = new HashSet<>();
     public HashSet<String> table = new HashSet<>();
     public boolean visit(SQLExprTableSource x) {
