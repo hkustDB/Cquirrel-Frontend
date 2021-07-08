@@ -70,7 +70,7 @@ class CountDistinctProcessFunctionWriter extends ProcessFunctionWriter {
                 " extends CountDistinctAggregation[Any]" +
                 "(" +
                 keyListToCode(aggregateProcessFunction.getDistinctKey()) +
-                "\"" +
+                ", \"" +
                 className +
                 "\", " +
                 keyListToCode(optimizeKey(aggregateProcessFunction.getThisKey())) +
