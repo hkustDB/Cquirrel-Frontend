@@ -3,6 +3,7 @@ package org.hkust.codegenerator;
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.jsonutils.JsonParser;
 import org.hkust.objects.AggregateProcessFunction;
+import org.hkust.objects.DistinctCountProcessFunction;
 import org.hkust.objects.Node;
 import org.hkust.objects.RelationProcessFunction;
 import org.hkust.schema.RelationSchema;
@@ -35,7 +36,11 @@ public class CodeGenerator {
 
         List<AggregateProcessFunction> aggregateProcessFunctions = node.getAggregateProcessFunctions();
         for (AggregateProcessFunction aggregateProcessFunction : aggregateProcessFunctions) {
-            new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
+            if (aggregateProcessFunction.getClass() == DistinctCountProcessFunction.class) {
+                new CountDistinctProcessFunctionWriter((DistinctCountProcessFunction) aggregateProcessFunction, schema).write(codeFilesPath);
+            } else {
+                new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
+            }
         }
 
         new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath, dataSinkTypes).write(codeFilesPath);

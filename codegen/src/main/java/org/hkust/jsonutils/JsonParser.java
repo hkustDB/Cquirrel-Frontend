@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.hkust.objects.Operator.COUNT_DISTINCT;
+
 @SuppressWarnings("unchecked")
 public class JsonParser {
     private static final Gson gson = new Gson();
@@ -82,17 +84,38 @@ public class JsonParser {
         apfList.forEach(apf -> {
             List<Map<String, Object>> agMap = (List<Map<String, Object>>) apf.get("AggregateValue");
             List<AggregateValue> aggregateValues = makeAggregateValues(agMap);
-            result.add(makeAggregateProcessFunction(apf, aggregateValues));
+            if (!testIfDistinctCount(aggregateValues)) {
+                result.add(makeAggregateProcessFunction(apf, aggregateValues));
+            } else {
+                result.add(makeDistinctProcessFunction(apf, aggregateValues));
+            }
         });
 
         return result;
     }
 
+    private static Boolean testIfDistinctCount(List<AggregateValue> aggregateValues) {
+        for (AggregateValue i : aggregateValues) {
+            if (i.getAggregation() == COUNT_DISTINCT) return true;
+        }
+        return false;
+    }
 
     @VisibleForTesting
     static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateValue> aggregateValues) {
         List<SelectCondition> outputSelectConditions = getOutputSelectConditions(apfMap);
         return new AggregateProcessFunction(
+                (String) apfMap.get("name"),
+                (List<String>) apfMap.get("this_key"),
+                (List<String>) apfMap.get("output_key"),
+                //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
+                aggregateValues,
+                outputSelectConditions);
+    }
+
+    static DistinctCountProcessFunction makeDistinctProcessFunction(Map<String, Object> apfMap, List<AggregateValue> aggregateValues) {
+        List<SelectCondition> outputSelectConditions = getOutputSelectConditions(apfMap);
+        return new DistinctCountProcessFunction(
                 (String) apfMap.get("name"),
                 (List<String>) apfMap.get("this_key"),
                 (List<String>) apfMap.get("output_key"),
