@@ -4,6 +4,7 @@ import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
+import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.postgresql.visitor.PGSchemaStatVisitor;
@@ -146,7 +147,7 @@ public class Parser {
             System.out.println(j.getWhere());
             //System.out.println(ASTvisitor.selectItem);
             for (SQLSelectItem i : ASTvisitor.selectItem) {
-                if (i.getExpr().getClass() == SQLAggregateExpr.class) {
+                if (i.getExpr().getClass() == SQLAggregateExpr.class || i.getExpr().getClass() == SQLBinaryOpExpr.class) {
                     System.out.println(i + " true "+ i.getExpr());
                 } else {
                     System.out.println(i + " false ");
