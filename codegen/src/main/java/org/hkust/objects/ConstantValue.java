@@ -24,6 +24,9 @@ public class ConstantValue implements Value {
         if (clss == null) {
             throw new RuntimeException("Unknown data type: " + type);
         }
+        if (clss == Integer.class) {
+            val = Integer.toString((int) Double.parseDouble(val));
+        }
         this.value = val;
         this.type = clss;
     }
