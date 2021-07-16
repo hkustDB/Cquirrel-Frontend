@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.hkust.objects.Operator.CASE;
 import static org.hkust.objects.Operator.COUNT_DISTINCT;
 
 @SuppressWarnings("unchecked")
@@ -174,9 +175,16 @@ public class JsonParser {
     static Expression makeExpression(Map<String, Object> value) {
         if (value == null || value.isEmpty()) return null;
         Operator operator = Operator.getOperator((String) value.get("operator"));
-        Value left = makeValue((Map<String, Object>) value.get("left_field"));
-        Value right = makeValue((Map<String, Object>) value.get("right_field"));
-        return new Expression(Arrays.asList(left, right), operator);
+        if (operator != CASE) {
+            Value left = makeValue((Map<String, Object>) value.get("left_field"));
+            Value right = makeValue((Map<String, Object>) value.get("right_field"));
+            return new Expression(Arrays.asList(left, right), operator);
+        } else {
+            Value condition = makeValue((Map<String, Object>) value.get("if_condition"));
+            Value then_value = makeValue((Map<String, Object>) value.get("then_value"));
+            Value else_value = makeValue((Map<String, Object>) value.get("else_value"));
+            return new Expression(Arrays.asList(condition, then_value, else_value), operator);
+        }
     }
 
     @VisibleForTesting

@@ -6,6 +6,7 @@ public enum Operator {
     EQUALS("=="),
     GREATER_THAN_EQUAL(">="),
     LESS_THAN_EQUAL("<="),
+    NOT_EQUAL("<>"),
     SUM("+"),
     SUBTRACT("-"),
     SUMMATION("++"),
