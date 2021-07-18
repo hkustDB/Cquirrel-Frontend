@@ -418,6 +418,48 @@ public class SQLParserTest {
     }
 
     @Test
+    public void SQLParserQ4Test() throws Exception {
+        String q4sql = "select o_orderpriority, count(distinct(l_orderkey)) as order_count\n" +
+                "from lineitem, orders\n" +
+                "where o_orderdate >= date '1993-07-01'\n" +
+                "and o_orderdate < date '1993-10-01'\n" +
+                "and l_commitdate < l_recriptdate\n" +
+                "and l_orderkey = o_orderkey\n" +
+                "group by o_orderpriority";
+        String expected_generated_json = "";
+
+        String expected_information_json = "{\n" +
+                "  \"binary\": [],\n" +
+                "  \"aggregation\": [\n" +
+                "    \"revenue\"\n" +
+                "  ],\n" +
+                "  \"unary\": [\n" +
+                "    {\n" +
+                "      \"lineitem\": [\n" +
+                "        \"l_shipdate >= DATE '1994-01-01'\",\n" +
+                "        \"l_shipdate < DATE '1995-01-01'\",\n" +
+                "        \"l_discount >= 0.05\",\n" +
+                "        \"l_discount <= 0.07\",\n" +
+                "        \"l_quantity < 24\"\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"relations\": [\n" +
+                "    \"lineitem\"\n" +
+                "  ]\n" +
+                "}";
+
+        SQLParser = new Parser(q4sql, TEST_GENERATED_JSON_PATH);
+        SQLParser.parse();
+
+        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
+        assertEquals(expected_generated_json, actual_generated_json);
+
+        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
+        assertEquals(expected_information_json, actual_information_json);
+    }
+
+    @Test
     public void SQLParserQ10Test() throws Exception {
         String q10sql = "select\n" +
                 "    c_custkey, \n" +
