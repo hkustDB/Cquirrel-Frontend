@@ -31,7 +31,16 @@ public class JsonParser {
         List<Map<String, Object>> apfMap = (List<Map<String, Object>>) map.get("AggregateProcessFunction");
         List<AggregateProcessFunction> apfs = makeAggregateProcessFunctions(apfMap);
 
-        return new Node(rpfs, apfs, joinStructure);
+        Map<String, Object> transMap = (Map<String, Object>) map.getOrDefault("transformer", null);
+        TransformerFunction transformerFunction = makeTransformerFunction(transMap);
+
+        return new Node(rpfs, apfs, joinStructure, transformerFunction);
+    }
+
+    private static TransformerFunction makeTransformerFunction(Map<String, Object> transMap) {
+        if (transMap == null) return null;
+        Map<String, Object> exprMap = (Map<String, Object>) transMap.get("expr");
+        return null;
     }
 
     private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {

@@ -35,6 +35,7 @@ public class SQLToJSONWriter {
     private final JSONArray aggregationFunctions = new JSONArray();
     private final JSONObject aggregationFunction = new JSONObject();
     private final JSONArray aggregateValues = new JSONArray();
+    private final JSONObject transformer = new JSONObject();
     public HashSet<SQLExpr> BinaryPredicates = new HashSet<>();
     public HashMap<String, List<SQLExpr>> UnaryPredicates = new HashMap<>();
     private String outputFileName = "";
@@ -225,21 +226,31 @@ public class SQLToJSONWriter {
     /***
      * Detected if the query is recursive query, if true, then the query must be like
      * "
-     * select * from ([SELECT_QUERY]) as ... where [CONDITION];
+     * select * from ([SELECT_QUERY]) as ... where [CONDITION]; or
+     * select Expr from ([SELECT_QUERY]) as ... where [CONDITION]
      * "
      * @param Visitor The visitor of the parser.
      * @return [SELECT_QUERY] in String
      */
     public String checkIfRecursive(ExportTableAliasVisitor Visitor) {
-        if (((PGSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery())
-                .getSelectList().iterator().next().getExpr().toString().equals("*")) {
-            if (!Visitor.aggregation.isEmpty()) {
-                SQLExpr filters = ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getWhere();
-                if (filters.getClass() == SQLBinaryOpExpr.class) {
-                    processFilter((SQLBinaryOpExpr) filters, "aggregation");
+        SQLExpr OuterSelectCondition = ((PGSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery())
+                .getSelectList().iterator().next().getExpr();
+        if (OuterSelectCondition.toString().equals("*") || OuterSelectCondition.getClass() == SQLBinaryOpExpr.class) {
+            if (OuterSelectCondition.getClass() != SQLBinaryOpExpr.class) {
+                if (!Visitor.aggregation.isEmpty()) {
+                    SQLExpr filters = ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getWhere();
+                    if (filters.getClass() == SQLBinaryOpExpr.class) {
+                        processFilter((SQLBinaryOpExpr) filters, "aggregation");
+                    }
+                } else {
+                    System.err.println("No Aggregation in Recursive queries!");
                 }
             } else {
-                System.err.println("No Aggregation in Recursive queries!");
+                // For case 2
+                transformer.put("expr", writeValueObject(OuterSelectCondition));
+                if (((SQLSelectItem) OuterSelectCondition.getParent()).getAlias() != null)
+                    transformer.put("alias", ((SQLSelectItem) OuterSelectCondition.getParent()).getAlias());
+                outputJsonObject.put("transformer", transformer);
             }
             return ((SQLSubqueryTableSource) ((SQLSelectQueryBlock) Visitor.selectStatement.iterator().next().getSelect().getQuery()).getFrom()).getSelect().getQuery().toString();
         } else {
@@ -660,7 +671,13 @@ public class SQLToJSONWriter {
             Unary.add(temp);
         }
         information.put("unary", Unary);
-        information.put("aggregation", aggregateValues);
+        if (!transformer.containsKey("expr")) {
+            information.put("aggregation", aggregateValues);
+        } else {
+            JSONArray tempArray = new JSONArray();
+            tempArray.add(transformer.get("alias"));
+            information.put("aggregation", tempArray);
+        }
         return information;
     }
 

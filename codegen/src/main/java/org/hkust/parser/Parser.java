@@ -133,10 +133,11 @@ public class Parser {
             stmt.accept(visitor);
             stmt.accept(ASTvisitor);
             SQLToJSONWriter writer = new SQLToJSONWriter(output_file_path);
-            System.out.println(ASTvisitor.groupByAttributes);
-            System.out.println(ASTvisitor.aggregation);
-            System.out.println(ASTvisitor.table);
+            System.out.println("groupByAttribute: " + ASTvisitor.groupByAttributes);
+            System.out.println("aggregation: " + ASTvisitor.aggregation);
+            System.out.println("table:" + ASTvisitor.table);
             String subqueryString = writer.checkIfRecursive(ASTvisitor);
+            System.out.println("subqueryString: "+subqueryString);
             if (subqueryString != null) {
                 ASTvisitor = new ExportTableAliasVisitor(){};
                 List<SQLStatement> subList = SQLUtils.parseStatements(subqueryString, dbType);
