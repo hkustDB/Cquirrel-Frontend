@@ -47,6 +47,8 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
                 " extends TransformerProcessFunction[Any, " +
                 outputType +
                 "](" +
+                keyListToCode(transformerFunction.getOutputKey()) +
+                ", " +
                 " aggregateName = \"" +
                 className + "\"" +
                 ", deltaOutput = true" +
