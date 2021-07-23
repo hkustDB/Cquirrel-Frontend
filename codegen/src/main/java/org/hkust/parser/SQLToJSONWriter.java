@@ -145,7 +145,7 @@ public class SQLToJSONWriter {
                 JSONArray nextKeyList0 = new JSONArray();
                 nextKeyList0.add("orderkey");
                 obj0.put("next_key", nextKeyList0);
-                obj0.put("id", "0");
+                obj0.put("id", "_ps");
 
                 obj1.put("name", "Q" + lineitem1);
                 obj1.put("relation", "lineitem");
@@ -156,7 +156,7 @@ public class SQLToJSONWriter {
                 JSONArray thisKeyList1 = new JSONArray();
                 thisKeyList1.add("orderkey");
                 obj1.put("this_key", thisKeyList1);
-                obj1.put("id", "1");
+                obj1.put("id", "_o");
 
                 JSONObject obj = new JSONObject();
                 obj.putAll(obj0);
@@ -348,7 +348,7 @@ public class SQLToJSONWriter {
                 JSONArray nextKeyList0 = new JSONArray();
                 nextKeyList0.add("partkey");
                 obj0.put("next_key", nextKeyList0);
-                obj0.put("id", "0");
+                obj0.put("id", "_s");
 
                 obj1.put("name", "Q" + partsupp1);
                 obj1.put("relation", "partsupp");
@@ -363,7 +363,7 @@ public class SQLToJSONWriter {
                 nextKeyList1.add("partkey");
                 nextKeyList1.add("suppkey");
                 obj1.put("next_key", nextKeyList1);
-                obj1.put("id", "1");
+                obj1.put("id", "_p");
 
                 JSONObject obj = new JSONObject();
                 obj.putAll(obj0);
