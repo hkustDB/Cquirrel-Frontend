@@ -59,6 +59,7 @@ class MainClassWriter implements ClassWriter {
 //            tagNames.put(rpf.getRelation(), rpf.getRelation().getValue().toLowerCase() + "Tag");
             tagNames.put(rpf.getRelationAndId(), rpf.getRelationAndId() + "Tag");
             this.rpfIsHandled.put(rpf, false);
+            this.relationIsFullyHandled.put(rpf.getRelation().getValue().toLowerCase(), false);
         }
         createRelationGraph();
     }
@@ -88,7 +89,6 @@ class MainClassWriter implements ClassWriter {
         }
         for (String s : relationStringSet) {
             relationGraph.addVertex(s);
-            relationIsFullyHandled.put(s, false);
         }
         for (Map.Entry<Relation, Relation> entry : joinStructure.entrySet()) {
             relationGraph.addEdge(entry.getValue().getValue().toLowerCase(), entry.getKey().getValue().toLowerCase());
