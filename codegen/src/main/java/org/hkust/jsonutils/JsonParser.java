@@ -11,6 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.hkust.objects.Operator.CASE;
+import static org.hkust.objects.Operator.COUNT_DISTINCT;
+
 @SuppressWarnings("unchecked")
 public class JsonParser {
     private static final Gson gson = new Gson();
@@ -83,17 +86,38 @@ public class JsonParser {
         apfList.forEach(apf -> {
             List<Map<String, Object>> agMap = (List<Map<String, Object>>) apf.get("AggregateValue");
             List<AggregateValue> aggregateValues = makeAggregateValues(agMap);
-            result.add(makeAggregateProcessFunction(apf, aggregateValues));
+            if (!testIfDistinctCount(aggregateValues)) {
+                result.add(makeAggregateProcessFunction(apf, aggregateValues));
+            } else {
+                result.add(makeDistinctProcessFunction(apf, aggregateValues));
+            }
         });
 
         return result;
     }
 
+    private static Boolean testIfDistinctCount(List<AggregateValue> aggregateValues) {
+        for (AggregateValue i : aggregateValues) {
+            if (i.getAggregation() == COUNT_DISTINCT) return true;
+        }
+        return false;
+    }
 
     @VisibleForTesting
     static AggregateProcessFunction makeAggregateProcessFunction(Map<String, Object> apfMap, List<AggregateValue> aggregateValues) {
         List<SelectCondition> outputSelectConditions = getOutputSelectConditions(apfMap);
         return new AggregateProcessFunction(
+                (String) apfMap.get("name"),
+                (List<String>) apfMap.get("this_key"),
+                (List<String>) apfMap.get("output_key"),
+                //Currently this assumes that there is exactly 1 AggregateValue, we may have more than one
+                aggregateValues,
+                outputSelectConditions);
+    }
+
+    static DistinctCountProcessFunction makeDistinctProcessFunction(Map<String, Object> apfMap, List<AggregateValue> aggregateValues) {
+        List<SelectCondition> outputSelectConditions = getOutputSelectConditions(apfMap);
+        return new DistinctCountProcessFunction(
                 (String) apfMap.get("name"),
                 (List<String>) apfMap.get("this_key"),
                 (List<String>) apfMap.get("output_key"),
@@ -152,9 +176,16 @@ public class JsonParser {
     static Expression makeExpression(Map<String, Object> value) {
         if (value == null || value.isEmpty()) return null;
         Operator operator = Operator.getOperator((String) value.get("operator"));
-        Value left = makeValue((Map<String, Object>) value.get("left_field"));
-        Value right = makeValue((Map<String, Object>) value.get("right_field"));
-        return new Expression(Arrays.asList(left, right), operator);
+        if (operator != CASE) {
+            Value left = makeValue((Map<String, Object>) value.get("left_field"));
+            Value right = makeValue((Map<String, Object>) value.get("right_field"));
+            return new Expression(Arrays.asList(left, right), operator);
+        } else {
+            Value condition = makeValue((Map<String, Object>) value.get("if_condition"));
+            Value then_value = makeValue((Map<String, Object>) value.get("then_value"));
+            Value else_value = makeValue((Map<String, Object>) value.get("else_value"));
+            return new Expression(Arrays.asList(condition, then_value, else_value), operator);
+        }
     }
 
     @VisibleForTesting

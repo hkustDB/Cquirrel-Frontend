@@ -418,6 +418,77 @@ public class SQLParserTest {
     }
 
     @Test
+    public void SQLParserQ4Test() throws Exception {
+        String q4sql = "select o_orderpriority, count(distinct(l_orderkey)) as order_count\n" +
+                "from lineitem, orders\n" +
+                "where o_orderdate >= date '1993-07-01'\n" +
+                "and o_orderdate < date '1993-10-01'\n" +
+                "and l_commitdate < l_recriptdate\n" +
+                "and l_orderkey = o_orderkey\n" +
+                "group by o_orderpriority";
+        String expected_generated_json = "";
+
+        String expected_information_json = "{\n" +
+                "  \"binary\": [],\n" +
+                "  \"aggregation\": [\n" +
+                "    \"revenue\"\n" +
+                "  ],\n" +
+                "  \"unary\": [\n" +
+                "    {\n" +
+                "      \"lineitem\": [\n" +
+                "        \"l_shipdate >= DATE '1994-01-01'\",\n" +
+                "        \"l_shipdate < DATE '1995-01-01'\",\n" +
+                "        \"l_discount >= 0.05\",\n" +
+                "        \"l_discount <= 0.07\",\n" +
+                "        \"l_quantity < 24\"\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"relations\": [\n" +
+                "    \"lineitem\"\n" +
+                "  ]\n" +
+                "}";
+
+        SQLParser = new Parser(q4sql, TEST_GENERATED_JSON_PATH);
+        SQLParser.parse();
+
+        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
+        assertEquals(expected_generated_json, actual_generated_json);
+
+        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
+        assertEquals(expected_information_json, actual_information_json);
+    }
+
+    @Test
+    public void SQLParserQ14Test() throws Exception {
+        String q14sql = "select\n" +
+                "sum(case \n" +
+                "when p_type like 'PROMO%'\n" +
+                "then l_extendedprice*(1-l_discount)\n" +
+                "else 0\n" +
+                "end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue\n" +
+                "from \n" +
+                "lineitem, \n" +
+                "part\n" +
+                "where \n" +
+                "l_partkey = p_partkey\n" +
+                "and l_shipdate >= date '1995-09-01'\n" +
+                "and l_shipdate < date '1995-10-01';";
+        String expected_generated_json = "";
+
+        String expected_information_json = "";
+
+        SQLParser = new Parser(q14sql, TEST_GENERATED_JSON_PATH);
+        SQLParser.parse();
+
+        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
+        assertEquals(expected_generated_json, actual_generated_json);
+
+        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
+        assertEquals(expected_information_json, actual_information_json);
+    }
+
+    @Test
     public void SQLParserQ10Test() throws Exception {
         String q10sql = "select\n" +
                 "    c_custkey, \n" +
@@ -662,6 +733,48 @@ public class SQLParserTest {
                 "}";
 
         SQLParser = new Parser(q10sql, TEST_GENERATED_JSON_PATH);
+        SQLParser.parse();
+
+        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
+        assertEquals(expected_generated_json, actual_generated_json);
+
+        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
+        assertEquals(expected_information_json, actual_information_json);
+    }
+
+    @Test
+    public void SQLParserQ12Test() throws Exception {
+        String q12sql = "select\n" +
+                "l_shipmode, \n" +
+                "sum(case \n" +
+                "when o_orderpriority ='1-URGENT'\n" +
+                "or o_orderpriority ='2-HIGH'\n" +
+                "then 1\n" +
+                "else 0\n" +
+                "end) as high_line_count,\n" +
+                "sum(case \n" +
+                "when o_orderpriority <> '1-URGENT'\n" +
+                "and o_orderpriority <> '2-HIGH'\n" +
+                "then 1\n" +
+                "else 0\n" +
+                "end) as low_line_count\n" +
+                "from \n" +
+                "orders, \n" +
+                "lineitem\n" +
+                "where \n" +
+                "o_orderkey = l_orderkey\n" +
+                "and (l_shipmode = 'MAIL' or l_shipmode =  'SHIP')\n" +
+                "and l_commitdate < l_receiptdate\n" +
+                "and l_shipdate < l_commitdate\n" +
+                "and l_receiptdate >= date '1994-01-01'\n" +
+                "and l_receiptdate < date '1995-01-01'\n" +
+                "group by \n" +
+                "l_shipmode;";
+        String expected_generated_json = "";
+
+        String expected_information_json = "";
+
+        SQLParser = new Parser(q12sql, TEST_GENERATED_JSON_PATH);
         SQLParser.parse();
 
         String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");

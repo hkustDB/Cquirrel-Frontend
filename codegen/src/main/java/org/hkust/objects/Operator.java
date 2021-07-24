@@ -6,6 +6,7 @@ public enum Operator {
     EQUALS("=="),
     GREATER_THAN_EQUAL(">="),
     LESS_THAN_EQUAL("<="),
+    NOT_EQUAL("<>"),
     SUM("+"),
     SUBTRACT("-"),
     SUMMATION("++"),
@@ -29,7 +30,7 @@ public enum Operator {
 
     public static Operator getOperator(String op) {
         for (Operator operator : values()) {
-            if (operator.getValue().equals(op)) {
+            if (operator.getType().equals(op)) {
                 return operator;
             }
         }
@@ -37,6 +38,11 @@ public enum Operator {
     }
 
     public String getValue() {
+        if (this == NOT_EQUAL) return "!=";
+        else return operator;
+    }
+
+    private String getType() {
         return operator;
     }
 

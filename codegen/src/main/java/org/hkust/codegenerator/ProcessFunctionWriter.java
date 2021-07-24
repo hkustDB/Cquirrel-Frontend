@@ -79,6 +79,8 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             attributeValueToCode((AttributeValue) value, code);
         } else if (value instanceof AggregateAttributeValue) {
             aggregationAttributeToCode((AggregateAttributeValue) value, code);
+        } else if (value instanceof Expression) {
+            expressionToCode((Expression) value, code);
         } else {
             throw new RuntimeException("Unknown type of value, expecting either ConstantValue or AttributeValue");
         }
@@ -171,7 +173,9 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         if (expression.getValues().size() != 3) {
             throw new RuntimeException("Expecting exactly 3 values with case if as operator for Expression, got: " + expression.getValues().size());
         }
-        for (Value value : expression.getValues()) {
+
+        ifStatementCode(code,expression.getValues().get(0), expression.getValues().get(1), expression.getValues().get(2));
+        /*for (Value value : expression.getValues()) {
             if (value instanceof Expression) {
                 Expression exp = (Expression) value;
                 if (exp.getValues().size() != 2) {
@@ -184,16 +188,24 @@ abstract class ProcessFunctionWriter implements ClassWriter {
                 }
             } else if (value instanceof ConstantValue) {
                 ConstantValue defaultReturn = (ConstantValue) value;
-                code.append("else ");
+                code.append(" else ");
                 constantValueToCode(defaultReturn, code);
             } else {
                 throw new RuntimeException("Expecting only expressions and 1 constant value for case if, got: " + value);
             }
-        }
+        }*/
     }
 
-    private void ifStatementCode(StringBuilder code, Expression exp, int i, int i2) {
-        Expression exp1 = (Expression) exp.getValues().get(i);
+    //private void ifStatementCode(StringBuilder code, Expression exp, int i, int i2) {
+    private void ifStatementCode(StringBuilder code, Value condition, Value then_value, Value else_value) {
+        code.append("if(");
+        valueToCode(condition, code);
+        code.append(") ");
+        valueToCode(then_value, code);
+        code.append("\nelse ");
+        valueToCode(else_value, code);
+        code.append("\n");
+        /*Expression exp1 = (Expression) exp.getValues().get(i);
         code.append("if(");
         valueToCode(exp1.getValues().get(0), code);
         code.append(exp1.getOperator().getValue());
@@ -201,7 +213,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         code.append(")");
         code.append(" ");
         valueToCode(exp.getValues().get(i2), code);
-        code.append("\n");
+        code.append("\n");*/
     }
 
     protected List<String> optimizeKey(List<String> rpfNextKeys) {

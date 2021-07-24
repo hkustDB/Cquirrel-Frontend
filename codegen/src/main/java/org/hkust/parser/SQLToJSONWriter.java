@@ -780,6 +780,14 @@ public class SQLToJSONWriter {
             value.put("value", ((SQLNumberExpr) expr).getValue());
         }
 
+        if (expr.getClass() == SQLCaseExpr.class) {
+            value.put("type", "expression");
+            value.put("operator", "case");
+            value.put("if_condition", writeValueObject(((SQLCaseExpr) expr).getItems().get(0).getConditionExpr()));
+            value.put("then_value", writeValueObject(((SQLCaseExpr) expr).getItems().get(0).getValueExpr() ));
+            value.put("else_value", writeValueObject(((SQLCaseExpr) expr).getElseExpr()));
+        }
+
         if (expr.getClass() == SQLInListExpr.class) {
             return writeValueObject(inToBinaryOr((SQLInListExpr) expr));
         }
