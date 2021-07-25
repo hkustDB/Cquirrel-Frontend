@@ -76,20 +76,6 @@ public class SQLToJSONWriter {
                 messages.add(l_ps);
                 int count = childCount.getOrDefault("lineitem", 0);
                 childCount.put("lineitem", count + 1);
-
-                if (table.contains("part")) {
-                    JSONObject ps_p = new JSONObject();
-                    ps_p.put("primary", "part");
-                    ps_p.put("foreign", "partsupp");
-                    messages.add(ps_p);
-                    keyList.add("partkey");
-                }
-                if (table.contains("supplier")) {
-                    JSONObject ps_s = new JSONObject();
-                    ps_s.put("primary", "supplier");
-                    ps_s.put("foreign", "partsupp");
-                    messages.add(ps_s);
-                }
             } else {
                 if (table.contains("part")) {
                     JSONObject l_p = new JSONObject();
@@ -169,7 +155,6 @@ public class SQLToJSONWriter {
 
         }
 
-
         if (table.contains("orders")) {
             JSONArray keyList = new JSONArray();
             JSONArray nextKey = new JSONArray();
@@ -228,33 +213,91 @@ public class SQLToJSONWriter {
             writeRelationJsonObject("customer", "is_Last", true);
         }
 
-        if (table.contains("nation")) {
+        if (table.contains("partsupp")) {
             JSONArray keyList = new JSONArray();
             JSONArray nextKey = new JSONArray();
-            if (table.contains("region")) {
-                JSONObject n_r = new JSONObject();
-                n_r.put("primary", "region");
-                n_r.put("foreign", "nation");
-                messages.add(n_r);
-                int count = childCount.getOrDefault("nation", 0);
-                childCount.put("nation", count + 1);
-                keyList.add("regionkey");
-            } else {
-                keyList.add("nationkey");
-            }
-            writeRelationJsonObject("nation", "this_key", keyList);
 
-            if (root.equals("")) root = "nation";
-            writeRelationDefinition("nation");
-            if (!table.contains("customer") && !table.contains("supplier")) {
-                writeRelationJsonObject("nation", "is_Root", true);
-                lastObject = "nation";
+            if (root.equals("")) {
+                root = "partsupp";
+                writeRelationJsonObject("partsupp", "is_Root", true);
+                lastObject = "part";
             } else {
-                writeRelationJsonObject("nation", "is_Root", false);
-                nextKey.add("nationkey");
-                writeRelationJsonObject("nation", "next_key", nextKey);
+                writeRelationJsonObject("partsupp", "is_Root", false);
+                nextKey.add("suppkey");
+                writeRelationJsonObject("partsupp", "next_key", nextKey);
             }
-            writeRelationJsonObject("nation", "is_Last", true);
+
+            if (table.contains("part")) {
+                JSONObject ps_p = new JSONObject();
+                ps_p.put("primary", "part");
+                ps_p.put("foreign", "partsupp");
+                messages.add(ps_p);
+            }
+            if (table.contains("supplier")) {
+                JSONObject ps_s = new JSONObject();
+                ps_s.put("primary", "supplier");
+                ps_s.put("foreign", "partsupp");
+                messages.add(ps_s);
+            }
+
+            if (table.contains("part") || table.contains("supplier")) {
+                writeRelationJsonObject("partsupp", "is_Last", false);
+            } else {
+                writeRelationJsonObject("partsupp", "is_Last", true);
+            }
+
+            keyList.add("partkey");
+            keyList.add("suppkey");
+            writeRelationJsonObject("partsupp", "this_key", keyList);
+            writeRelationDefinition("partsupp");
+
+            if (table.contains("part") && table.contains("supplier")) {
+
+                JSONObject obj0 = new JSONObject();
+                JSONObject obj1 = new JSONObject();
+                String partsupp0 = "partsupps";
+                String partsupp1 = "partsuppp";
+
+                obj0.put("name", "Q" + partsupp0);
+                obj0.put("relation", "partsupp");
+                obj0.put("rename_attribute", null);
+                obj0.put("child_nodes", 1);
+                obj0.put("is_Root", false);
+                obj0.put("is_Last", false);
+                JSONArray thisKeyList0 = new JSONArray();
+                thisKeyList0.add("suppkey");
+                obj0.put("this_key", thisKeyList0);
+                JSONArray nextKeyList0 = new JSONArray();
+                nextKeyList0.add("partkey");
+                obj0.put("next_key", nextKeyList0);
+                obj0.put("id", "_s");
+
+                obj1.put("name", "Q" + partsupp1);
+                obj1.put("relation", "partsupp");
+                obj1.put("rename_attribute", null);
+                obj1.put("child_nodes", 1);
+                if (root.equals("partsupp")) {
+                    obj1.put("is_Root", true);
+                } else {
+                    obj1.put("is_Root", false);
+                }
+                obj1.put("is_Last", true);
+                JSONArray thisKeyList1 = new JSONArray();
+                thisKeyList1.add("partkey");
+                obj1.put("this_key", thisKeyList1);
+                JSONArray nextKeyList1 = new JSONArray();
+                nextKeyList1.add("partkey");
+                nextKeyList1.add("suppkey");
+                obj1.put("next_key", nextKeyList1);
+                obj1.put("id", "_p");
+
+                JSONObject obj = new JSONObject();
+                obj.putAll(obj0);
+                obj.putAll(obj1);
+                relationJsonObject.remove("partsupp");
+                relationJsonObject.put("partsupp0", obj0);
+                relationJsonObject.put("partsupp1", obj1);
+            }
         }
 
         if (table.contains("part")) {
@@ -306,74 +349,34 @@ public class SQLToJSONWriter {
             writeRelationDefinition("supplier");
         }
 
-        if (table.contains("partsupp")) {
+        if (table.contains("nation")) {
             JSONArray keyList = new JSONArray();
             JSONArray nextKey = new JSONArray();
-
-            if (root.equals("")) {
-                root = "partsupp";
-                writeRelationJsonObject("partsupp", "is_Root", true);
-                lastObject = "part";
+            if (table.contains("region")) {
+                JSONObject n_r = new JSONObject();
+                n_r.put("primary", "region");
+                n_r.put("foreign", "nation");
+                messages.add(n_r);
+                int count = childCount.getOrDefault("nation", 0);
+                childCount.put("nation", count + 1);
+                keyList.add("regionkey");
             } else {
-                writeRelationJsonObject("partsupp", "is_Root", false);
-                nextKey.add("suppkey");
-                writeRelationJsonObject("partsupp", "next_key", nextKey);
+                keyList.add("nationkey");
             }
-            if (table.contains("part") || table.contains("supplier")) {
-                writeRelationJsonObject("partsupp", "is_Last", false);
+            writeRelationJsonObject("nation", "this_key", keyList);
+
+            if (root.equals("")) root = "nation";
+            writeRelationDefinition("nation");
+            if (!table.contains("customer") && !table.contains("supplier")) {
+                writeRelationJsonObject("nation", "is_Root", true);
+                lastObject = "nation";
             } else {
-                writeRelationJsonObject("partsupp", "is_Last", true);
+                writeRelationJsonObject("nation", "is_Root", false);
+                nextKey.add("nationkey");
+                writeRelationJsonObject("nation", "next_key", nextKey);
             }
-            keyList.add("partkey");
-            keyList.add("suppkey");
-            writeRelationJsonObject("partsupp", "this_key", keyList);
-            writeRelationDefinition("partsupp");
-
-            if (table.contains("part") && table.contains("supplier")) {
-
-                JSONObject obj0 = new JSONObject();
-                JSONObject obj1 = new JSONObject();
-                String partsupp0 = "partsupps";
-                String partsupp1 = "partsuppp";
-
-                obj0.put("name", "Q" + partsupp0);
-                obj0.put("relation", "partsupp");
-                obj0.put("rename_attribute", null);
-                obj0.put("child_nodes", 1);
-                obj0.put("is_Root", false);
-                obj0.put("is_Last", false);
-                JSONArray thisKeyList0 = new JSONArray();
-                thisKeyList0.add("suppkey");
-                obj0.put("this_key", thisKeyList0);
-                JSONArray nextKeyList0 = new JSONArray();
-                nextKeyList0.add("partkey");
-                obj0.put("next_key", nextKeyList0);
-                obj0.put("id", "_s");
-
-                obj1.put("name", "Q" + partsupp1);
-                obj1.put("relation", "partsupp");
-                obj1.put("rename_attribute", null);
-                obj1.put("child_nodes", 1);
-                obj1.put("is_Root", false);
-                obj1.put("is_Last", true);
-                JSONArray thisKeyList1 = new JSONArray();
-                thisKeyList1.add("partkey");
-                obj1.put("this_key", thisKeyList1);
-                JSONArray nextKeyList1 = new JSONArray();
-                nextKeyList1.add("partkey");
-                nextKeyList1.add("suppkey");
-                obj1.put("next_key", nextKeyList1);
-                obj1.put("id", "_p");
-
-                JSONObject obj = new JSONObject();
-                obj.putAll(obj0);
-                obj.putAll(obj1);
-                relationJsonObject.remove("partsupp");
-                relationJsonObject.put("partsupp0", obj0);
-                relationJsonObject.put("partsupp1", obj1);
-            }
+            writeRelationJsonObject("nation", "is_Last", true);
         }
-
 
         // Merge the JSON Array into the JSON Object.
         outputJsonObject.put("join_structure", messages);
