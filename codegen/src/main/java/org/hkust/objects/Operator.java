@@ -19,6 +19,7 @@ public enum Operator {
     IF("if"),
     CASE("case"),
     LIKE("LIKE"),
+    NOT_LIKE("NOT LIKE"),
     COUNT("COUNT"),
     COUNT_DISTINCT("COUNT_DISTINCT");
 

@@ -54,6 +54,10 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             likeToCode(expression, code);
             return;
         }
+        if (expression.getOperator().equals(Operator.NOT_LIKE)) {
+            notLikeToCode(expression, code);
+            return;
+        }
         for (int i = 0; i < size; i++) {
             Value value = values.get(i);
             if (value instanceof Expression) {
@@ -113,6 +117,20 @@ abstract class ProcessFunctionWriter implements ClassWriter {
                 .append("]");
     }
 
+    protected String getAttributeValueString(AttributeValue value) {
+        requireNonNull(value);
+        final String columnName = value.getColumnName();
+        final Class<?> type = requireNonNull(relationSchema.getColumnAttributeByRawName(value.getRelation(), columnName.toLowerCase())).getType();
+        StringBuilder sb = new StringBuilder();
+        sb.append("value(\"")
+                .append(columnName.toUpperCase())
+                .append("\")")
+                .append(".asInstanceOf[")
+                .append(type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName())
+                .append("]");
+        return sb.toString();
+    }
+
     protected void aggregationAttributeToCode(AggregateAttributeValue aggregateAttributeValue, StringBuilder code) {
         requireNonNull(code);
         requireNonNull(aggregateAttributeValue);
@@ -140,33 +158,52 @@ abstract class ProcessFunctionWriter implements ClassWriter {
         if (expression.getValues().size() != 2) {
             throw new RuntimeException("Expecting 2 values with LIKE as operator for express, got: " + expression.getValues().size());
         }
-        if (!expression.getOperator().equals(Operator.LIKE)) {
-            throw new RuntimeException("The operator of like expression should be LIKE!");
-        }
         if (!(expression.getValues().get(0) instanceof AttributeValue)) {
             throw new RuntimeException("The first value in like expression should be attribute value!");
         }
         if (!(expression.getValues().get(1) instanceof ConstantValue)) {
             throw new RuntimeException("The second value in like expression should be constant value!");
         }
+
         AttributeValue attributeValue = (AttributeValue) expression.getValues().get(0);
         ConstantValue constantValue = (ConstantValue) expression.getValues().get(1);
-        attributeValueToCode(attributeValue, code);
         String pattern = constantValue.getValue();
 
-        if (getSubstringCountFromString(pattern, "%") > 2) {
+        attributeValueToCode(attributeValue, code);
+
+        int percentOccurrNum = getSubstringCountFromString(pattern, "%");
+        if (percentOccurrNum == 0) {
+            code.append(".equals(\"").append(pattern).append("\")");
+        } else if (percentOccurrNum == 1) {
+            if (pattern.startsWith("%")) {
+                code.append(".endsWith(\"").append(pattern, 1, pattern.length()).append("\")");
+            } else if (pattern.endsWith("%")) {
+                code.append(".startsWith(\"").append(pattern, 0, pattern.length() - 1).append("\")");
+            } else {
+                throw new RuntimeException("This \"" + pattern + "\" has not supported yet.");
+            }
+        } else if (percentOccurrNum == 2) {
+            if (pattern.startsWith("%") && pattern.endsWith("%")) {
+                code.append(".contains(\"").append(pattern, 1, pattern.length() - 1).append("\")");
+            } else {
+                throw new RuntimeException("This \"" + pattern + "\" has not supported yet.");
+            }
+        } else if (percentOccurrNum == 3) {
+            if (pattern.startsWith("%") && pattern.endsWith("%")) {
+                String first = pattern.split("%")[1];
+                String second = pattern.split("%")[2];
+                code.append(".matches(\".*").append(first).append(".*").append(second).append(".*\")");
+            } else {
+                throw new RuntimeException("This \"" + pattern + "\" has not supported yet.");
+            }
+        } else {
             throw new RuntimeException("More than two % in like expression is not supported now!");
         }
-        if (pattern.startsWith("%") && pattern.endsWith("%")) {
-            code.append(".contains(\"").append(pattern, 1, pattern.length() - 1).append("\")");
-        } else if (pattern.startsWith("%")) {
-            code.append(".endsWith(\"").append(pattern, 1, pattern.length()).append("\")");
-        } else if (pattern.endsWith("%")) {
-            code.append(".startsWith(\"").append(pattern, 0, pattern.length() - 1).append("\")");
-        } else {
-            code.append(".equals(\"").append(pattern).append("\")");
-        }
+    }
 
+    private void notLikeToCode(Expression expression, StringBuilder code) {
+        code.append("!");
+        likeToCode(expression, code);
     }
 
     private void caseIfCode(Expression expression, StringBuilder code) {
