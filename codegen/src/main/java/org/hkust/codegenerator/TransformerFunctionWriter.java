@@ -20,7 +20,7 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
         this.transformerFunction = transformerFunction;
         Class<?> type = Double.class;//
         outputType = type.equals(Type.getClass("date")) ? type.getName() : type.getSimpleName();
-        className = getProcessFunctionClassName(transformerFunction.getName());
+        className = transformerFunction.getName();
     }
 
     @Override
@@ -28,9 +28,10 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
         addImports(writer);
         addConstructorAndOpenClass(writer);
         addExprFunction(writer);
+        closeClass(writer);
+        writeClassFile("QTransformationFunction", filePath, writer.toString());
 
-
-        return className;
+        return "QTransformationFunction";
     }
 
     @Override
@@ -47,8 +48,8 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
                 " extends TransformerProcessFunction[Any, " +
                 outputType +
                 "](" +
-                keyListToCode(transformerFunction.getOutputKey()) +
-                ", " +
+                //keyListToCode(transformerFunction.getOutputKey()) +
+                //", " +
                 " aggregateName = \"" +
                 className + "\"" +
                 ", deltaOutput = true" +

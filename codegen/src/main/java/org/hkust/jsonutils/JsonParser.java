@@ -40,7 +40,9 @@ public class JsonParser {
     private static TransformerFunction makeTransformerFunction(Map<String, Object> transMap) {
         if (transMap == null) return null;
         Map<String, Object> exprMap = (Map<String, Object>) transMap.get("expr");
-        return null;
+        String name = (String) transMap.get("alias");
+        Expression expr = (Expression) makeValue(exprMap);
+        return new TransformerFunction(name, expr);
     }
 
     private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {

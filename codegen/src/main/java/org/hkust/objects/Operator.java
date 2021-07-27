@@ -12,6 +12,7 @@ public enum Operator {
     SUMMATION("++"),
     MULTIPLY("*"),
     PRODUCT("**"),
+    DIVIDE("/"),
     AVG("avg"),
     AND("&&"),
     OR("||"),
