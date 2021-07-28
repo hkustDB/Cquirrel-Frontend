@@ -115,10 +115,10 @@ public class SQLToJSONWriter {
 
                 JSONObject obj0 = new JSONObject();
                 JSONObject obj1 = new JSONObject();
-                String lineitem0 = "lineitemps";
-                String lineitem1 = "lineitemorder";
+                String lineitem_ps = "lineitemps";
+                String lineitem_o = "lineitemorder";
 
-                obj0.put("name", "Q" + lineitem0);
+                obj0.put("name", "Q" + lineitem_ps);
                 obj0.put("relation", "lineitem");
                 obj0.put("rename_attribute", null);
                 obj0.put("child_nodes", 1);
@@ -133,7 +133,7 @@ public class SQLToJSONWriter {
                 obj0.put("next_key", nextKeyList0);
                 obj0.put("id", "_ps");
 
-                obj1.put("name", "Q" + lineitem1);
+                obj1.put("name", "Q" + lineitem_o);
                 obj1.put("relation", "lineitem");
                 obj1.put("rename_attribute", null);
                 obj1.put("child_nodes", 1);
@@ -148,9 +148,9 @@ public class SQLToJSONWriter {
                 obj.putAll(obj0);
                 obj.putAll(obj1);
                 relationJsonObject.remove("lineitem");
-                relationJsonObject.put("lineitem0", obj0);
-                relationJsonObject.put("lineitem1", obj1);
-                lastObject = "lineitem1";
+                relationJsonObject.put(lineitem_ps, obj0);
+                relationJsonObject.put(lineitem_o, obj1);
+                lastObject = lineitem_o;
             }
 
         }
@@ -220,7 +220,7 @@ public class SQLToJSONWriter {
             if (root.equals("")) {
                 root = "partsupp";
                 writeRelationJsonObject("partsupp", "is_Root", true);
-                lastObject = "part";
+                lastObject = "partsupp";
             } else {
                 writeRelationJsonObject("partsupp", "is_Root", false);
                 nextKey.add("suppkey");
@@ -255,10 +255,10 @@ public class SQLToJSONWriter {
 
                 JSONObject obj0 = new JSONObject();
                 JSONObject obj1 = new JSONObject();
-                String partsupp0 = "partsupps";
-                String partsupp1 = "partsuppp";
+                String partsupp_s = "partsupps";
+                String partsupp_p = "partsuppp";
 
-                obj0.put("name", "Q" + partsupp0);
+                obj0.put("name", "Q" + partsupp_s);
                 obj0.put("relation", "partsupp");
                 obj0.put("rename_attribute", null);
                 obj0.put("child_nodes", 1);
@@ -272,12 +272,13 @@ public class SQLToJSONWriter {
                 obj0.put("next_key", nextKeyList0);
                 obj0.put("id", "_s");
 
-                obj1.put("name", "Q" + partsupp1);
+                obj1.put("name", "Q" + partsupp_p);
                 obj1.put("relation", "partsupp");
                 obj1.put("rename_attribute", null);
                 obj1.put("child_nodes", 1);
                 if (root.equals("partsupp")) {
                     obj1.put("is_Root", true);
+                    lastObject = partsupp_p;
                 } else {
                     obj1.put("is_Root", false);
                 }
@@ -287,7 +288,9 @@ public class SQLToJSONWriter {
                 obj1.put("this_key", thisKeyList1);
                 JSONArray nextKeyList1 = new JSONArray();
                 nextKeyList1.add("partkey");
-                nextKeyList1.add("suppkey");
+                if (!root.equals("partsupp")) {
+                    nextKeyList1.add("suppkey");
+                }
                 obj1.put("next_key", nextKeyList1);
                 obj1.put("id", "_p");
 
@@ -295,8 +298,8 @@ public class SQLToJSONWriter {
                 obj.putAll(obj0);
                 obj.putAll(obj1);
                 relationJsonObject.remove("partsupp");
-                relationJsonObject.put("partsupp0", obj0);
-                relationJsonObject.put("partsupp1", obj1);
+                relationJsonObject.put(partsupp_s, obj0);
+                relationJsonObject.put(partsupp_p, obj1);
             }
         }
 
