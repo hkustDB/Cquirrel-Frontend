@@ -335,7 +335,7 @@ class MainClassWriter implements ClassWriter {
         String relationName = rpf.getRelation().toString().toLowerCase();
         for (RelationProcessFunction r : relationProcessFunctions) {
             if (r.getRelation().toString().toLowerCase().equals(relationName)) {
-                if (r.getRelationAndId() != rpf.getRelationAndId()) {
+                if (!r.getRelationAndId().equals(rpf.getRelationAndId())) {
                     return r;
                 }
             }
