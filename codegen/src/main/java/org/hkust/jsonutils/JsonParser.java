@@ -75,7 +75,8 @@ public class JsonParser {
                 (boolean) rpfMap.get("is_Root"),
                 (boolean) rpfMap.get("is_Last"),
                 (Map<String, String>) rpfMap.get("rename_attribute"),
-                selectConditions
+                selectConditions,
+                (String) rpfMap.get("id")
         );
     }
 

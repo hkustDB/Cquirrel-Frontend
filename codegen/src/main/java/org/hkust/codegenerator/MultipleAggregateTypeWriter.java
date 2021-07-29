@@ -91,7 +91,13 @@ public class MultipleAggregateTypeWriter implements ClassWriter {
     void addToStringMethod(final PicoWriter writer) throws Exception {
         writer.writeln_r("override def toString : String = {");
         String joinedStr = aggregateProcessFunction.getAggregateValues()
-                .stream().map(aggregateValue -> aggregateValue.getName().toUpperCase())
+                .stream().map(aggregateValue -> {
+                    if (aggregateValue.getValueType().getSimpleName().equals("Double")) {
+                        return "\"%f\".format(" + aggregateValue.getName().toUpperCase() + ")";
+                    } else {
+                        return "\"%s\".format(" + aggregateValue.getName().toUpperCase() + ")";
+                    }
+                })
                 .collect(Collectors.joining(" + \"|\" + "));
         writer.writeln(joinedStr);
         writer.writeln_l("}");

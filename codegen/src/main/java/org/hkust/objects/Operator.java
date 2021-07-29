@@ -19,6 +19,8 @@ public enum Operator {
     NOT("!"),
     IF("if"),
     CASE("case"),
+    LIKE("LIKE"),
+    NOT_LIKE("NOT LIKE"),
     COUNT("COUNT"),
     COUNT_DISTINCT("COUNT_DISTINCT");
 
@@ -28,15 +30,6 @@ public enum Operator {
         this.operator = operator;
     }
 
-    public String getValue() {
-        if (this == NOT_EQUAL) return "!=";
-        else return operator;
-    }
-
-    private String getType() {
-        return operator;
-    }
-
     public static Operator getOperator(String op) {
         for (Operator operator : values()) {
             if (operator.getType().equals(op)) {
@@ -44,6 +37,15 @@ public enum Operator {
             }
         }
         throw new IllegalArgumentException("Got " + op);
+    }
+
+    public String getValue() {
+        if (this == NOT_EQUAL) return "!=";
+        else return operator;
+    }
+
+    private String getType() {
+        return operator;
     }
 
     @Override

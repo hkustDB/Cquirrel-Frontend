@@ -13,11 +13,17 @@ import org.hkust.schema.Relation;
 import org.hkust.schema.RelationSchema;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jgrapht.*;
+import org.jgrapht.graph.*;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.*;
+import org.jgrapht.alg.shortestpath.*;
 
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 import static org.hkust.objects.Type.getStringConversionMethod;
+import static org.jgrapht.Graphs.predecessorListOf;
+import static org.jgrapht.Graphs.successorListOf;
 
 class MainClassWriter implements ClassWriter {
     private static final String CLASS_NAME = "Job";
@@ -28,8 +34,12 @@ class MainClassWriter implements ClassWriter {
     private final String flinkInputPath;
     private final String flinkOutputPath;
     private final RelationSchema schema;
-    private final Map<Relation, String> tagNames;
+    //    private final Map<Relation, String> tagNames;
+    private final Map<String, String> tagNames;
     private final Map<String, String> ACTIONS = ImmutableMap.of("Insert", "+", "Delete", "-");
+    private Graph<String, DefaultEdge> relationGraph;
+    private Map<String, Boolean> relationIsFullyHandled;
+    private Map<RelationProcessFunction, Boolean> rpfIsHandled;
     private Boolean isFileSink = false;
     private Boolean isSocketSink = false;
     private Boolean isKafkaSink = false;
@@ -46,9 +56,15 @@ class MainClassWriter implements ClassWriter {
         this.joinStructure = node.getJoinStructure();
         this.schema = schema;
         this.tagNames = new HashMap<>();
+        this.relationIsFullyHandled = new HashMap<>();
+        this.rpfIsHandled = new HashMap<>();
         for (RelationProcessFunction rpf : relationProcessFunctions) {
-            tagNames.put(rpf.getRelation(), rpf.getRelation().getValue().toLowerCase() + "Tag");
+//            tagNames.put(rpf.getRelation(), rpf.getRelation().getValue().toLowerCase() + "Tag");
+            tagNames.put(rpf.getRelationAndId(), rpf.getRelationAndId() + "Tag");
+            this.rpfIsHandled.put(rpf, false);
+            this.relationIsFullyHandled.put(rpf.getRelation().getValue().toLowerCase(), false);
         }
+        createRelationGraph();
     }
 
     MainClassWriter(Node node, RelationSchema schema, String flinkInputPath, String flinkOutputPath, String[] dataSinkTypes) {
@@ -63,6 +79,22 @@ class MainClassWriter implements ClassWriter {
             if (sinkType.equals("file")) {
                 this.isFileSink = true;
             }
+        }
+    }
+
+    private void createRelationGraph() {
+        relationGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
+
+        HashSet<String> relationStringSet = new HashSet<>();
+        for (Map.Entry<Relation, Relation> entry : joinStructure.entrySet()) {
+            relationStringSet.add(entry.getKey().getValue().toLowerCase());
+            relationStringSet.add(entry.getValue().getValue().toLowerCase());
+        }
+        for (String s : relationStringSet) {
+            relationGraph.addVertex(s);
+        }
+        for (Map.Entry<Relation, Relation> entry : joinStructure.entrySet()) {
+            relationGraph.addEdge(entry.getValue().getValue().toLowerCase(), entry.getKey().getValue().toLowerCase());
         }
     }
 
@@ -96,7 +128,8 @@ class MainClassWriter implements ClassWriter {
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         writer.writeln_r("object " + CLASS_NAME + " {");
         relationProcessFunctions.forEach(rpf -> {
-            writer.writeln("val " + tagNames.get(rpf.getRelation()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelation().getValue() + "\")");
+//            writer.writeln("val " + tagNames.get(rpf.getRelation()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelation().getValue() + "\")");
+            writer.writeln("val " + tagNames.get(rpf.getRelationAndId()) + ": OutputTag[Payload] = OutputTag[Payload](\"" + rpf.getRelationAndId() + "\")");
         });
     }
 
@@ -115,13 +148,26 @@ class MainClassWriter implements ClassWriter {
         if (relationProcessFunctions.size() == 1) {
             writeSingleRelationStream(relationProcessFunctions.get(0), writer);
         } else {
-            RelationProcessFunction root = getLeafOrParent(true);
-            writeMultipleRelationStream(root, writer, "", "S");
+            if (getLeafNumberOfRelationProcessFunctions() > 1) {
+                writeMultipleRelationsStreamWithMultipleLeaves(writer);
+            } else {
+                RelationProcessFunction root = getLeafOrParent(true);
+                writeMultipleRelationStream(root, writer, "", "S");
+            }
         }
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
         writer.writeln_l("}");
     }
 
+
+    private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
+        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
+        String className = getProcessFunctionClassName(root.getName());
+        writer.writeln(".process(new " + className + "())");
+        writer.writeln(".keyBy(i => i._3)");
+        linkAggregateProcessFunctions(writer);
+        writeDataSink(writer);
+    }
 
     @NotNull
     private RelationProcessFunction getLeafOrParent(boolean leaf) {
@@ -137,13 +183,32 @@ class MainClassWriter implements ClassWriter {
         return relationProcessFunction;
     }
 
-    private void writeSingleRelationStream(RelationProcessFunction root, final PicoWriter writer) {
-        writer.writeln("val result  = " + root.getRelation().toString().toLowerCase() + ".keyBy(i => i._3)");
-        String className = getProcessFunctionClassName(root.getName());
-        writer.writeln(".process(new " + className + "())");
-        writer.writeln(".keyBy(i => i._3)");
-        linkAggregateProcessFunctions(writer);
-        writeDataSink(writer);
+    private ArrayList<RelationProcessFunction> getLeavesRPFList() {
+        ArrayList<RelationProcessFunction> leavesRPFList = new ArrayList<>();
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (rpf.isLeaf()) {
+                leavesRPFList.add(rpf);
+            }
+        }
+        return leavesRPFList;
+    }
+
+    private int getDistanceFromRoot(String root, String target) {
+        DijkstraShortestPath<String, DefaultEdge> dijkstraAlg = new DijkstraShortestPath<>(relationGraph);
+        SingleSourcePaths<String, DefaultEdge> iPaths = dijkstraAlg.getPaths(root);
+        return iPaths.getPath(target).getLength();
+    }
+
+    private ArrayList<RelationProcessFunction> sortLeavesRPFAccordingToRootDistance(ArrayList<RelationProcessFunction> rpfList, RelationProcessFunction root) {
+        HashMap<RelationProcessFunction, Integer> rpfDistanceToRoot = new HashMap<>();
+        String rootStr = root.getRelation().getValue().toLowerCase();
+        for (RelationProcessFunction rpf : rpfList) {
+            String curRPFStr = rpf.getRelation().getValue().toLowerCase();
+            rpfDistanceToRoot.put(rpf, getDistanceFromRoot(rootStr, curRPFStr));
+        }
+        ArrayList<RelationProcessFunction> res = new ArrayList<>();
+        rpfDistanceToRoot.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).forEachOrdered(e -> res.add(e.getKey()));
+        return res;
     }
 
     private void writeMultipleRelationStream(RelationProcessFunction rpf, final PicoWriter writer, String prevStreamName, String streamSuffix) {
@@ -169,6 +234,192 @@ class MainClassWriter implements ClassWriter {
                 streamName,
                 streamSuffix
         );
+    }
+
+    private void setRelationIsFullyHandled(String relationName, boolean bool) {
+        relationIsFullyHandled.put(relationName, bool);
+    }
+
+    private Boolean getRelationIsFullyHandled(String relationName) {
+        return relationIsFullyHandled.get(relationName);
+    }
+
+    private Boolean isRelationListFullyHandled(List<String> relationNameList) {
+        for (String r : relationNameList) {
+            if (!getRelationIsFullyHandled(r)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void setRpfIsHandled(RelationProcessFunction rpf, Boolean bool) {
+        rpfIsHandled.put(rpf, bool);
+    }
+
+    private Boolean getRpfIsHandled(RelationProcessFunction rpf) {
+        return rpfIsHandled.get(rpf);
+    }
+
+    private void writeLeafRelationStream(RelationProcessFunction rpf, final PicoWriter writer) {
+        String relationName = rpf.getRelationAndId().toLowerCase();
+        String streamName = relationName + "S";
+        writer.writeln("val " + streamName + " = " + relationName + ".keyBy(i => i._3)");
+        writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
+
+        setRelationIsFullyHandled(rpf.getRelation().toString().toLowerCase(), true);
+        setRpfIsHandled(rpf, true);
+    }
+
+    private void writeUnLeafRelationStream(RelationProcessFunction rpfC, RelationProcessFunction rpf, final PicoWriter writer) {
+        String relationNameC = rpfC.getRelationAndId().toLowerCase();
+        String streamNameC = relationNameC + "S";
+        String relationName = rpf.getRelationAndId().toLowerCase();
+        String streamName = relationName + "S";
+        writer.writeln("val " + streamName + " = " + streamNameC + ".connect(" + relationName + ")");
+        writer.writeln(".keyBy(i => i._3, i => i._3)");
+        writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
+
+        List<String> rpfRelationC = successorListOf(relationGraph, rpf.getRelation().toString().toLowerCase());
+        if (isRelationListFullyHandled(rpfRelationC)) {
+            setRelationIsFullyHandled(rpf.getRelation().toString().toLowerCase(), true);
+        }
+        setRpfIsHandled(rpf, true);
+    }
+
+    private void writeBifurRelationSteam(RelationProcessFunction rpfC, RelationProcessFunction rpf, RelationProcessFunction rpfU, final PicoWriter writer) {
+        String relationNameC = rpfC.getRelationAndId().toLowerCase();
+        String streamNameC = relationNameC + "S";
+        String relationName = rpf.getRelationAndId().toLowerCase();
+        String streamName = relationName + "S";
+        String relationNameU = rpfU.getRelationAndId().toLowerCase();
+        String streamNameU = relationNameU + "S";
+        writer.writeln("val " + streamName + " = " + streamNameC + ".connect(" + streamNameU + ")");
+        writer.writeln(".keyBy(i => i._3, i => i._3)");
+        writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
+
+        List<String> rpfRelationC = successorListOf(relationGraph, rpf.getRelation().toString().toLowerCase());
+        if (isRelationListFullyHandled(rpfRelationC)) {
+            setRelationIsFullyHandled(rpf.getRelation().toString().toLowerCase(), true);
+        }
+        setRpfIsHandled(rpf, true);
+    }
+
+    private boolean hasMultipleChildRelation(String relationName) {
+        List<String> relationC = successorListOf(relationGraph, relationName);
+        if (relationC.size() > 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private RelationProcessFunction getFatherRPFfromBifurParent(RelationProcessFunction rpf, List<RelationProcessFunction> rpfPList) {
+        String r = Relation.getRelationAbbr(rpf.getRelation().toString().toLowerCase());
+        for (RelationProcessFunction p : rpfPList) {
+            if (p.getId().replaceAll("_", "").equals(r)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private RelationProcessFunction getUncleRPFfromBifurParent(RelationProcessFunction rpf, List<RelationProcessFunction> rpfPList) {
+        String r = Relation.getRelationAbbr(rpf.getRelation().toString().toLowerCase());
+        for (RelationProcessFunction p : rpfPList) {
+            if (!p.getId().replaceAll("_", "").equals(r)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private RelationProcessFunction getSibleRPF(RelationProcessFunction rpf) {
+        String relationName = rpf.getRelation().toString().toLowerCase();
+        for (RelationProcessFunction r : relationProcessFunctions) {
+            if (r.getRelation().toString().toLowerCase().equals(relationName)) {
+                if (!r.getRelationAndId().equals(rpf.getRelationAndId())) {
+                    return r;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String writeLeafRelationToBifur(RelationProcessFunction rpf, final PicoWriter writer) {
+        if (rpf.isLeaf()) {
+            writeLeafRelationStream(rpf, writer);
+        }
+        do {
+            String rpfRelationP = predecessorListOf(relationGraph, rpf.getRelation().toString().toLowerCase()).get(0);
+            List<RelationProcessFunction> rpfPList = getRelationProcessFunctionListByRelationName(rpfRelationP);
+            RelationProcessFunction rpfP = null;
+            if (rpfPList.size() == 1) {
+                writeUnLeafRelationStream(rpf, rpfPList.get(0), writer);
+                rpfP = rpfPList.get(0);
+            }
+            if (rpfPList.size() == 2) {
+                RelationProcessFunction rpfU = getUncleRPFfromBifurParent(rpf, rpfPList);
+                RelationProcessFunction rpfF = getFatherRPFfromBifurParent(rpf, rpfPList);
+
+                if (getRpfIsHandled(rpfU)) {
+                    writeBifurRelationSteam(rpf, rpfF, rpfU, writer);
+                    rpfP = rpfF;
+                } else {
+                    writeUnLeafRelationStream(rpf, rpfF, writer);
+                    rpfP = rpfF;
+                }
+            }
+            rpf = rpfP;
+        } while (!hasMultipleChildRelation(rpf.getRelation().toString().toLowerCase()));
+
+        RelationProcessFunction rpfS = getSibleRPF(rpf);
+        if (getRpfIsHandled(rpfS)) {
+            List<String> pList = predecessorListOf(relationGraph, rpf.getRelation().toString().toLowerCase());
+            if (pList.size() >= 1) {
+                String rpfRelationP = pList.get(0);
+                List<RelationProcessFunction> rpfPList = getRelationProcessFunctionListByRelationName(rpfRelationP);
+                RelationProcessFunction rpfF = getFatherRPFfromBifurParent(rpf, rpfPList);
+                writeUnLeafRelationStream(rpf, rpfF, writer);
+                return rpfF.getRelationAndId().toLowerCase() + "S";
+            }
+        }
+        return rpf.getRelationAndId().toLowerCase() + "S";
+    }
+
+    private List<RelationProcessFunction> getRelationProcessFunctionListByRelationName(String relationName) {
+        ArrayList<RelationProcessFunction> rpfList = new ArrayList<>();
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (rpf.getRelation().toString().toLowerCase().equals(relationName)) {
+                rpfList.add(rpf);
+            }
+        }
+        return rpfList;
+    }
+
+    private void writeMultipleRelationsStreamWithMultipleLeaves(final PicoWriter writer) {
+        RelationProcessFunction rootRPF = getLeafOrParent(false);
+        ArrayList<RelationProcessFunction> leavesRPFList = getLeavesRPFList();
+        leavesRPFList = sortLeavesRPFAccordingToRootDistance(leavesRPFList, rootRPF);
+
+        String latestStreamName = "";
+        for (RelationProcessFunction rpf : leavesRPFList) {
+            latestStreamName = writeLeafRelationToBifur(rpf, writer);
+        }
+
+        writer.writeln("val result = " + latestStreamName + ".keyBy(i => i._3)");
+        linkAggregateProcessFunctions(writer);
+        writeDataSink(writer);
+    }
+
+    private int getLeafNumberOfRelationProcessFunctions() {
+        int count = 0;
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (rpf.isLeaf()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private void linkAggregateProcessFunctions(final PicoWriter writer) {
@@ -229,7 +480,10 @@ class MainClassWriter implements ClassWriter {
         }
         attributes.addAll(aggregateProcessFunctions.get(0).getAttributeSet(schema));
 
-        for (RelationProcessFunction rpf : relationProcessFunctions) {
+        for (String relationName : relationIsFullyHandled.keySet()) {
+            List<RelationProcessFunction> rpfList = getRelationProcessFunctionListByRelationName(relationName);
+            RelationProcessFunction rpf = rpfList.get(0);
+
             Relation relation = rpf.getRelation();
             String lowerRelationName = relation.getValue();
             StringBuilder columnNamesCode = new StringBuilder();
@@ -242,11 +496,21 @@ class MainClassWriter implements ClassWriter {
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
                 writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
-                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode(rpf));
-                writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
-                writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
+//                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode(rpf));
+                if (rpfList.size() == 1) {
+                    writer.writeln("ctx.output(" + tagNames.get(rpf.getRelationAndId()) + ", Payload(relation, action, " + thisKeyCode(rpf));
+                    writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
+                    writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
+                } else {
+                    for (RelationProcessFunction r : rpfList) {
+                        writer.writeln("ctx.output(" + tagNames.get(r.getRelationAndId()) + ", Payload(relation, action, " + thisKeyCode(r));
+                        writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
+                        writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
+                    }
+                }
             });
         }
+
         writer.writeln("case _ =>");
         writer.writeln("out.collect(Payload(\"\", \"\", 0, Array(), Array(), 0))");
         writer.writeln("}");
@@ -256,6 +520,9 @@ class MainClassWriter implements ClassWriter {
     }
 
     private String caseLabel(Relation relation) {
+        if (relation.equals(Relation.PARTSUPP)) {
+            return "PS";
+        }
         return relation.getValue().substring(0, 2).toUpperCase();
     }
 
@@ -336,7 +603,13 @@ class MainClassWriter implements ClassWriter {
             Class<?> type = attribute.getType();
             String conversionMethod = getStringConversionMethod(type);
             int position = attribute.getPosition();
-            if (!type.equals(Date.class)) {
+
+            if (attribute.getName().equals("o_year")) {
+                tupleCode.append("cells(").append(position).append(")")
+                        .append(".substring(").append(attribute.getSubStrStartInd()).append(", ")
+                        .append(attribute.getSubStrEndInd()).append(")")
+                        .append(conversionMethod == null ? "" : "." + conversionMethod);
+            } else if (!type.equals(Date.class)) {
                 tupleCode.append("cells(").append(position).append(")").append(conversionMethod == null ? "" : "." + conversionMethod);
             } else {
                 tupleCode.append(conversionMethod).append("(cells(").append(position).append("))");
