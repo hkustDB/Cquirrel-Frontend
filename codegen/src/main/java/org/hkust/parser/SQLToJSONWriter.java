@@ -523,6 +523,7 @@ public class SQLToJSONWriter {
                     aggregate.put("value_type", "int");
                     break;
                 case "double":
+                case "number":
                 case "":
                     aggregate.put("value_type", "Double");
                     break;
