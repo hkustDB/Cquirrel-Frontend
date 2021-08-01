@@ -44,7 +44,7 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
     public void addConstructorAndOpenClass(final PicoWriter writer) {
         //TODO: apply the next_key optimization on thiskey, remember: next_key is now output_key and requires no such optimizations
         String code = "class " +
-                "transformer" +
+                "QTransformationFunction" +
                 " extends TransformerProcessFunction[Any, " +
                 outputType +
                 "](" +
@@ -52,7 +52,7 @@ class TransformerFunctionWriter extends ProcessFunctionWriter {
                 //", " +
                 " aggregateName = \"" +
                 className + "\"" +
-                ", deltaOutput = true" +
+//                ", deltaOutput = true" +
                 ") {";
         writer.writeln_r(code);
     }
