@@ -762,7 +762,7 @@ public class SQLParserTest {
                 "(\n" +
                 "select sum(case when p_type like 'PROMO%'\n" +
                 "           then l_extendedprice*(1-l_discount)\n" +
-                "           else 0 \n" +
+                "           else 0.0 \n" +
                 "           end ) as promosum, \n" +
                 "       sum(l_extendedprice * (1 - l_discount)) as revenue\n" +
                 "from \n" +
