@@ -211,7 +211,7 @@ abstract class ProcessFunctionWriter implements ClassWriter {
             throw new RuntimeException("Expecting exactly 3 values with case if as operator for Expression, got: " + expression.getValues().size());
         }
 
-        ifStatementCode(code,expression.getValues().get(0), expression.getValues().get(1), expression.getValues().get(2));
+        ifStatementCode(code, expression.getValues().get(0), expression.getValues().get(1), expression.getValues().get(2));
         /*for (Value value : expression.getValues()) {
             if (value instanceof Expression) {
                 Expression exp = (Expression) value;
