@@ -760,7 +760,7 @@ public class SQLToJSONWriter {
                 value.put("name", truncateKey(((SQLIdentifierExpr) expr).getLowerName()));
                 // Currently, for any attributes created during execution, we fix the value type to be Double.
                 value.put("var_type", "Double");
-                value.put("store_type", "String");
+                value.put("store_type", "Double");
             }
         }
 
