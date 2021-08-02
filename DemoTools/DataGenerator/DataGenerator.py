@@ -58,7 +58,8 @@ def data_generator(config_file_name):
         raise Exception('KafkaTopic should be in the config file.')
     kafka_topic = config['KafkaTopic']
     # kafka_partition = config.getint('KafkaPartition')
-    kafka_producer = Producer({'bootstrap.servers': kafka_bootstrap_server})
+    if kafka_enable:
+        kafka_producer = Producer({'bootstrap.servers': kafka_bootstrap_server})
 
     # define a output func to write data to file and kafka
     def write_to_output_and_kafka(s):
@@ -350,13 +351,14 @@ def data_generator(config_file_name):
     with open(output_file_path, 'r') as f:
         res_lines_num = len(f.readlines())
     print("output file lines number: ", res_lines_num)
-
-
+    print("finished: ", config_file_name)
+    print("outputfile: ", output_file_path)
 
 
 if __name__ == '__main__':
     import time
+
     start = time.time()
-    data_generator('config.ini')
+    data_generator('config_all.ini')
     end = time.time()
     print("cpu time: ", end - start)
