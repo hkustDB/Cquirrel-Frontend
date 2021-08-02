@@ -227,7 +227,7 @@ export default class Settings extends Component {
                                     name="output_methods"
                                 >
                                     <Checkbox defaultChecked>File</Checkbox>
-                                    <Checkbox defaultChecked>Socket</Checkbox>
+                                    <Checkbox >Socket</Checkbox>
                                     <Checkbox >Kafka</Checkbox>
                                 </Form.Item>
 
