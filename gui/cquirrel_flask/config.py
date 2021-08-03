@@ -26,18 +26,8 @@ class BaseConfig:
     CODEGEN_LOG_PATH = os.path.abspath(os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/log'))
     CODEGEN_LOG_FILE = os.path.abspath(os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/log/codegen.log'))
     TEST_RESOURCES_PATH = os.path.abspath(os.path.join(GUI_FLASK_PATH, '../cquirrel_flask/tests/resources'))
-    Q6_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q6_0.1_sliding_window.csv')
-    Q6_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q6.csv')
-    Q3_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q3_0.1_sliding_window.csv')
 
-    Q3_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q3.csv')
-    Q10_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q10_0.1_sliding_window.csv')
-    Q10_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q10.csv')
-    Q18_INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q18.csv')
-    Q18_OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data_q18.csv')
-
-    # INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q6_0.1_sliding_window.csv')
-    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_q10_insert_only.csv')
+    INPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/input_data_all_insert_only.csv')
     OUTPUT_DATA_FILE = os.path.join(GUI_FLASK_PATH, 'cquirrel_app/resources/output_data.csv')
 
     # Top N Value Setting

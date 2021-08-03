@@ -369,7 +369,7 @@ def get_aggregate_value_idx(aggregate_name_idx):
 
 def get_aggregate_name_idx(aggregate_name, line_list):
     for i in range(len(line_list)):
-        if line_list[i] == aggregate_name:
+        if line_list[i].lower() == aggregate_name.lower():
             return i
     logging.error("can not find aggregate_name, aggregate_name = ", aggregate_name, " line_list = ", line_list)
     return -1
