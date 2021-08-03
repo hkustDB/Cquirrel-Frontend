@@ -47,6 +47,7 @@ class App extends Component {
             showRelationGraph: false,
             relationsData: {},
             showFlowDiag: false,
+            flowDiagData: {},
             queryChartLoading: false,
             queryTableLoading: false,
             codegenLogLoading: false,
@@ -62,16 +63,39 @@ class App extends Component {
                 legend: {
                     type: 'scroll',
                     orient: 'vertical',
-                    top: '78%',
+                    left: '75%',
+                    top: '10%',
                     bottom: '0%',
                     textStyle: {
-                        fontSize: 10
+                        fontFamily: 'Monaco',
+                        fontSize: 10,
+                        width: '25%'
+                    },
+                    formatter: function (params) {
+                        let tip1 = "";
+                        let tip = "";
+                        let le = params.length
+                        let num = 40;
+                        if (le > num) {
+                            let l = Math.ceil(le / num);
+                            for (let i = 1; i <= l; i++) {
+                                if (i < l) {
+                                    tip1 += params.slice(i * num - num, i * num) + '\n';
+                                } else if (i === l) {
+                                    tip = tip1 + params.slice((l - 1) * num, le);
+                                }
+                            }
+                            return tip;
+                        } else {
+                            return params;
+                        }
                     },
                     data: []
                 },
                 grid: {
                     left: "5%",
-                    bottom: "32%",
+                    bottom: "12%",
+                    right: '25%',
                     show: true
                 },
                 dataZoom: {
@@ -79,7 +103,7 @@ class App extends Component {
                     show: true,
                     showDetail: true,
                     realtime: true,
-                    bottom: '23%'
+                    // bottom: '23%'
                 },
                 xAxis: {
                     type: 'category',
@@ -182,12 +206,18 @@ class App extends Component {
 
         _socket.on('r_information_data', res => {
             console.log("information json: ")
-            console.log(res)
-            console.log(typeof res.information_data)
+            // console.log(res)
+            // console.log(typeof res.information_data)
+            console.log(JSON.parse(res.information_data))
+            console.log(JSON.parse(res.information_data).relations)
             this.setState({
-                relationsData: JSON.parse(res.information_data) ,
+                relationsData: JSON.parse(res.information_data),
                 relationGraphLoading: false,
                 showRelationGraph: true,
+
+                flowDiagData: JSON.parse(res.information_data).relations,
+                flowDiagLoading: false,
+                showFlowDiag: true,
             }, () => {
                 console.log("relations data:")
                 console.log(this.state.relationsData)
@@ -197,7 +227,7 @@ class App extends Component {
         _socket.on('r_figure_data', res => {
 
             this.setState({
-                queryTableLoading:false,
+                queryTableLoading: false,
                 queryChartLoading: false,
                 topN_input_disabled: true,
                 aggregate_name_input_disabled: true
@@ -433,32 +463,35 @@ class App extends Component {
             }
         }
 
-        console.log(v)
-        this.setState({
-            relationGraphLoading: true,
-            flowDiagLoading: true,
-        }, ()=>{
-            wait(1000);
-        })
-
-        wait(1000);
-        this.setState({
-            // relationGraphLoading: false,
-            flowDiagLoading: false,
-        },()=>{
-            wait(1000);
-        })
-        wait(500);
+        // console.log(v)
+        // this.setState({
+        //     relationGraphLoading: true,
+        //     flowDiagLoading: true,
+        // }, () => {
+        //     wait(1000);
+        // })
+        //
+        // wait(1000);
+        // this.setState({
+        //     // relationGraphLoading: false,
+        //     flowDiagLoading: false,
+        // }, () => {
+        //     wait(1000);
+        // })
+        // wait(500);
 
         this.setState({
             // showRelationGraph: true,
-            showFlowDiag: true,
+            // showFlowDiag: true,
 
-
+            relationGraphLoading: true,
+            flowDiagLoading: true,
             codegenLogLoading: true,
             queryTableLoading: true,
             queryChartLoading: true,
         })
+
+
 
         axios.post('http://localhost:5000/r/submit_sql', {sql: v}).then(res => {
             console.log(res);
@@ -524,7 +557,8 @@ class App extends Component {
                                         <Row>
                                             <Col span={12}>
                                                 <Spin tip={"loading"} spinning={this.state.flowDiagLoading}>
-                                                    <FlowDiag showFlowDiag={this.state.showFlowDiag}/>
+                                                    <FlowDiag showFlowDiag={this.state.showFlowDiag}
+                                                              flowDiagData={this.state.flowDiagData}/>
                                                 </Spin>
                                             </Col>
                                             <Col span={12}>
