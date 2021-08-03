@@ -460,35 +460,6 @@ public class SQLParserTest {
     }
 
     @Test
-    public void SQLParserQ14Test() throws Exception {
-        String q14sql = "select\n" +
-                "sum(case \n" +
-                "when p_type like 'PROMO%'\n" +
-                "then l_extendedprice*(1-l_discount)\n" +
-                "else 0\n" +
-                "end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue\n" +
-                "from \n" +
-                "lineitem, \n" +
-                "part\n" +
-                "where \n" +
-                "l_partkey = p_partkey\n" +
-                "and l_shipdate >= date '1995-09-01'\n" +
-                "and l_shipdate < date '1995-10-01';";
-        String expected_generated_json = "";
-
-        String expected_information_json = "";
-
-        SQLParser = new Parser(q14sql, TEST_GENERATED_JSON_PATH);
-        SQLParser.parse();
-
-        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
-        assertEquals(expected_generated_json, actual_generated_json);
-
-        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
-        assertEquals(expected_information_json, actual_information_json);
-    }
-
-    @Test
     public void SQLParserQ10Test() throws Exception {
         String q10sql = "select\n" +
                 "    c_custkey, \n" +
@@ -775,6 +746,38 @@ public class SQLParserTest {
         String expected_information_json = "";
 
         SQLParser = new Parser(q12sql, TEST_GENERATED_JSON_PATH);
+        SQLParser.parse();
+
+        String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");
+        assertEquals(expected_generated_json, actual_generated_json);
+
+        String actual_information_json = FileUtils.readFileToString(new File(TEST_INFORMATION_JSON_PATH), "UTF-8");
+        assertEquals(expected_information_json, actual_information_json);
+    }
+
+    @Test
+    public void SQLParserQ14Test() throws Exception {
+        String q14sql = "select (100.00 * promosum / revenue) as promo_revenue\n" +
+                "from \n" +
+                "(\n" +
+                "select sum(case when p_type like 'PROMO%'\n" +
+                "           then l_extendedprice*(1-l_discount)\n" +
+                "           else 0.0 \n" +
+                "           end ) as promosum, \n" +
+                "       sum(l_extendedprice * (1 - l_discount)) as revenue\n" +
+                "from \n" +
+                "lineitem,\n" +
+                "part\n" +
+                "where\n" +
+                "l_partkey = p_partkey\n" +
+                "and l_shipdate >= date '1995-09-01'\n" +
+                "    and l_shipdate < date '1995-10-01'\n" +
+                ") as T;";
+        String expected_generated_json = "";
+
+        String expected_information_json = "";
+
+        SQLParser = new Parser(q14sql, TEST_GENERATED_JSON_PATH);
         SQLParser.parse();
 
         String actual_generated_json = FileUtils.readFileToString(new File(TEST_GENERATED_JSON_PATH), "UTF-8");

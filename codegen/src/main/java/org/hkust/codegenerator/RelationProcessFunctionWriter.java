@@ -144,6 +144,7 @@ class RelationProcessFunctionWriter extends ProcessFunctionWriter {
         writer.writeln("import org.hkust.BasedProcessFunctions." + RELATION_PROCESS_FUNCTION_IMPORT);
         writer.writeln("import org.hkust.RelationType.Payload");
         writer.writeln("import java.util.Date");
+        writer.writeln("import scala.util.matching.Regex");
     }
 
     @Override

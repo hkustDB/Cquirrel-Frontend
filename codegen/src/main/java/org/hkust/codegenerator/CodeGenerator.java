@@ -2,10 +2,7 @@ package org.hkust.codegenerator;
 
 import org.hkust.checkerutils.CheckerUtils;
 import org.hkust.jsonutils.JsonParser;
-import org.hkust.objects.AggregateProcessFunction;
-import org.hkust.objects.DistinctCountProcessFunction;
-import org.hkust.objects.Node;
-import org.hkust.objects.RelationProcessFunction;
+import org.hkust.objects.*;
 import org.hkust.schema.RelationSchema;
 
 import java.io.BufferedReader;
@@ -41,6 +38,11 @@ public class CodeGenerator {
             } else {
                 new AggregateProcessFunctionWriter(aggregateProcessFunction, schema).write(codeFilesPath);
             }
+        }
+
+        TransformerFunction transformerFunction = node.getTransformerFunction();
+        if (transformerFunction != null) {
+            new TransformerFunctionWriter(transformerFunction, schema).write(codeFilesPath);
         }
 
         new MainClassWriter(node, schema, flinkInputPath, flinkOutputPath, dataSinkTypes).write(codeFilesPath);

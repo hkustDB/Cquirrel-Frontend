@@ -12,6 +12,8 @@ import java.util.*;
 public class RelationProcessFunction extends ProcessFunction {
     private final String name;
     private final Relation relation;
+    @Nullable
+    private final String id;
 
     private final List<String> thisKey;
     @Nullable
@@ -24,6 +26,7 @@ public class RelationProcessFunction extends ProcessFunction {
     private final Map<String, String> renaming;
     @Nullable
     private final List<SelectCondition> selectConditions;
+
 
     public RelationProcessFunction(String name, String relationName, List<String> thisKey, @Nullable List<String> nextKey, int childNodes,
                                    boolean isRoot, boolean isLast, @Nullable Map<String, String> renaming,
@@ -42,6 +45,27 @@ public class RelationProcessFunction extends ProcessFunction {
         CheckerUtils.validateNonNullNonEmpty((Collection) renaming, "renaming");
         this.renaming = renaming;
         this.selectConditions = selectConditions;
+        this.id = "";
+    }
+
+    public RelationProcessFunction(String name, String relationName, List<String> thisKey, @Nullable List<String> nextKey, int childNodes,
+                                   boolean isRoot, boolean isLast, @Nullable Map<String, String> renaming,
+                                   @Nullable List<SelectCondition> selectConditions, @Nullable String id) {
+        super(name, thisKey, nextKey);
+        this.name = name;
+        this.thisKey = thisKey;
+        this.nextKey = nextKey;
+        if (childNodes < 0)
+            throw new RuntimeException("Number of child nodes must be >=0, got: " + childNodes);
+        CheckerUtils.checkNullOrEmpty(relationName, "relationName");
+        this.relation = Relation.getRelation(relationName);
+        this.childNodes = childNodes;
+        this.isRoot = isRoot;
+        this.isLast = isLast;
+        CheckerUtils.validateNonNullNonEmpty((Collection) renaming, "renaming");
+        this.renaming = renaming;
+        this.selectConditions = selectConditions;
+        this.id = id;
     }
 
     //Used for getStream in main
@@ -108,6 +132,18 @@ public class RelationProcessFunction extends ProcessFunction {
 
     public Relation getRelation() {
         return relation;
+    }
+
+    public String getId() {
+        if (id == null) {
+            return "";
+        } else {
+            return id;
+        }
+    }
+
+    public String getRelationAndId() {
+        return relation.getValue().toLowerCase() + getId();
     }
 
     @Nullable

@@ -9,6 +9,10 @@ public class Attribute {
     private final int position;
     private final String name;
 
+    private final boolean isContainSubAttribute;
+    private final int subStrStartInd;
+    private final int subStrEndInd;
+
     public Attribute(Class type, int position, String name) {
         requireNonNull(type);
         if (position < 0) {
@@ -17,7 +21,25 @@ public class Attribute {
         this.name = name;
         this.type = type;
         this.position = position;
+        this.isContainSubAttribute = false;
+        this.subStrStartInd = -1;
+        this.subStrEndInd = -1;
     }
+
+    public Attribute(Class type, int position, String name, boolean isContainSubAttribute, int subStrStartInd, int subStrEndInd) {
+        requireNonNull(type);
+        if (position < 0) {
+            throw new RuntimeException("position in Attribute cannot be < 0");
+        }
+        this.name = name;
+        this.type = type;
+
+        this.position = position;
+        this.isContainSubAttribute = isContainSubAttribute;
+        this.subStrStartInd = subStrStartInd;
+        this.subStrEndInd = subStrEndInd;
+    }
+
 
     public static String rawColumnName(String columnName) {
         return columnName.contains("_") ? columnName.substring(2).toLowerCase() : columnName.toLowerCase();
@@ -33,6 +55,18 @@ public class Attribute {
 
     public String getName() {
         return name;
+    }
+
+    public boolean getIsContainSubAttribute() {
+        return isContainSubAttribute;
+    }
+
+    public int getSubStrStartInd() {
+        return subStrStartInd;
+    }
+
+    public int getSubStrEndInd() {
+        return subStrEndInd;
     }
 
     @Override

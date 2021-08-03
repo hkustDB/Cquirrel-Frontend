@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class CodeGenTest {
-    private final String JSON_FILE_NAME = "q12/Q12.json";
+    private final String JSON_FILE_NAME = "q14/Q14.json";
     private String JSON_FILE_PATH;
     private String TEST_DIRECTORY;
 

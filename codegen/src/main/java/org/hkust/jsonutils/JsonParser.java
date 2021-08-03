@@ -31,7 +31,18 @@ public class JsonParser {
         List<Map<String, Object>> apfMap = (List<Map<String, Object>>) map.get("AggregateProcessFunction");
         List<AggregateProcessFunction> apfs = makeAggregateProcessFunctions(apfMap);
 
-        return new Node(rpfs, apfs, joinStructure);
+        Map<String, Object> transMap = (Map<String, Object>) map.getOrDefault("transformer", null);
+        TransformerFunction transformerFunction = makeTransformerFunction(transMap);
+
+        return new Node(rpfs, apfs, joinStructure, transformerFunction);
+    }
+
+    private static TransformerFunction makeTransformerFunction(Map<String, Object> transMap) {
+        if (transMap == null) return null;
+        Map<String, Object> exprMap = (Map<String, Object>) transMap.get("expr");
+        String name = (String) transMap.get("alias");
+        Expression expr = (Expression) makeValue(exprMap);
+        return new TransformerFunction(name, expr);
     }
 
     private static List<RelationProcessFunction> makeRelationProcessFunctions(List<Map<String, Object>> rpfList) {
@@ -64,7 +75,8 @@ public class JsonParser {
                 (boolean) rpfMap.get("is_Root"),
                 (boolean) rpfMap.get("is_Last"),
                 (Map<String, String>) rpfMap.get("rename_attribute"),
-                selectConditions
+                selectConditions,
+                (String) rpfMap.get("id")
         );
     }
 

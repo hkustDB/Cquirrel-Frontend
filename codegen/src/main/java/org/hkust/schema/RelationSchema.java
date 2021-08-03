@@ -207,6 +207,9 @@ public final class RelationSchema {
             }
         }
 
+        if (relation.equals(ORDERS) && columnName.equals("o_year")) {
+            return new Attribute(Type.getClass("int"), 4, "o_year", true, 0, 4);
+        }
         return null;
     }
 

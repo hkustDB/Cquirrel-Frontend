@@ -11,15 +11,17 @@ import static java.util.Objects.requireNonNull;
 public class Node {
     private final List<RelationProcessFunction> relationProcessFunctions;
     private final List<AggregateProcessFunction> aggregateProcessFunctions;
+    private final TransformerFunction transformerFunction;
     //Currently only supports 1 parent for each relation
     private final Map<Relation, Relation> joinStructure;
 
-    public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions, Map<Relation, Relation> joinStructure) {
+    public Node(List<RelationProcessFunction> relationProcessFunctions, List<AggregateProcessFunction> aggregateProcessFunctions, Map<Relation, Relation> joinStructure, TransformerFunction transformerFunction) {
         this.joinStructure = joinStructure;
         requireNonNull(relationProcessFunctions);
         requireNonNull(aggregateProcessFunctions);
         this.relationProcessFunctions = relationProcessFunctions;
         this.aggregateProcessFunctions = aggregateProcessFunctions;
+        this.transformerFunction = transformerFunction;
     }
 
     public List<RelationProcessFunction> getRelationProcessFunctions() {
@@ -33,6 +35,10 @@ public class Node {
     @Nullable
     public Map<Relation, Relation> getJoinStructure() {
         return joinStructure;
+    }
+
+    public TransformerFunction getTransformerFunction() {
+        return transformerFunction;
     }
 
     @Override
