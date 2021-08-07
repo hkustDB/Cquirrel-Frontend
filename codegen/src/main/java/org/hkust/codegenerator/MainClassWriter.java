@@ -402,7 +402,11 @@ class MainClassWriter implements ClassWriter {
         ArrayList<RelationProcessFunction> leavesRPFList = getLeavesRPFList();
         leavesRPFList = sortLeavesRPFAccordingToRootDistance(leavesRPFList, rootRPF);
 
-        if (leavesRPFList.get(0).getRelation().equals(Relation.NATION2) && leavesRPFList.get(1).getRelation().equals(Relation.NATION)) {
+        if (leavesRPFList.size() == 2 && leavesRPFList.get(0).getRelation().equals(Relation.NATION2) && leavesRPFList.get(1).getRelation().equals(Relation.NATION)) {
+            Collections.swap(leavesRPFList, 0, 1);
+        }
+
+        if (leavesRPFList.size() == 2 && leavesRPFList.get(0).getRelation().equals(Relation.PART) && leavesRPFList.get(1).getRelation().equals(Relation.SUPPLIER)) {
             Collections.swap(leavesRPFList, 0, 1);
         }
 
