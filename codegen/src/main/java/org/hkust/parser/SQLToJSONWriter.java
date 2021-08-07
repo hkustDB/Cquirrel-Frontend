@@ -154,7 +154,7 @@ public class SQLToJSONWriter {
                 lastObject = lineitem_o;
             }
 
-            if (table.contains("orders") && table.contains("supplier")) {
+            if (table.contains("orders") && table.contains("supplier") && !table.contains("partsupp")) {
 
                 JSONObject obj0 = new JSONObject();
                 JSONObject obj1 = new JSONObject();
