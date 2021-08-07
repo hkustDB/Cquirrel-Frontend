@@ -5,6 +5,7 @@ public enum Relation {
     ORDERS("orders"),
     CUSTOMER("customer"),
     NATION("nation"),
+    NATION2("nation2"),
     PART("part"),
     SUPPLIER("supplier"),
     PARTSUPP("partsupp"),
@@ -35,6 +36,7 @@ public enum Relation {
             case "orders" : return "o";
             case "customer" : return "c";
             case "nation" : return "n";
+            case "nation2" : return "n2";
             case "part" : return "p";
             case "supplier" : return "s";
             case "partsupp" : return "ps";

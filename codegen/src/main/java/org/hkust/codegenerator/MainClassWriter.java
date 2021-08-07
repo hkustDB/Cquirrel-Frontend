@@ -222,7 +222,7 @@ class MainClassWriter implements ClassWriter {
             writer.writeln(".keyBy(i => i._3, i => i._3)");
         }
         writer.writeln(".process(new " + getProcessFunctionClassName(rpf.getName()) + "())");
-        RelationProcessFunction parent = getRelation(joinStructure.get(relation));
+        RelationProcessFunction parent = getRelationProcessFunctionByRelation(joinStructure.get(relation));
         if (parent == null) {
             writer.writeln("val result = " + streamName + ".keyBy(i => i._3)");
             linkAggregateProcessFunctions(writer);
@@ -402,6 +402,14 @@ class MainClassWriter implements ClassWriter {
         ArrayList<RelationProcessFunction> leavesRPFList = getLeavesRPFList();
         leavesRPFList = sortLeavesRPFAccordingToRootDistance(leavesRPFList, rootRPF);
 
+        if (leavesRPFList.size() == 2 && leavesRPFList.get(0).getRelation().equals(Relation.NATION2) && leavesRPFList.get(1).getRelation().equals(Relation.NATION)) {
+            Collections.swap(leavesRPFList, 0, 1);
+        }
+
+        if (leavesRPFList.size() == 2 && leavesRPFList.get(0).getRelation().equals(Relation.PART) && leavesRPFList.get(1).getRelation().equals(Relation.SUPPLIER)) {
+            Collections.swap(leavesRPFList, 0, 1);
+        }
+
         String latestStreamName = "";
         for (RelationProcessFunction rpf : leavesRPFList) {
             latestStreamName = writeLeafRelationToBifur(rpf, writer);
@@ -451,7 +459,7 @@ class MainClassWriter implements ClassWriter {
     }
 
     @Nullable
-    private RelationProcessFunction getRelation(Relation relation) {
+    private RelationProcessFunction getRelationProcessFunctionByRelation(Relation relation) {
         for (RelationProcessFunction rpf : relationProcessFunctions) {
             if (rpf.getRelation() == relation) {
                 return rpf;
@@ -491,12 +499,33 @@ class MainClassWriter implements ClassWriter {
             int numberOfMatchingColumns = attributeCode(rpf, attributes, columnNamesCode, tupleCode);
             String caseLabel = caseLabel(relation);
             ACTIONS.forEach((key, value) -> {
+
+                if (relation.equals(Relation.NATION2)) {
+                    return;
+                }
+
                 writer.writeln("case \"" + value + caseLabel + "\" =>");
                 writer.writeln("action = \"" + key + "\"");
                 writer.writeln("relation = \"" + lowerRelationName + "\"");
                 writer.writeln("val i = Tuple" + numberOfMatchingColumns + "(" + tupleCode.toString() + ")");
                 writer.writeln("cnt = cnt + 1");
 //                writer.writeln("ctx.output(" + tagNames.get(rpf.getRelation()) + ", Payload(relation, action, " + thisKeyCode(rpf));
+
+                if (relation.equals(Relation.NATION) && (getRelationProcessFunctionByRelation(Relation.NATION2) != null)) {
+                    writer.writeln("ctx.output(" + tagNames.get(rpf.getRelationAndId()) + ", Payload(relation, action, " + thisKeyCode(rpf));
+                    writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
+                    writer.writeln("Array[String](" + columnNamesCode.toString() + "), cnt))");
+
+                    RelationProcessFunction rpf2 = getRelationProcessFunctionByRelation(Relation.NATION2);
+                    StringBuilder columnNamesCode2 = new StringBuilder();
+                    StringBuilder tupleCode2 = new StringBuilder();
+                    int numberOfMatchingColumns2 = attributeCode(rpf2, attributes, columnNamesCode2, tupleCode2);
+                    writer.writeln("ctx.output(" + tagNames.get(rpf2.getRelationAndId()) + ", Payload(\"nation2\", action, " + thisKeyCode(rpf2));
+                    writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns2) + "),");
+                    writer.writeln("Array[String](" + columnNamesCode2.toString() + "), cnt))");
+                    return;
+                }
+
                 if (rpfList.size() == 1) {
                     writer.writeln("ctx.output(" + tagNames.get(rpf.getRelationAndId()) + ", Payload(relation, action, " + thisKeyCode(rpf));
                     writer.writeln("Array[Any](" + iteratorCode(numberOfMatchingColumns) + "),");
@@ -589,6 +618,13 @@ class MainClassWriter implements ClassWriter {
         while (iterator.hasNext()) {
             Attribute attribute = iterator.next();
             Attribute rpfAttribute = schema.getColumnAttributeByRawName(rpf.getRelation(), attribute.getName());
+
+            if (rpf.getRelation().equals(Relation.CUSTOMER) && checkIfAttributesContainNationkeyAndNation2key(attributes)) {
+                if (attribute.getName().equals("nationkey")) {
+                    continue;
+                }
+            }
+
             if (rpfAttribute == null || !rpfAttribute.equals(attribute)) {
                 if (!iterator.hasNext()) {
                     columnNamesCode.delete(columnNamesCode.length() - ",".length(), columnNamesCode.length());
@@ -609,6 +645,11 @@ class MainClassWriter implements ClassWriter {
                         .append(".substring(").append(attribute.getSubStrStartInd()).append(", ")
                         .append(attribute.getSubStrEndInd()).append(")")
                         .append(conversionMethod == null ? "" : "." + conversionMethod);
+            } else if (attribute.getName().equals("l_year")) {
+                tupleCode.append("cells(").append(position).append(")")
+                        .append(".substring(").append(attribute.getSubStrStartInd()).append(", ")
+                        .append(attribute.getSubStrEndInd()).append(")")
+                        .append(conversionMethod == null ? "" : "." + conversionMethod);
             } else if (!type.equals(Date.class)) {
                 tupleCode.append("cells(").append(position).append(")").append(conversionMethod == null ? "" : "." + conversionMethod);
             } else {
@@ -622,5 +663,19 @@ class MainClassWriter implements ClassWriter {
         }
 
         return numberOfMatchingColumns;
+    }
+
+    private boolean checkIfAttributesContainNationkeyAndNation2key(Set<Attribute> attributes) {
+        boolean nationkeyExistsFlag = false;
+        boolean nation2keyExistsFlag = false;
+        for(Attribute a : attributes) {
+            if (a.getName().equals("nationkey")) {
+                nationkeyExistsFlag = true;
+            }
+            if (a.getName().equals("nation2key")) {
+                nation2keyExistsFlag = true;
+            }
+        }
+        return nationkeyExistsFlag && nation2keyExistsFlag;
     }
 }

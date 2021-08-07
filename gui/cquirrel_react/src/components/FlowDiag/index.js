@@ -637,6 +637,253 @@ export default class Flowdiag extends Component {
         ],
     }
 
+    q7ModelData = {
+        nodes: [
+            {
+                id: 'source',
+                width: 120,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Data Source / Input Stream Splitter Reader',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'nation',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Nation Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'nation2',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Nation2 Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'supplier',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Supplier Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'lineitems',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Lineitems Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'customer',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Customer Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'orders',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Orders Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'lineitemorder',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Lineitemorder Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'aggregate',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Aggregation Process Function',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+            {
+                id: 'sink',
+                width: 100,
+                height: 60,
+                attrs: {
+                    body: {
+                        fill: 'rgb(177,218,255)',   // 背景颜色
+                        stroke: 'rgb(24,144,255)',  // 边框颜色
+                    },
+                    text: {
+                        textWrap: {
+                            text: 'Data Sink',
+                            width: -10,
+                        }
+                    },
+                },
+            },
+        ],
+        edges: [
+            {
+                source: 'source',
+                target: 'nation',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'source',
+                target: 'supplier',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'source',
+                target: 'nation2',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'source',
+                target: 'customer',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'source',
+                target: 'lineitems',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'source',
+                target: 'orders',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'nation',
+                target: 'supplier',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'supplier',
+                target: 'lineitems',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'nation2',
+                target: 'customer',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'customer',
+                target: 'orders',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'orders',
+                target: 'lineitemorder',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'lineitems',
+                target: 'lineitemorder',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'lineitemorder',
+                target: 'aggregate',
+                labels: [ { attrs: { label: { text: 'HASH',} }, }, ],
+            },
+            {
+                source: 'aggregate',
+                target: 'sink',
+                labels: [ { attrs: { label: { text: 'REBALANCE',} }, }, ],
+            },
+        ],
+    }
+
     q9ModelData = {
         nodes: [
             {
@@ -1384,6 +1631,10 @@ export default class Flowdiag extends Component {
                     model_data = this.q3ModelData
                 } else if (relations == JSON.stringify(["lineitem", "orders"].sort())) {    //q4, q12
                     model_data = this.q4ModelData
+                } else if (relations ==
+                    JSON.stringify(["lineitemorder", "orders", "customer", "nation", "nation2", "supplier", "lineitems"]
+                        .sort())) {     // q7
+                    model_data = this.q7ModelData
                 } else if (relations ==
                     JSON.stringify(["lineitemorder", "nation", "part", "supplier", "lineitemps", "partsupps", "orders", "partsuppp"]
                         .sort())) {     // q9
