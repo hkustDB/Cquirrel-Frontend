@@ -16,6 +16,7 @@ public final class RelationSchema {
     public final Schema orders;
     public final Schema customer;
     public final Schema nation;
+    public final Schema nation2;
     public final Schema part;
     public final Schema supplier;
     public final Schema partsupp;
@@ -79,6 +80,7 @@ public final class RelationSchema {
                     put("c_name", new Attribute(Type.getClass("string"), 1, "c_name"));
                     put("c_address", new Attribute(Type.getClass("string"), 2, "c_address"));
                     put("nationkey", new Attribute(Type.getClass("long"), 3, "nationkey"));
+                    put("nation2key", new Attribute(Type.getClass("long"), 3, "nation2key"));
                     put("c_phone", new Attribute(Type.getClass("string"), 4, "c_phone"));
                     put("c_acctbal", new Attribute(Type.getClass("double"), 5, "c_acctbal"));
                     put("c_mktsegment", new Attribute(Type.getClass("string"), 6, "c_mktsegment"));
@@ -105,6 +107,21 @@ public final class RelationSchema {
                 .withParent(CUSTOMER)
                 .withRelationName(NATION)
                 .withColumnPrefix("n_")
+                .build();
+
+        Attribute nation2PrimaryKey = new Attribute(Type.getClass("long"), 0, "nation2key");
+        nation2 = Schema.builder()
+                .withAttributes(new HashMap<String, Attribute>() {{
+                    put("nation2key", nation2PrimaryKey);
+                    put("n2_name", new Attribute(Type.getClass("string"), 1, "n2_name"));
+                    put("n2_regionkey", new Attribute(Type.getClass("string"), 2, "n2_address"));
+                    put("n2_comment", new Attribute(Type.getClass("string"), 3, "n2_comment"));
+                }})
+                .withPrimaryKey(singletonList(nation2PrimaryKey))
+                .withChildren(singletonList(REGION))
+                .withParent(CUSTOMER)
+                .withRelationName(NATION2)
+                .withColumnPrefix("n2_")
                 .build();
 
         Attribute partPrimaryKey = new Attribute(Type.getClass("long"), 0, "partkey");
@@ -182,6 +199,7 @@ public final class RelationSchema {
                 .put(ORDERS, orders)
                 .put(CUSTOMER, customer)
                 .put(NATION, nation)
+                .put(NATION2, nation2)
                 .put(PART, part)
                 .put(SUPPLIER, supplier)
                 .put(PARTSUPP, partsupp)
@@ -209,6 +227,10 @@ public final class RelationSchema {
 
         if (relation.equals(ORDERS) && columnName.equals("o_year")) {
             return new Attribute(Type.getClass("int"), 4, "o_year", true, 0, 4);
+        }
+
+        if (relation.equals(LINEITEM) && columnName.equals("l_year")) {
+            return new Attribute(Type.getClass("int"), 10, "l_year", true, 0, 4);
         }
         return null;
     }
