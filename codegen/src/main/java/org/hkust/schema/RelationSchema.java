@@ -99,7 +99,7 @@ public final class RelationSchema {
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("nationkey", nationPrimaryKey);
                     put("n_name", new Attribute(Type.getClass("string"), 1, "n_name"));
-                    put("n_regionkey", new Attribute(Type.getClass("string"), 2, "n_address"));
+                    put("regionkey", new Attribute(Type.getClass("long"), 2, "regionkey"));
                     put("n_comment", new Attribute(Type.getClass("string"), 3, "n_comment"));
                 }})
                 .withPrimaryKey(singletonList(nationPrimaryKey))
@@ -114,7 +114,7 @@ public final class RelationSchema {
                 .withAttributes(new HashMap<String, Attribute>() {{
                     put("nation2key", nation2PrimaryKey);
                     put("n2_name", new Attribute(Type.getClass("string"), 1, "n2_name"));
-                    put("n2_regionkey", new Attribute(Type.getClass("string"), 2, "n2_address"));
+                    put("regionkey", new Attribute(Type.getClass("long"), 2, "regionkey"));
                     put("n2_comment", new Attribute(Type.getClass("string"), 3, "n2_comment"));
                 }})
                 .withPrimaryKey(singletonList(nation2PrimaryKey))
