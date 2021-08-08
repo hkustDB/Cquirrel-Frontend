@@ -462,6 +462,25 @@ public class SQLToJSONWriter {
             writeRelationJsonObject("nation2", "is_Last", true);
         }
 
+        if (table.contains("region")) {
+            JSONArray keyList = new JSONArray();
+            JSONArray nextKey = new JSONArray();
+            childCount.put("region", 0);
+            keyList.add("regionkey");
+            writeRelationJsonObject("region", "this_key", keyList);
+
+            if (root.equals("")) {
+                root = "region";
+                writeRelationJsonObject("region", "is_Root", true);
+            } else {
+                writeRelationJsonObject("region", "is_Root", false);
+            }
+            writeRelationDefinition("region");
+            nextKey.add("regionkey");
+            writeRelationJsonObject("region", "next_key", nextKey);
+            writeRelationJsonObject("region", "is_Last", true);
+        }
+
         // Merge the JSON Array into the JSON Object.
         outputJsonObject.put("join_structure", messages);
         return true;
