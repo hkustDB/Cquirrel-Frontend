@@ -17,6 +17,7 @@ import org.jgrapht.*;
 import org.jgrapht.graph.*;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.*;
 import org.jgrapht.alg.shortestpath.*;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 import java.util.*;
 
@@ -151,8 +152,12 @@ class MainClassWriter implements ClassWriter {
             if (getLeafNumberOfRelationProcessFunctions() > 1) {
                 writeMultipleRelationsStreamWithMultipleLeaves(writer);
             } else {
-                RelationProcessFunction root = getLeafOrParent(true);
-                writeMultipleRelationStream(root, writer, "", "S");
+                if (checkIfThereExistsBifurRelation()) {
+                    writeBifurRelationsStreamWithSingleLeaf(writer);
+                } else {
+                    RelationProcessFunction root = getLeafOrParent(true);
+                    writeMultipleRelationStream(root, writer, "", "S");
+                }
             }
         }
         writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
@@ -395,6 +400,15 @@ class MainClassWriter implements ClassWriter {
             }
         }
         return rpfList;
+    }
+
+    private RelationProcessFunction getRelationProcessFunctionListByRelationAndId(String relationAndId) {
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (rpf.getRelationAndId().equals(relationAndId)) {
+                return rpf;
+            }
+        }
+        return null;
     }
 
     private void writeMultipleRelationsStreamWithMultipleLeaves(final PicoWriter writer) {
@@ -668,7 +682,7 @@ class MainClassWriter implements ClassWriter {
     private boolean checkIfAttributesContainNationkeyAndNation2key(Set<Attribute> attributes) {
         boolean nationkeyExistsFlag = false;
         boolean nation2keyExistsFlag = false;
-        for(Attribute a : attributes) {
+        for (Attribute a : attributes) {
             if (a.getName().equals("nationkey")) {
                 nationkeyExistsFlag = true;
             }
@@ -677,5 +691,92 @@ class MainClassWriter implements ClassWriter {
             }
         }
         return nationkeyExistsFlag && nation2keyExistsFlag;
+    }
+
+    private boolean checkIfThereExistsBifurRelation() {
+        for (RelationProcessFunction rpf : relationProcessFunctions) {
+            if (!rpf.getId().equals("")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Graph<String, DefaultEdge> createRpfGraph() {
+        Graph<String, DefaultEdge> rpfGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
+
+        for (RelationProcessFunction r : relationProcessFunctions) {
+            rpfGraph.addVertex(r.getRelationAndId());
+        }
+
+        for (RelationProcessFunction r : relationProcessFunctions) {
+            for (RelationProcessFunction rr : relationProcessFunctions) {
+                if (r.getRelationAndId().equals(rr.getRelationAndId())) {
+                    continue;
+                }
+                if (r.getNextKey().equals(rr.getThisKey())) {
+                    rpfGraph.addEdge(r.getRelationAndId(), rr.getRelationAndId());
+                }
+            }
+        }
+        return rpfGraph;
+    }
+
+    private boolean checkIfRpfHasTwoPredecessor(Graph<String, DefaultEdge> rpfGraph, RelationProcessFunction rpf) {
+        List<String> predOfRpf = predecessorListOf(rpfGraph, rpf.getRelationAndId());
+        if (predOfRpf.size() == 2) {
+            return true;
+        }
+        return false;
+    }
+
+    private String writeRpfStreamUsingRpfGraph(final PicoWriter writer) {
+        Graph<String, DefaultEdge> rpfGraph = createRpfGraph();
+        RelationProcessFunction leafRPF = getLeafOrParent(true);
+
+        BreadthFirstIterator<String, DefaultEdge> bfi = new BreadthFirstIterator<String, DefaultEdge>(rpfGraph, leafRPF.getRelationAndId());
+        ArrayList<String> rpfSeq = new ArrayList<>();
+        while (bfi.hasNext()) {
+            rpfSeq.add(bfi.next());
+        }
+
+
+        for (String rpfString : rpfSeq) {
+            RelationProcessFunction rpf = getRelationProcessFunctionListByRelationAndId(rpfString);
+
+            if (rpf.isLeaf()) {
+                writeLeafRelationStream(rpf, writer);
+            } else if (checkIfRpfHasTwoPredecessor(rpfGraph, rpf)) {
+                List<String> predsOfRpfString = predecessorListOf(rpfGraph, rpf.getRelationAndId());
+                RelationProcessFunction rpfB = null;
+                RelationProcessFunction rpfP = null;
+                for (String s : predsOfRpfString) {
+                    RelationProcessFunction r = getRelationProcessFunctionListByRelationAndId(s);
+                    if (r.getRelation().equals(rpf.getRelation())) {
+                        rpfB = r;
+                    }
+                    if (!r.getRelation().equals(rpf.getRelation())) {
+                        rpfP = r;
+                    }
+                }
+                writeBifurRelationSteam(rpfP, rpf, rpfB, writer);
+            } else {
+                String predOfRpfString = predecessorListOf(rpfGraph, rpf.getRelationAndId()).get(0);
+                RelationProcessFunction predOfRpf = getRelationProcessFunctionListByRelationAndId(predOfRpfString);
+                writeUnLeafRelationStream(predOfRpf, rpf, writer);
+            }
+        }
+
+        return rpfSeq.get(rpfSeq.size() - 1) + "S";
+    }
+
+    private void writeBifurRelationsStreamWithSingleLeaf(final PicoWriter writer) {
+
+
+        String latestStreamName = writeRpfStreamUsingRpfGraph(writer);
+
+        writer.writeln("val result = " + latestStreamName + ".keyBy(i => i._3)");
+        linkAggregateProcessFunctions(writer);
+        writeDataSink(writer);
     }
 }
