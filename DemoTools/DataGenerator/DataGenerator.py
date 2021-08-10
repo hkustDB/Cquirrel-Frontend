@@ -246,12 +246,12 @@ def data_generator(config_file_name):
         if count * region_size / lineitem_size > region_count and line_region:
             region_count = region_count + 1
             if isRegion:
-                write_to_output_and_kafka("+RI" + line_region)
+                write_to_output_and_kafka("+RE" + line_region)
             line_region = region.readline()
             if delete_count * region_size / lineitem_size > region_delete_count and line_region_d:
                 region_delete_count = region_delete_count + 1
                 if isRegion:
-                    write_to_output_and_kafka("-RI" + line_region_d)
+                    write_to_output_and_kafka("-RE" + line_region_d)
                 line_region_d = region_d.readline()
 
     # write the second part
@@ -300,7 +300,7 @@ def data_generator(config_file_name):
         if delete_count * region_size / lineitem_size > region_delete_count and line_region_d:
             region_delete_count = region_delete_count + 1
             if isRegion:
-                write_to_output_and_kafka("-RI" + line_region_d)
+                write_to_output_and_kafka("-RE" + line_region_d)
             line_region_d = region_d.readline()
 
     # close the file
