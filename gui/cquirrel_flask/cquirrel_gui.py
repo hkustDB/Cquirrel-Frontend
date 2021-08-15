@@ -9,6 +9,9 @@ if __name__ == '__main__':
     from cquirrel_app import create_app
     from cquirrel_app import socketio
 
+    import eventlet
+    # eventlet.monkey_patch()
+
     app = create_app(os.getenv('FLASK_CONFIG_NAME') or 'default')
     # app.run(debug=True)
     socketio.run(app, debug=True)
