@@ -154,6 +154,47 @@ public class SQLToJSONWriter {
                 lastObject = lineitem_o;
             }
 
+            if (table.contains("orders") && table.contains("supplier") && !table.contains("partsupp")) {
+
+                JSONObject obj0 = new JSONObject();
+                JSONObject obj1 = new JSONObject();
+                String lineitem_s = "lineitems";
+                String lineitem_o = "lineitemorder";
+
+                obj0.put("name", "Q" + lineitem_s);
+                obj0.put("relation", "lineitem");
+                obj0.put("rename_attribute", null);
+                obj0.put("child_nodes", 1);
+                obj0.put("is_Root", false);
+                obj0.put("is_Last", false);
+                JSONArray thisKeyList0 = new JSONArray();
+                thisKeyList0.add("suppkey");
+                obj0.put("this_key", thisKeyList0);
+                JSONArray nextKeyList0 = new JSONArray();
+                nextKeyList0.add("orderkey");
+                obj0.put("next_key", nextKeyList0);
+                obj0.put("id", "_s");
+
+                obj1.put("name", "Q" + lineitem_o);
+                obj1.put("relation", "lineitem");
+                obj1.put("rename_attribute", null);
+                obj1.put("child_nodes", 1);
+                obj1.put("is_Root", true);
+                obj1.put("is_Last", true);
+                JSONArray thisKeyList1 = new JSONArray();
+                thisKeyList1.add("orderkey");
+                obj1.put("this_key", thisKeyList1);
+                obj1.put("id", "_o");
+
+                JSONObject obj = new JSONObject();
+                obj.putAll(obj0);
+                obj.putAll(obj1);
+                relationJsonObject.remove("lineitem");
+                relationJsonObject.put(lineitem_s, obj0);
+                relationJsonObject.put(lineitem_o, obj1);
+                lastObject = lineitem_o;
+            }
+
         }
 
         if (table.contains("orders")) {
@@ -190,12 +231,22 @@ public class SQLToJSONWriter {
             JSONArray nextKey = new JSONArray();
             if (table.contains("nation")) {
                 JSONObject c_n = new JSONObject();
-                c_n.put("primary", "nation");
-                c_n.put("foreign", "customer");
+                if (table.contains("nation2")) {
+                    c_n.put("primary", "nation2");
+                    c_n.put("foreign", "customer");
+                } else {
+                    c_n.put("primary", "nation");
+                    c_n.put("foreign", "customer");
+                }
                 messages.add(c_n);
                 int count = childCount.getOrDefault("customer", 0);
                 childCount.put("customer", count + 1);
-                keyList.add("nationkey");
+
+                if (table.contains("nation2")) {
+                    keyList.add("nation2key");
+                } else {
+                    keyList.add("nationkey");
+                }
             } else {
                 keyList.add("custkey");
             }
@@ -382,6 +433,54 @@ public class SQLToJSONWriter {
             writeRelationJsonObject("nation", "is_Last", true);
         }
 
+        if (table.contains("nation2")) {
+            JSONArray keyList = new JSONArray();
+            JSONArray nextKey = new JSONArray();
+            if (table.contains("region")) {
+                JSONObject n_r = new JSONObject();
+                n_r.put("primary", "region");
+                n_r.put("foreign", "nation");
+                messages.add(n_r);
+                int count = childCount.getOrDefault("nation", 0);
+                childCount.put("nation", count + 1);
+                keyList.add("regionkey");
+            } else {
+                keyList.add("nation2key");
+            }
+            writeRelationJsonObject("nation2", "this_key", keyList);
+
+            if (root.equals("")) root = "nation2";
+            writeRelationDefinition("nation2");
+            if (!table.contains("customer") && !table.contains("supplier")) {
+                writeRelationJsonObject("nation2", "is_Root", true);
+                lastObject = "nation2";
+            } else {
+                writeRelationJsonObject("nation2", "is_Root", false);
+                nextKey.add("nation2key");
+                writeRelationJsonObject("nation2", "next_key", nextKey);
+            }
+            writeRelationJsonObject("nation2", "is_Last", true);
+        }
+
+        if (table.contains("region")) {
+            JSONArray keyList = new JSONArray();
+            JSONArray nextKey = new JSONArray();
+            childCount.put("region", 0);
+            keyList.add("regionkey");
+            writeRelationJsonObject("region", "this_key", keyList);
+
+            if (root.equals("")) {
+                root = "region";
+                writeRelationJsonObject("region", "is_Root", true);
+            } else {
+                writeRelationJsonObject("region", "is_Root", false);
+            }
+            writeRelationDefinition("region");
+            nextKey.add("regionkey");
+            writeRelationJsonObject("region", "next_key", nextKey);
+            writeRelationJsonObject("region", "is_Last", true);
+        }
+
         // Merge the JSON Array into the JSON Object.
         outputJsonObject.put("join_structure", messages);
         return true;
@@ -449,7 +548,6 @@ public class SQLToJSONWriter {
                 keyList.add(truncateKey(Visitor.groupByAttributes.get(0).toString()));
             } else {
                 Visitor.groupByAttributes.forEach(i -> keyList.add(truncateKey(i.toString())));
-
             }
             writeRelationJsonObject(lastObject, "next_key", keyList);
             //TODO Modify if handling multiple relations.
@@ -550,6 +648,15 @@ public class SQLToJSONWriter {
         relationJsonObject.put(relation, temp);
     }
 
+    private boolean checkIfRelationJsonObjectContainMultipleRelationName(String relationName) {
+        for(String r : relationJsonObject.keySet()) {
+            if (r.contains(relationName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /***
      *
      * @param expr
@@ -591,9 +698,15 @@ public class SQLToJSONWriter {
                     String relationName = relationNameInit;
                     if (relationName.equals("")) relationName = getIdentifierRelation(identifierExpr);
                     //writeSelectConditionJSONObject(expr.getLeft(), expr.getRight(), OP, relationName);
-                    JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
-                    temp.add(writeValueObject(expr));
-                    SelectCondition.put(relationName, temp);
+                    if(checkIfRelationJsonObjectContainMultipleRelationName(relationName)  && root.equals(relationName)) {
+                        JSONArray temp = SelectCondition.getOrDefault(lastObject, new JSONArray());
+                        temp.add(writeValueObject(expr));
+                        SelectCondition.put(lastObject, temp);
+                    } else {
+                        JSONArray temp = SelectCondition.getOrDefault(relationName, new JSONArray());
+                        temp.add(writeValueObject(expr));
+                        SelectCondition.put(relationName, temp);
+                    }
                     List<SQLExpr> tempList = UnaryPredicates.getOrDefault(relationName, new ArrayList<>());
                     tempList.add(expr);
                     UnaryPredicates.put(relationName, tempList);
@@ -676,6 +789,8 @@ public class SQLToJSONWriter {
                 return "supplier";
             case "n":
                 return "nation";
+            case "n2":
+                return "nation2";
             case "r":
                 return "region";
             case "c":
