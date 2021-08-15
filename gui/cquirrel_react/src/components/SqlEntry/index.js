@@ -107,7 +107,7 @@ export default class SqlEntry extends Component {
                 "    and c_nationkey = s_nationkey\n" +
                 "    and s_nationkey = n_nationkey\n" +
                 "    and n_regionkey = r_regionkey\n" +
-                "    and r_name = '[REGION]'\n" +
+                "    and r_name = 'ASIA'\n" +
                 "    and o_orderdate >= date '1994-01-01'\n" +
                 "    and o_orderdate < date '1995-01-01'\n" +
                 "group by \n" +
@@ -133,31 +133,31 @@ export default class SqlEntry extends Component {
     setEditorCodeAsQ7 = () => {
         this.setState({
             code: "select \n" +
-                "    n1.n_name as supp_nation, \n" +
-                "    n2.n_name as cust_nation, \n" +
+                "    n_name,\n" +
+                "    n2_name, \n" +
                 "    l_year,\n" +
-                "    l_extendedprice * (1 - l_discount) as volume\n" +
+                "    sum(l_extendedprice * (1 - l_discount)) as volume\n" +
                 "from \n" +
                 "    supplier, \n" +
                 "    lineitem, \n" +
                 "    orders, \n" +
                 "    customer, \n" +
-                "    nation n1, \n" +
-                "    nation n2\n" +
+                "    nation, \n" +
+                "    nation2\n" +
                 "where \n" +
                 "    s_suppkey = l_suppkey\n" +
                 "    and o_orderkey = l_orderkey\n" +
                 "    and c_custkey = o_custkey\n" +
-                "    and s_nationkey = n1.n_nationkey\n" +
-                "    and c_nationkey = n2.n_nationkey\n" +
-                "    and (n1.n_name = 'FRANCE' or n1.n_name = 'GERMANY')\n" +
-                "    and (n2.n_name = 'FRANCE' or n2.n_name = 'GERMANY')\n" +
-                "    and n1.n_name <> n2.n_name\n" +
+                "    and s_nationkey = n_nationkey\n" +
+                "    and c_nationkey = n2_nationkey\n" +
+                "    and (n_name = 'FRANCE' or n_name = 'GERMANY')\n" +
+                "    and (n2_name = 'FRANCE' or n2_name = 'GERMANY')\n" +
+                "    and n_name <> n2_name\n" +
                 "    and l_shipdate >= date '1995-01-01' \n" +
                 "    and l_shipdate <= date '1996-12-31'\n" +
                 "group by\n" +
-                "    supp_nation,\n" +
-                "    cust_nation,\n" +
+                "    n_name,\n" +
+                "    n2_name,\n" +
                 "    l_year;"
         })
     }

@@ -63,7 +63,7 @@ class App extends Component {
                 legend: {
                     type: 'scroll',
                     orient: 'vertical',
-                    left: '75%',
+                    left: '78%',
                     top: '10%',
                     bottom: '0%',
                     textStyle: {
@@ -75,7 +75,7 @@ class App extends Component {
                         let tip1 = "";
                         let tip = "";
                         let le = params.length
-                        let num = 40;
+                        let num = 35;
                         if (le > num) {
                             let l = Math.ceil(le / num);
                             for (let i = 1; i <= l; i++) {
@@ -234,7 +234,140 @@ class App extends Component {
             })
 
             // console.log("r_figure_data: ", res)
-            if (res.isTopN === 0) {
+            if (res.multi_aggr === 1 && res.isTopN === 0) {
+
+                let total_data = res.total_data;
+                console.log(res);
+                let line_list = res.data
+                let line_list_len = line_list.length;
+                let attribute_length = ((line_list_len - 1) / 2);
+                // refresh table
+
+                // construct column name
+                let t_cols = [
+                    {
+                        title: 'timestamp',
+                        dataIndex: 'timestamp',
+                    },
+                ]
+                for (var i = 0; i < attribute_length; i++) {
+                    let tmp_col = {
+                        title: line_list[attribute_length + i],
+                        dataIndex: line_list[attribute_length + i],
+                    }
+                    t_cols.push(tmp_col);
+                }
+
+                // construct table data index
+                let tmp_t_data = {
+                    key: (this.state.table_data.length + 1).toString(),
+                }
+                for (var i = 0; i < attribute_length; i++) {
+                    tmp_t_data[line_list[attribute_length + i]] = line_list[i];
+                    tmp_t_data["timestamp"] = line_list[line_list_len - 1];
+                }
+                let t_data = [tmp_t_data, ...this.state.table_data];
+                let t_title = "TPC-H Query Result Table: "
+
+                this.setState({table_cols: t_cols, table_data: t_data, table_title: t_title});
+
+                // refresh chart
+                let c_option = {...this.state.chart_option};
+                c_option.title.text = "Result Chart - TPC-H Query";
+                x_timestamp = res.x_timestamp;
+                let aggr_name_list = res.aggregate_name
+
+                // update the xAxis
+                var n_xAxis = []
+                for (var i = 0; i < aggr_name_list.length; i++) {
+                    let an_xAxis = {
+                        type: 'category',
+                        name: 'timestamp',
+                        nameLocation: 'center',
+                        nameTextStyle: {
+                            fontSize: 9
+                        },
+                        nameGap: 19,
+                        data: x_timestamp,
+                        gridIndex: i
+                    }
+                    n_xAxis.push(an_xAxis);
+                }
+
+                // update the yAxis
+                var n_yAxis = []
+                for (var i = 0; i < aggr_name_list.length; i++) {
+                    let an_yAxis = {
+                        type: 'value',
+                        name: aggr_name_list[i].toLowerCase(),
+                        nameLocation: 'center',
+                        nameTextStyle: {
+                            fontSize: 10
+                        },
+                        axisLabel: {inside: true},
+                        gridIndex: i
+                    }
+                    n_yAxis.push(an_yAxis);
+                }
+
+                //update the grid
+                var n_grid = []
+                let a_total_height = 85 / aggr_name_list.length;
+                let a_height = a_total_height - 5;
+                for (var i = 0; i < aggr_name_list.length; i++) {
+                    let an_grid = {
+                        left: '5%',
+                        right: '25%',
+                        top: (10 + a_total_height * i).toString() + "%",
+                        height: a_height.toString() + "%",
+                        show: true
+                    }
+                    n_grid.push(an_grid);
+                }
+
+                // update the dataZoom
+                // var n_dataZoom = []
+                // for (var i = 0;  i < aggr_name_list.length; i++) {
+                //     let an_dataZoom = {
+                //         type: "slider",
+                //             show: true,
+                //             showDetail: true,
+                //             realtime: true,
+                //             startValue : ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1
+                //     };
+                //     n_dataZoom.push(an_dataZoom);
+                // }
+
+                // update the legend_data and series data
+                legend_data = []
+                var series_data = []
+                for (var key_tag in total_data) {
+                    console.log("total_data: ", total_data)
+                    console.log("key_tag: ", key_tag)
+
+                    legend_data.push(key_tag);
+                    for (var i = 0; i < aggr_name_list.length; i++) {
+                        let aserie = {
+                            name: key_tag,
+                            type: "line",
+                            xAxisIndex: i,
+                            yAxisIndex: i,
+                            data: total_data[key_tag][aggr_name_list[i]]
+                        };
+                        series_data.push(aserie);
+                    }
+                }
+
+                // option.series.push(aserie);
+                c_option.series = series_data;
+                c_option.legend.data = legend_data;
+                c_option.xAxis = n_xAxis;
+                c_option.yAxis = n_yAxis;
+                c_option.grid = n_grid;
+                c_option.dataZoom = {show: false};
+                myChart.setOption(c_option);
+                this.setState({chart_option: c_option});
+            } else if (res.isTopN === 0) {
                 // refresh table
                 let t_cols = [
                     {
@@ -492,7 +625,6 @@ class App extends Component {
         })
 
 
-
         axios.post('http://localhost:5000/r/submit_sql', {sql: v}).then(res => {
             console.log(res);
         })
@@ -611,7 +743,7 @@ class App extends Component {
                                                             </div>}>
 
                                                             <div id="queryChart"
-                                                                 style={{width: "100%", height: 650}}></div>
+                                                                 style={{width: "100%", height: 850}}></div>
 
                                                         </Card>
 
