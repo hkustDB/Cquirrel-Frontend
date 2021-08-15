@@ -160,7 +160,7 @@ class MainClassWriter implements ClassWriter {
                 }
             }
         }
-        writer.writeln("env.execute(\"Flink Streaming Scala API Skeleton\")");
+        writer.writeln("env.execute(\"TPC-H Query Benchmark\")");
         writer.writeln_l("}");
     }
 
