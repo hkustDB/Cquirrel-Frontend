@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 import logging
+import threading
 
 import cquirrel_app
 from config import BaseConfig
@@ -22,7 +23,6 @@ def r_get_input_data_pattern(information_data):
     pattern_list = info['relations']
     pattern = ""
     for p in pattern_list:
-
         if p.lower() == 'partsupp':
             pattern = pattern + 'P'
         else:
@@ -41,7 +41,7 @@ def r_run_codegen_to_generate_jar2(sql_content):
               + BaseConfig.GENERATED_JAR_PATH + ' -i ' \
               + 'file://' + BaseConfig.INPUT_DATA_FILE + ' -o ' \
               + 'file://' + BaseConfig.OUTPUT_DATA_FILE + ' -s ' \
-              + 'file ' + ' -q ' \
+              + ' file ' + ' -q ' \
               + ' " ' + sql_content + ' " '
 
     logging.info("codegen command: " + cmd_str)
@@ -91,19 +91,28 @@ def r_run_codegen_to_generate_jar(json_file_path, query_idx):
 
 
 def kill_5001_port():
-    ret = subprocess.run("lsof -i tcp:5001", shell=True, capture_output=True)
+    # ret = subprocess.run("lsof -i tcp:5001 | grep LISTEN ", shell=True, capture_output=True)
+    ret = subprocess.run("lsof -i tcp:5001 | grep LISTEN ", shell=True, capture_output=True)
     content = str(ret.stdout, 'utf-8')
+    print("kill_5001_port content: \n", content)
     if not content:
         print("5001 port is available.")
         return
     try:
-        port_pid_str = content.splitlines()[1].split(' ')[1]
+        port_pid_str = content.split()[1]
+        # port_pid_str = content.splitlines()[1].split()[1]
     except IndexError:
         print("can not find the pid of port 5001.")
         return
-    ret = subprocess.run("kill " + port_pid_str, shell=True, capture_output=True)
+
+    ret = subprocess.run("ps -p " + port_pid_str, shell=True, capture_output=True)
+    print(ret.stdout)
+
+    ret = subprocess.run("kill -9 " + port_pid_str, shell=True, capture_output=True)
     if ret.returncode == 0:
         print("kill 5001 successfully.")
+    else:
+        print("kill 5001 failed!")
 
 
 def send_notify_of_start_to_run_flink_job():
@@ -156,12 +165,21 @@ def r_run_flink_task(filename, queue):
 
     clean_flink_output_files()
 
+    # t = threading.Thread(target=cquirrel_app.r_send_query_result_data_from_socket, args=(queue, ))
+    # if t.is_alive():
+    #     global stop_send_data_thread_flag
+    #     stop_send_data_thread_flag = True
+    # t.start()
+    from cquirrel_app import socketio
+    # socketio.start_background_task(cquirrel_app.r_send_query_result_data_from_socket, queue)
+
+    print("start to run flink program...")
     ret = subprocess.run(cmd_str, shell=True, capture_output=True)
     result = str(ret.stdout) + str('\n') + str(ret.stderr)
     logging.info('flink jobs return: ' + result)
 
     # cquirrel_app.r_send_query_result_data_from_socket(queue)
-    cquirrel_app.r_send_query_result_data_from_file()
+    cquirrel_app.r_send_query_result_data_from_file2()
     return ret
 
 
@@ -197,5 +215,41 @@ def get_aggregate_name_from_information_json():
     if BaseConfig.AggregateName == info['aggregation'][0]:
         return BaseConfig.AggregateName
     return info['aggregation'][0]
+
+
+def get_aggregate_number_from_information_json():
+    with open(BaseConfig.INFORMATION_JSON_FILE, 'r') as f:
+        data = f.readlines()
+    content = ""
+    for line in data:
+        content = content + line
+    info = json.loads(content)
+    if 'aggregation' in info:
+        aggr_list = list(info['aggregation'])
+        return len(aggr_list)
+    else:
+        return 0
+
+
+def get_aggregate_list_from_information_json():
+    with open(BaseConfig.INFORMATION_JSON_FILE, 'r') as f:
+        data = f.readlines()
+    content = ""
+    for line in data:
+        content = content + line
+    info = json.loads(content)
+    if 'aggregation' in info:
+        aggr_list = list(info['aggregation'])
+        return aggr_list
+    else:
+        return []
+
+
+def get_attribute_name_list(aggregate_name_list, column_name_list):
+    return list(set(column_name_list).difference(set(aggregate_name_list)))
+
+
+def get_column_name_list(line_list):
+    return line_list[int(len(line_list) / 2): -1]
 
 

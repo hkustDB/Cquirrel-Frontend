@@ -23,6 +23,7 @@ def r_socket_connect(data):
 
 @r.route('/r')
 def index():
+    cquirrel_app.stop_send_data_thread()
     return "here are flask r."
     # aju_utils.clean_codegen_log_and_generated_jar();
     # return render_template('index.html')
@@ -115,10 +116,7 @@ def r_submit_sql():
 
     data_str = str(request.data, 'utf-8')
     sql_content = json.loads(data_str)['sql']
-    print(sql_content)
-
-    # information_data = cquirrel_utils.r_run_codegen_to_generate_json(sql_content, BaseConfig.GENERATED_JSON_PATH)
-    # cquirrel_app.r_send_information_data(information_data)
+    # print(sql_content)
 
     from multiprocessing import Process
     p = Process(target=cquirrel_app.r_run_socket_server, args=(cquirrel_app.queue,))

@@ -12,19 +12,15 @@ from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask import current_app
+import eventlet
 
 from config import BaseConfig, config_options
 
 from cquirrel_app import cquirrel_utils
 
 bootstrap = Bootstrap()
-# socketio = SocketIO()
-# socketio = SocketIO(cors_allowed_origins="*", cors_credentials=False, async_mode='eventlet')
 # socketio = SocketIO(cors_allowed_origins="*", cors_credentials=False, async_mode='threading')
-socketio = SocketIO(cors_allowed_origins="*", cors_credentials=False, ping_timeout=50000)
-
-# import eventlet
-# eventlet.monkey_patch()
+socketio = SocketIO(cors_allowed_origins="*", cors_credentials=False, async_mode='eventlet', ping_timeout=50000)
 
 cors = CORS(resources={r"/*": {"origins": "*"}})
 
@@ -37,9 +33,9 @@ def r_run_socket_server(queue):
     cquirrel_utils.kill_5001_port()
     cquirrel_utils.kill_5001_port()
     print("r_run_socket_server: ")
-    sk = socket.socket()  # 创建 socket 对象
-    host = "localhost"  # 获取本地主机名
-    port = 5001  # 设置端口号
+    sk = socket.socket()
+    host = "localhost"
+    port = 5001
     sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     sk.bind((host, port))
@@ -259,8 +255,175 @@ def r_send_query_result_data_from_file():
                 r_set_step_to(5)
                 break
 
+
+def r_send_query_result_data_from_file2():
+    SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.3
+    socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
+
+    total_data = {}
+    x_timestamp = []
+    max_record = {}
+
+    global stop_send_data_thread_flag
+    global send_data_control
+    stop_send_data_thread_flag = False
+    with open(BaseConfig.OUTPUT_DATA_FILE, 'r') as f:
+        while True:
+            if send_data_control == "pause":
+                while True:
+                    if send_data_control == "send":
+                        break
+                    if stop_send_data_thread_flag:
+                        break
+                    socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+            if stop_send_data_thread_flag:
+                break
+            socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+
+            line = f.readline()
+            if line:
+                line_list = line.strip().lstrip('(').rstrip(')').split('|')
+                for i in range(len(line_list)):
+                    line_list[i] = line_list[i].strip()
+
+                if len(line_list) == 3:
+                    # print("r_figure_data: ", str(line_list))
+                    socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+                    socketio.emit('r_figure_data', {"isTopN": 0, "data": line_list}, namespace='/ws')
+                elif cquirrel_utils.get_aggregate_number_from_information_json() == 1:
+                    # TopN
+
+                    N = BaseConfig.TopNValue
+                    aggregate_name = cquirrel_utils.get_aggregate_name_from_information_json()
+
+                    line_list_len = len(line_list)
+                    x_timestamp_idx = line_list_len - 1
+                    attribute_length = int((line_list_len - 1) / 2)
+                    aggregate_name_idx = get_aggregate_name_idx(aggregate_name, line_list)
+                    aggregate_value_idx = get_aggregate_value_idx(aggregate_name_idx)
+
+                    # get current key_tag
+                    key_tag = ""
+                    for i in range(attribute_length):
+                        if i == aggregate_value_idx:
+                            continue
+                        key_tag = key_tag + line_list[attribute_length + i] + ":" + line_list[i] + ","
+                    key_tag = key_tag[: (len(key_tag) - 1)]
+
+                    # add the new value into total_data
+                    if key_tag not in total_data:
+                        # if total_data is not null, in each key, add the last value
+                        if len(total_data) != 0:
+                            # add other key_tag
+                            for key in total_data:
+                                tmpValue = total_data.get(key)
+                                total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
+                        # add the new key_tag
+                        total_data[key_tag] = []
+                        for i in range(len(x_timestamp)):
+                            total_data[key_tag].append(0.0)
+                        total_data[key_tag].append(float(line_list[aggregate_value_idx]))
+                    else:
+                        for key in total_data:
+                            tmpValue = total_data.get(key)
+                            total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
+                        total_data[key_tag].pop(len(total_data[key_tag]) - 1)
+                        total_data[key_tag].append(float(line_list[aggregate_value_idx]))
+
+                    # add timestamp
+                    x_timestamp.append(line_list[x_timestamp_idx])
+                    for key in total_data:
+                        max_record[key] = (total_data[key])[-1]
+
+                    # get top N key_tag
+                    topN = sorted(max_record.items(), key=lambda item: item[1], reverse=True)
+                    topN = topN[:N]
+                    top_value_data = {}
+                    for k, v in topN:
+                        top_value_data[k] = total_data[k]
+
+                    logging.info("send: " + str(line_list))
+                    socketio.emit('r_figure_data',
+                                  {'isTopN': 1,
+                                   'data': line_list,
+                                   'x_timestamp': x_timestamp,
+                                   "top_value_data": top_value_data}, namespace='/ws')
+                else:
+                    #####
+
+                    N = BaseConfig.TopNValue
+
+                    line_list_len = len(line_list)
+                    x_timestamp_idx = line_list_len - 1
+
+                    column_name_list = cquirrel_utils.get_column_name_list(line_list)
+                    aggregate_name_list = cquirrel_utils.get_aggregate_list_from_information_json()
+                    aggregate_name_list = [s.upper() for s in aggregate_name_list]
+                    aggregate_size = len(aggregate_name_list)
+                    attribute_name_list = cquirrel_utils.get_attribute_name_list(aggregate_name_list, column_name_list)
+
+                    aggregate_name_idx_dict = {}
+                    aggregate_value_idx_dict = {}
+                    for a_name in aggregate_name_list:
+                        aggregate_name_idx_dict[a_name] = get_column_name_idx(a_name, line_list)
+                        aggregate_value_idx_dict[a_name] = aggregate_name_idx_dict[a_name] - len(column_name_list)
+                    attribute_name_idx_dict = {}
+                    attribute_value_idx_dict = {}
+                    for a_name in attribute_name_list:
+                        attribute_name_idx_dict[a_name] = get_column_name_idx(a_name, line_list)
+                        attribute_value_idx_dict[a_name] = attribute_name_idx_dict[a_name] - len(column_name_list)
+
+                    # get current key_tag, which is assembled by attribute names
+                    key_tag = ""
+                    for attr_name in attribute_name_list:
+                        key_tag = key_tag + attr_name + ":" + line_list[attribute_value_idx_dict[attr_name]] + ","
+
+                    # add the new value into total_data
+                    if key_tag not in total_data:
+                        # if total_data is not null, in each key, add the last value
+                        for key in total_data:
+                            for agg in total_data[key]:
+                                total_data[key][agg].append(total_data[key][agg][-1])
+
+                        # add the new key_tag
+                        total_data[key_tag] = {}
+                        for aggr_name in aggregate_name_list:  # init each aggr_name
+                            total_data[key_tag][aggr_name] = []
+                            for i in range(len(x_timestamp)):
+                                total_data[key_tag][aggr_name].append(0.0)
+                            # append the new value to new key_tag
+                            total_data[key_tag][aggr_name].append(float(line_list[aggregate_value_idx_dict[aggr_name]]))
+                    else:
+                        for key in total_data:
+                            if key == key_tag:  # the target key should append the new value in line_list
+                                for aggr_name in aggregate_name_list:
+                                    total_data[key_tag][aggr_name].append(
+                                        float(line_list[aggregate_value_idx_dict[aggr_name]]))
+                            else:  # the other keys should append the last value
+                                for aggr_name in aggregate_name_list:
+                                    total_data[key][aggr_name].append(total_data[key][aggr_name][-1])
+
+                    # add timestamp
+                    x_timestamp.append(line_list[x_timestamp_idx])
+
+                    logging.info("send: " + str(line_list))
+                    logging.info("total_data.keys: " + str(total_data.keys()))
+                    socketio.emit('r_figure_data',
+                                  {
+                                      'multi_aggr': 1,
+                                      'isTopN': 0,
+                                      'data': line_list,
+                                      'x_timestamp': x_timestamp,
+                                      'aggregate_name': aggregate_name_list,
+                                      'total_data': total_data
+                                  }, namespace='/ws')
+            else:
+                r_set_step_to(5)
+                break
+
+
 def r_send_query_result_data_from_socket(q):
-    # print("r_send_query_result_data_from_socket: ")
+    print("r_send_query_result_data_from_socket: ")
     SERVER_SEND_DATA_TO_CLIENT_INTEVAL = 0.3
     socketio.emit('r_start_to_send_data', {"status": "start"}, namespace='/ws')
 
@@ -272,92 +435,97 @@ def r_send_query_result_data_from_socket(q):
     global send_data_control
     stop_send_data_thread_flag = False
     while True:
-        # print("send_data_control=", send_data_control, "stop_send_data_thread_flag=", stop_send_data_thread_flag)
+        print("send_data_control=", send_data_control, "stop_send_data_thread_flag=", stop_send_data_thread_flag)
         if send_data_control == "pause":
             while True:
                 if send_data_control == "send":
                     break
                 if stop_send_data_thread_flag:
                     break
+                print("1 socketio.sleep")
                 socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
         if stop_send_data_thread_flag:
             break
-        socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+        print("2 socketio.sleep")
+        socketio.sleep(1)
 
+        print("check if queue is empty")
         if q.empty():
             print("r_send_query_result_data_from_socket: queue is empty")
-        line = q.get()
-        print("r_send_query_result_data_from_socket: line: ", line)
-        if line:
-            line_list = line.strip().lstrip('(').rstrip(')').split('|')
-            for i in range(len(line_list)):
-                line_list[i] = line_list[i].strip()
+        else:
+            line = q.get()
+            print("r_send_query_result_data_from_socket: line: ", line)
+            if line:
+                line_list = line.strip().lstrip('(').rstrip(')').split('|')
+                for i in range(len(line_list)):
+                    line_list[i] = line_list[i].strip()
 
-            if len(line_list) == 3:
-                # print("r_figure_data: ", str(line_list))
-                socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
-                socketio.emit('r_figure_data', {"isTopN": 0, "data": line_list}, namespace='/ws')
-            else:
-                # TopN
+                if len(line_list) == 3:
+                    # print("r_figure_data: ", str(line_list))
+                    socketio.sleep(SERVER_SEND_DATA_TO_CLIENT_INTEVAL)
+                    socketio.emit('r_figure_data', {"isTopN": 0, "data": line_list}, namespace='/ws')
+                else:
+                    # TopN
 
-                N = BaseConfig.TopNValue
-                aggregate_name = cquirrel_utils.get_aggregate_name_from_information_json()
+                    N = BaseConfig.TopNValue
+                    aggregate_name = cquirrel_utils.get_aggregate_name_from_information_json()
 
-                line_list_len = len(line_list)
-                x_timestamp_idx = line_list_len - 1
-                attribute_length = int((line_list_len - 1) / 2)
-                aggregate_name_idx = get_aggregate_name_idx(aggregate_name, line_list)
-                aggregate_value_idx = get_aggregate_value_idx(aggregate_name_idx)
+                    line_list_len = len(line_list)
+                    x_timestamp_idx = line_list_len - 1
+                    attribute_length = int((line_list_len - 1) / 2)
+                    aggregate_name_idx = get_aggregate_name_idx(aggregate_name, line_list)
+                    aggregate_value_idx = get_aggregate_value_idx(aggregate_name_idx)
 
-                # get current key_tag
-                key_tag = ""
-                for i in range(attribute_length):
-                    if i == aggregate_value_idx:
-                        continue
-                    key_tag = key_tag + line_list[attribute_length + i] + ":" + line_list[i] + ","
-                key_tag = key_tag[: (len(key_tag) - 1)]
+                    # get current key_tag
+                    key_tag = ""
+                    for i in range(attribute_length):
+                        if i == aggregate_value_idx:
+                            continue
+                        key_tag = key_tag + line_list[attribute_length + i] + ":" + line_list[i] + ","
+                    key_tag = key_tag[: (len(key_tag) - 1)]
 
-                # add the new value into total_data
-                if key_tag not in total_data:
-                    # if total_data is not null, in each key, add the last value
-                    if len(total_data) != 0:
-                        # add other key_tag
+                    # add the new value into total_data
+                    if key_tag not in total_data:
+                        # if total_data is not null, in each key, add the last value
+                        if len(total_data) != 0:
+                            # add other key_tag
+                            for key in total_data:
+                                tmpValue = total_data.get(key)
+                                total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
+                        # add the new key_tag
+                        total_data[key_tag] = []
+                        for i in range(len(x_timestamp)):
+                            total_data[key_tag].append(0.0)
+                        total_data[key_tag].append(float(line_list[aggregate_value_idx]))
+                    else:
                         for key in total_data:
                             tmpValue = total_data.get(key)
                             total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
-                    # add the new key_tag
-                    total_data[key_tag] = []
-                    for i in range(len(x_timestamp)):
-                        total_data[key_tag].append(0.0)
-                    total_data[key_tag].append(float(line_list[aggregate_value_idx]))
-                else:
+                        total_data[key_tag].pop(len(total_data[key_tag]) - 1)
+                        total_data[key_tag].append(float(line_list[aggregate_value_idx]))
+
+                    # add timestamp
+                    x_timestamp.append(line_list[x_timestamp_idx])
                     for key in total_data:
-                        tmpValue = total_data.get(key)
-                        total_data[key] = [x for x in tmpValue] + [tmpValue[-1]]
-                    total_data[key_tag].pop(len(total_data[key_tag]) - 1)
-                    total_data[key_tag].append(float(line_list[aggregate_value_idx]))
+                        max_record[key] = (total_data[key])[-1]
 
-                # add timestamp
-                x_timestamp.append(line_list[x_timestamp_idx])
-                for key in total_data:
-                    max_record[key] = (total_data[key])[-1]
+                    # get top N key_tag
+                    topN = sorted(max_record.items(), key=lambda item: item[1], reverse=True)
+                    topN = topN[:N]
+                    top_value_data = {}
+                    for k, v in topN:
+                        top_value_data[k] = total_data[k]
 
-                # get top N key_tag
-                topN = sorted(max_record.items(), key=lambda item: item[1], reverse=True)
-                topN = topN[:N]
-                top_value_data = {}
-                for k, v in topN:
-                    top_value_data[k] = total_data[k]
-
-                logging.info("send: " + str(line_list))
-                socketio.emit('r_figure_data',
-                              {'isTopN': 1,
-                               'data': line_list,
-                               'x_timestamp': x_timestamp,
-                               "top_value_data": top_value_data}, namespace='/ws')
-        else:
-            r_set_step_to(5)
-            break
+                    logging.info("send: " + str(line_list))
+                    socketio.emit('r_figure_data',
+                                  {'isTopN': 1,
+                                   'data': line_list,
+                                   'x_timestamp': x_timestamp,
+                                   "top_value_data": top_value_data}, namespace='/ws')
+                    print("socketio.emit  r_figure_data")
+            else:
+                r_set_step_to(5)
+                break
 
 
 def get_aggregate_value_idx(aggregate_name_idx):
@@ -372,4 +540,12 @@ def get_aggregate_name_idx(aggregate_name, line_list):
         if line_list[i].lower() == aggregate_name.lower():
             return i
     logging.error("can not find aggregate_name, aggregate_name = ", aggregate_name, " line_list = ", line_list)
+    return -1
+
+
+def get_column_name_idx(column_name, line_list):
+    for i in range(len(line_list)):
+        if line_list[i].lower() == column_name.lower():
+            return i
+    logging.error("can not find column name, column_name = ", column_name, " line_list = ", line_list)
     return -1
