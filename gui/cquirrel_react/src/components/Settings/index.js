@@ -117,9 +117,9 @@ export default class Settings extends Component {
                                 <Form.Item
                                     label="Flink Parallelism"
                                     name="flink_parallelism"
-                                    initialValue = "2"
+                                    initialValue = "4"
                                 >
-                                    <Input placeholder="2"/>
+                                    <Input placeholder="4"/>
                                 </Form.Item>
                                 <Button type="primary" htmlType="submit">Save</Button> <span> </span>
                                 <Button type="primary" onClick={this.hideModal}>Cancel</Button>
@@ -148,9 +148,9 @@ export default class Settings extends Component {
                                     name="streams_types"
                                     initialValue = "sliding_windows"
                                 >
-                                    <Select defaultValue="sliding_windows">
-                                        <Option value="sliding_windows">sliding windows</Option>
+                                    <Select defaultValue="insert_only">
                                         <Option value="insert_only">insert only</Option>
+                                        <Option value="sliding_windows">sliding windows</Option>
                                     </Select>
                                 </Form.Item>
 
@@ -180,9 +180,9 @@ export default class Settings extends Component {
                                 <Form.Item
                                     label="Input Data File"
                                     name="input_data_file"
-                                    initialValue = "/Users/chaoqi/data/input_data.csv"
+                                    initialValue = "/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/cquirrel_flask/cquirrel_app/resources/input_data_all_insert_only.csv"
                                 >
-                                    <Input placeholder="/Users/chaoqi/data/input_data.csv"/>
+                                    <Input placeholder="/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/cquirrel_flask/cquirrel_app/resources/input_data_all_insert_only.csv"/>
                                 </Form.Item>
 
                                 <Form.Item
@@ -234,9 +234,9 @@ export default class Settings extends Component {
                                 <Form.Item
                                     label="Output Data File"
                                     name="output_data_file"
-                                    initialValue = "/Users/chaoqi/data/output_data.csv"
+                                    initialValue = "/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/cquirrel_flask/cquirrel_app/resources/output_data.csv"
                                 >
-                                    <Input placeholder="/Users/chaoqi/data/output_data.csv"/>
+                                    <Input placeholder="/Users/chaoqi/Projects/AJU/code/gui-codegen/gui/cquirrel_flask/cquirrel_app/resources/output_data.csv"/>
                                 </Form.Item>
 
                                 <Form.Item
