@@ -284,9 +284,9 @@ class App extends Component {
                         type: 'category',
                         name: 'timestamp',
                         nameLocation: 'center',
-                        nameTextStyle: {
-                            fontSize: 9
-                        },
+                        // nameTextStyle: {
+                        //     fontSize: 9
+                        // },
                         nameGap: 19,
                         data: x_timestamp,
                         gridIndex: i
@@ -301,9 +301,9 @@ class App extends Component {
                         type: 'value',
                         name: aggr_name_list[i].toLowerCase(),
                         nameLocation: 'center',
-                        nameTextStyle: {
-                            fontSize: 10
-                        },
+                        // nameTextStyle: {
+                        //     fontSize: 10
+                        // },
                         axisLabel: {inside: true},
                         gridIndex: i
                     }
@@ -324,19 +324,6 @@ class App extends Component {
                     }
                     n_grid.push(an_grid);
                 }
-
-                // update the dataZoom
-                // var n_dataZoom = []
-                // for (var i = 0;  i < aggr_name_list.length; i++) {
-                //     let an_dataZoom = {
-                //         type: "slider",
-                //             show: true,
-                //             showDetail: true,
-                //             realtime: true,
-                //             startValue : ((x_timestamp.length - 100) > 0) ? x_timestamp.length - 100 : 1
-                //     };
-                //     n_dataZoom.push(an_dataZoom);
-                // }
 
                 // update the legend_data and series data
                 legend_data = []
@@ -719,16 +706,16 @@ class App extends Component {
                                                         <Card title="Query Result Figure: " extra={
                                                             <div>
                                                                 <Input.Group size="small" compact>
-                                                                    Aggregate Name:&nbsp;
-                                                                    <Input defaultValue="" size="small"
-                                                                           style={{width: 'min-content'}}
-                                                                           disabled={this.state.aggregate_name_input_disabled}
-                                                                           onPressEnter={this.set_aggregate_name.bind(this)}/>
-                                                                    &nbsp;&nbsp;
-                                                                    TopN:&nbsp;
-                                                                    <InputNumber defaultValue={10} size="small"
-                                                                                 disabled={this.state.topN_input_disabled}
-                                                                                 onPressEnter={this.set_topN_value.bind(this)}/>
+                                                                    {/*Aggregate Name:&nbsp;*/}
+                                                                    {/*<Input defaultValue="" size="small"*/}
+                                                                    {/*       style={{width: 'min-content'}}*/}
+                                                                    {/*       disabled={this.state.aggregate_name_input_disabled}*/}
+                                                                    {/*       onPressEnter={this.set_aggregate_name.bind(this)}/>*/}
+                                                                    {/*&nbsp;&nbsp;*/}
+                                                                    {/*TopN:&nbsp;*/}
+                                                                    {/*<InputNumber defaultValue={10} size="small"*/}
+                                                                    {/*             disabled={this.state.topN_input_disabled}*/}
+                                                                    {/*             onPressEnter={this.set_topN_value.bind(this)}/>*/}
                                                                     &nbsp;&nbsp;&nbsp;
                                                                     <Button type="primary" size="small"
                                                                             icon={<PlayCircleOutlined/>}
@@ -743,8 +730,7 @@ class App extends Component {
                                                             </div>}>
 
                                                             <div id="queryChart"
-                                                                 style={{width: "100%", height: 850}}></div>
-
+                                                                 style={{width: "100%", height: 1050}}></div>
                                                         </Card>
 
                                                     </div>

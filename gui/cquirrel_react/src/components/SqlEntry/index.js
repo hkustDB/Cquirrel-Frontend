@@ -19,8 +19,12 @@ export default class SqlEntry extends Component {
         editor.focus();
     }
 
-    onChange(newValue, e) {
-        console.log('onChange', newValue, e);
+    onChange = (newValue, e) => {
+        console.log('onChange newValue:', newValue);
+        console.log('onChange e:', e);
+        this.setState({
+            code: newValue,
+        })
     }
 
     setEditorCodeAsQ1 = () => {
